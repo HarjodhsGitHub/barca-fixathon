@@ -1,30 +1,102 @@
 @import "tailwindcss";
 
+/*
+  Selinsight tokens. Industrial, trustworthy, numbers first.
+  - Paper and ink: a recycled-board ground with near-black type.
+  - Circular green is the one action colour.
+  - The four route colours follow the EU waste hierarchy, best first:
+    reuse (teal), recycling (green), recovery (amber), landfill (clay).
+  - Amber hazard stripe = sample data. Quiet green tick = sourced.
+  - Motion: one orchestrated entrance per page, then quick, quiet feedback.
+    Everything collapses to instant under prefers-reduced-motion.
+*/
 @theme {
-  --color-paper: #f3f1ea;
+  --color-paper: #f0eee7;
   --color-surface: #ffffff;
-  --color-sunken: #ebe8df;
-  --color-ink: #15171a;
-  --color-ink-2: #4b5157;
-  --color-muted: #81878d;
-  --color-line: #e2ded4;
-  --color-line-2: #cdc8ba;
-  --color-circular: #0b7149;
-  --color-circular-soft: #e1f0e7;
+  --color-sunken: #e7e4da;
+  --color-ink: #15181b;
+  --color-ink-2: #454b51;
+  --color-muted: #656b71;
+  --color-line: #dedace;
+  --color-line-2: #c6c1b2;
+  --color-tablehead: #f6f4ef;
+
+  --color-circular: #0b6b45;
+  --color-circular-soft: #dfefe5;
+  --color-circular-ink: #07462d;
+  --color-circular-bright: #3fbf7f;
+
   --color-reuse: #0f766e;
   --color-recycling: #2c8a3b;
   --color-recovery: #b26e12;
   --color-landfill: #8f4a3a;
-  --color-flag: #b45309;
-  --color-flag-soft: #fcf0de;
+
+  --color-flag: #a94f08;
+  --color-flag-soft: #fcefdb;
+  --color-hazard: #e9a23b;
   --color-danger: #b42318;
   --color-danger-soft: #fbe9e7;
+
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* Sharper corners than the Tailwind defaults: plates and panels, not pillows. */
+  --radius-md: 0.3125rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+
+  /* Depth: a hairline lip plus a soft, low shadow. shadow-card at rest, shadow-lift on hover, shadow-pop for the chosen thing. */
+  --shadow-card: 0 1px 0 rgb(21 24 27 / 0.03), 0 1px 3px rgb(21 24 27 / 0.06);
+  --shadow-lift: 0 1px 0 rgb(21 24 27 / 0.03), 0 12px 28px -14px rgb(21 24 27 / 0.3);
+  --shadow-pop: 0 1px 0 rgb(21 24 27 / 0.04), 0 22px 48px -20px rgb(21 24 27 / 0.42);
+
+  /* Easing. out-expo for entrances, out-quart for hovers and state changes, spring only for confirmations. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* Entrances: animate-rise, animate-fade-in, animate-grow-x, animate-num-in, animate-pop. */
+  --animate-rise: rise 640ms var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 480ms var(--ease-out-quart) both;
+  --animate-grow-x: grow-x 1000ms var(--ease-out-expo) both;
+  --animate-num-in: num-in 760ms var(--ease-out-expo) both;
+  --animate-pop: pop 420ms var(--ease-spring) both;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes grow-x {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes num-in {
+    from { opacity: 0; transform: translateY(0.35em); filter: blur(6px); }
+    to { opacity: 1; transform: none; filter: blur(0); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 :root {
   color-scheme: light;
+  /* Durations, for transitions written by hand. */
+  --motion-fast: 140ms;
+  --motion-base: 240ms;
+  --motion-slow: 480ms;
+}
+
+/* animation-delay in ms: anim-delay-120 */
+@utility anim-delay-* {
+  animation-delay: calc(--value(integer) * 1ms);
 }
 
 html,
@@ -33,22 +105,140 @@ body {
   color: var(--color-ink);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-circular-soft);
+  color: var(--color-circular-ink);
+}
+
+/* One visible focus style everywhere, keyboard only. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .tabular {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* "Sample data" marker: a quiet hazard stripe, so invented numbers never pass as real ones. */
+/* ------------------------------------------------------------------ motion */
+
+/* Children rise in sequence. Step and start are tunable per container. */
+.stagger > * {
+  animation: rise 640ms var(--ease-out-expo) both;
+}
+.stagger > :nth-child(1) { animation-delay: calc(var(--stagger-start, 0ms) + 0 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(2) { animation-delay: calc(var(--stagger-start, 0ms) + 1 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(3) { animation-delay: calc(var(--stagger-start, 0ms) + 2 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(4) { animation-delay: calc(var(--stagger-start, 0ms) + 3 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(5) { animation-delay: calc(var(--stagger-start, 0ms) + 4 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(6) { animation-delay: calc(var(--stagger-start, 0ms) + 5 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(7) { animation-delay: calc(var(--stagger-start, 0ms) + 6 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(8) { animation-delay: calc(var(--stagger-start, 0ms) + 7 * var(--stagger-step, 70ms)); }
+.stagger > :nth-child(n + 9) { animation-delay: calc(var(--stagger-start, 0ms) + 8 * var(--stagger-step, 70ms)); }
+
+/* Hover lift for cards and rows you can open. */
+.lift {
+  transition:
+    transform var(--motion-base) var(--ease-out-quart),
+    box-shadow var(--motion-base) var(--ease-out-quart),
+    border-color var(--motion-base) var(--ease-out-quart),
+    background-color var(--motion-base) var(--ease-out-quart);
+}
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Pressed buttons give a little. */
+.press {
+  transition:
+    transform var(--motion-fast) var(--ease-out-quart),
+    background-color var(--motion-base) var(--ease-out-quart),
+    box-shadow var(--motion-base) var(--ease-out-quart),
+    border-color var(--motion-base) var(--ease-out-quart);
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* An underline that draws in from the left on hover. */
+.draw-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--motion-slow) var(--ease-out-expo);
+}
+.draw-underline:hover {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .lift:hover,
+  .press:active {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ marks */
+
+/* "Sample data" marker: an amber hazard stripe, so invented numbers never pass as real ones. */
 .sample-stripe {
   background-image: repeating-linear-gradient(
     -45deg,
-    var(--color-flag-soft) 0 6px,
-    #f7e2c2 6px 12px
+    var(--color-flag-soft) 0 5px,
+    #f6dcb0 5px 10px
   );
+}
+
+/* Closed or not-allowed: a thin diagonal hatch on the paper ground. */
+.hatch {
+  background-color: var(--color-paper);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 4px,
+    var(--color-line-2) 4px 5px
+  );
+}
+
+/* In-page anchors clear the sticky header (and the price book's section bar on small screens). */
+.anchor {
+  scroll-margin-top: 8rem;
+}
+@media (min-width: 1024px) {
+  .anchor {
+    scroll-margin-top: 5.5rem;
+  }
+}
+
+/* Horizontal scrollers without a visible bar (the price book's section bar on phones). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 details > summary {
