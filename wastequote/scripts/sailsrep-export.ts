@@ -377,6 +377,7 @@ const testfall = {
     { namn: "Wet cardboard to recycling", val: sel("cardboard_paper", "high", "recycling", "roro_20", "weekly"), regel: "CB-4: wet or food-soiled cardboard is rejected by paper mills" },
     { namn: "Clean cardboard to landfill", val: sel("cardboard_paper", "low", "landfill", "roro_20", "weekly"), regel: "LF-2: separately collected recyclables may not be landfilled" },
     { namn: "Dirty film to recycling", val: sel("plastic_film", "high", "recycling", "roro_20", "weekly"), regel: "PF-4: soiled film is rejected by film recyclers" },
+    { namn: "Clean cardboard to energy from waste", val: sel("cardboard_paper", "low", "recovery", "roro_20", "weekly"), regel: "ES-1: Ley 7/2022 art. 25.1, separately collected waste may not be incinerated" },
     {
       namn: "Food waste in an open skip",
       val: { ...sel("organic_food", "low", "recycling", "bin_240", "weekly"), [ID.container]: ID.containerVariant("skip_6") },

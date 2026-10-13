@@ -38,9 +38,10 @@
       ],
       "effect": "deny",
       "text": "A clean, separately collected stream that is fit for recycling may not be landfilled.",
-      "source": "Directive 1999/31/EC (Landfill Directive), Article 5(3)(f) as amended by Directive (EU) 2018/850",
+      "source": "Directive 1999/31/EC (Landfill Directive), Art. 5(3)(f) as amended by Directive (EU) 2018/850; Spain: Ley 7/2022, art. 25.1",
       "source_url": "https://eur-lex.europa.eu/eli/dir/2018/850/oj",
-      "is_sample": false
+      "is_sample": false,
+      "notes": "WasteQuote treats low contamination as a clean, separately collected stream."
     },
     {
       "id": "LF-3",
@@ -54,6 +55,25 @@
       "source": "Directive 1999/31/EC, Article 5(3)(f) as amended by Directive (EU) 2018/850 (applies to separately collected waste only)",
       "source_url": "https://eur-lex.europa.eu/eli/dir/2018/850/oj",
       "is_sample": false
+    },
+    {
+      "id": "ES-1",
+      "material": [
+        "cardboard_paper",
+        "clean_wood",
+        "plastic_film",
+        "organic_food"
+      ],
+      "route": "recovery",
+      "contamination": [
+        "low"
+      ],
+      "effect": "deny",
+      "text": "Waste collected separately for reuse and recycling may not be incinerated, with or without energy recovery.",
+      "source": "Ley 7/2022 de residuos y suelos contaminados para una economía circular, art. 25.1 (Spain)",
+      "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-5809",
+      "is_sample": false,
+      "notes": "Applies in Spain. WasteQuote treats low contamination as a clean, separately collected stream; residues from sorting are exempt."
     },
     {
       "id": "CB-1",

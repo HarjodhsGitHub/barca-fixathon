@@ -2,92 +2,127 @@
   "_meta": {
     "table": "materials",
     "description": "The six waste streams. Bulk density turns the estimated volume into tonnes, which drives gate fees, rebates, taxes and CO2e. Contamination definitions are what the vision model and the salesperson grade against.",
-    "units": { "bulk_density_t_per_m3": "tonnes per m³, loose in a container" }
+    "units": {
+      "bulk_density_t_per_m3": "tonnes per m³, loose (uncompacted)"
+    }
   },
   "rows": [
     {
       "id": "cardboard_paper",
       "name": "Cardboard & paper",
       "examples": "boxes, flattened packaging, office paper",
-      "ewc_codes": ["15 01 01", "20 01 01"],
+      "ewc_codes": [
+        "15 01 01",
+        "20 01 01"
+      ],
       "contamination": {
         "low": "Clean, dry boxes and paper; under 5% other material.",
         "medium": "Some tape, labels, film or damp patches; 5-15% other material.",
         "high": "Wet, food-soiled or mixed with general waste; over 15% other material."
       },
-      "bulk_density_t_per_m3": 0.05,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.063,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), Paper: Old Corrugated Containers, Flattened = 106 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     },
     {
       "id": "clean_wood",
       "name": "Clean wood",
       "examples": "pallets, untreated offcuts, crates",
-      "ewc_codes": ["15 01 03", "17 02 01", "03 01 05"],
+      "ewc_codes": [
+        "15 01 03",
+        "17 02 01",
+        "03 01 05"
+      ],
       "contamination": {
         "low": "Untreated, unpainted solid wood and pallets; intact pieces.",
         "medium": "Nails, screws, some chipboard or broken pallets; little else.",
         "high": "Painted, treated, laminated or mixed with other waste."
       },
-      "bulk_density_t_per_m3": 0.2,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.1,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), C&D: Wood, Pallets and Crates = 169 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     },
     {
       "id": "mixed_cd",
       "name": "Mixed construction waste",
       "examples": "rubble, timber, plasterboard, packaging from a site",
-      "ewc_codes": ["17 09 04"],
+      "ewc_codes": [
+        "17 09 04"
+      ],
       "contamination": {
         "low": "Mostly inert (concrete, brick, tile) with some timber and metal.",
         "medium": "Inert plus plasterboard, plastics, insulation and packaging.",
         "high": "Large share of general waste, insulation or suspect items needing checks."
       },
-      "bulk_density_t_per_m3": 0.4,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.247,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), C&D: Remainder/Composite, Construction and Demolition = 417 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     },
     {
       "id": "scrap_metal",
       "name": "Scrap metal",
       "examples": "steel offcuts, swarf, sheet, profiles",
-      "ewc_codes": ["17 04 05", "17 04 07", "12 01 01"],
+      "ewc_codes": [
+        "17 04 05",
+        "17 04 07",
+        "12 01 01"
+      ],
       "contamination": {
         "low": "Clean, sorted metal; one alloy family.",
         "medium": "Mixed metals with some paint, plastic or wood attached.",
         "high": "Oily swarf, mixed with other waste, or attached non-metal components."
       },
-      "bulk_density_t_per_m3": 0.5,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.133,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), C&D: Metal, Other Ferrous = 225 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     },
     {
       "id": "plastic_film",
       "name": "Plastic film",
       "examples": "stretch wrap, shrink film, LDPE bags",
-      "ewc_codes": ["15 01 02", "20 01 39"],
+      "ewc_codes": [
+        "15 01 02",
+        "20 01 39"
+      ],
       "contamination": {
         "low": "Clear or natural LDPE film, dry, few labels.",
         "medium": "Coloured or printed film, some tape and labels.",
         "high": "Food or soil residue, mixed plastics, wet."
       },
-      "bulk_density_t_per_m3": 0.03,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.021,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), Plastic: Film, LDPE, loose = 35 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     },
     {
       "id": "organic_food",
       "name": "Organic / food waste",
       "examples": "canteen waste, spoiled product, food processing residues",
-      "ewc_codes": ["20 01 08", "02 02 03", "20 02 01"],
+      "ewc_codes": [
+        "20 01 08",
+        "02 03 04",
+        "02 02 03",
+        "20 02 01"
+      ],
       "contamination": {
         "low": "Food only, unpackaged.",
         "medium": "Some packaging, cutlery or compostable bags mixed in.",
         "high": "Heavily packaged product or mixed with general waste."
       },
-      "bulk_density_t_per_m3": 0.5,
-      "source": "Sample value (placeholder)",
-      "is_sample": true
+      "bulk_density_t_per_m3": 0.275,
+      "source": "US EPA, Volume-to-Weight Conversion Factors (April 2016), Food: Food Waste = 463 lb/yd³",
+      "is_sample": false,
+      "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+      "notes": "Converted at 1 lb/yd³ = 0.593276 kg/m³. US survey data, used as a physical property."
     }
   ]
 }

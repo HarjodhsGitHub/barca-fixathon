@@ -1,12 +1,52 @@
 {
   "_meta": {
     "table": "transport",
-    "description": "Per-km cost and emissions by vehicle class. A trip is the round trip site -> facility -> back (2 x one-way km). Wheelie bins are emptied on a shared collection round, so only a share of the trip is allocated to this customer.",
-    "units": { "eur_per_km": "EUR per vehicle km", "kg_co2e_per_km": "kg CO2e per vehicle km", "distance_share": "fraction of the round trip allocated to one lift" }
+    "description": "Per-km cost and emissions by vehicle class. A trip is the round trip site -> facility -> back (2 x one-way km). Wheelie bins are emptied on a shared collection round, so only a share of the trip is allocated to this customer. DESNZ and WARM waste factors already include a default collection leg, so only distance beyond included_km one way is added to CO2e (the cost side still charges every km).",
+    "units": {
+      "eur_per_km": "EUR per vehicle km",
+      "kg_co2e_per_km": "kg CO2e per vehicle km",
+      "distance_share": "fraction of the round trip allocated to one lift"
+    }
   },
   "rows": [
-    { "id": "rcv", "name": "Refuse collection vehicle (shared round)", "eur_per_km": 2.4, "distance_share": 0.1, "kg_co2e_per_km": 1.0, "source": "Sample cost; emission factor placeholder", "is_sample": true },
-    { "id": "skip_loader", "name": "Skip loader", "eur_per_km": 1.9, "distance_share": 1, "kg_co2e_per_km": 0.8, "source": "Sample cost; emission factor placeholder", "is_sample": true },
-    { "id": "hook_loader", "name": "Hook-lift truck", "eur_per_km": 2.1, "distance_share": 1, "kg_co2e_per_km": 1.0, "source": "Sample cost; emission factor placeholder", "is_sample": true }
-  ]
+    {
+      "id": "rcv",
+      "name": "Refuse collection vehicle (shared round)",
+      "eur_per_km": 2.4,
+      "distance_share": 0.1,
+      "kg_co2e_per_km": 0.99773,
+      "source": "Cost: sample. Emissions: DESNZ 2026 full set, Delivery vehicles, HGV (all diesel), Rigid (>17 tonnes), average laden = 0.99773 kg CO2e/km",
+      "is_sample": true,
+      "source_url": "https://assets.publishing.service.gov.uk/media/6a29392bade52dc0882218a8/ghg-conversion-factors-2026-full-set.xlsx",
+      "notes": "Cost per km is a sample value. The emission factor is sourced; mapping this vehicle class to rigid >17 t is our assumption."
+    },
+    {
+      "id": "skip_loader",
+      "name": "Skip loader",
+      "eur_per_km": 1.9,
+      "distance_share": 1,
+      "kg_co2e_per_km": 0.99773,
+      "source": "Cost: sample. Emissions: DESNZ 2026 full set, Delivery vehicles, HGV (all diesel), Rigid (>17 tonnes), average laden = 0.99773 kg CO2e/km",
+      "is_sample": true,
+      "source_url": "https://assets.publishing.service.gov.uk/media/6a29392bade52dc0882218a8/ghg-conversion-factors-2026-full-set.xlsx",
+      "notes": "Cost per km is a sample value. The emission factor is sourced; mapping this vehicle class to rigid >17 t is our assumption."
+    },
+    {
+      "id": "hook_loader",
+      "name": "Hook-lift truck",
+      "eur_per_km": 2.1,
+      "distance_share": 1,
+      "kg_co2e_per_km": 0.99773,
+      "source": "Cost: sample. Emissions: DESNZ 2026 full set, Delivery vehicles, HGV (all diesel), Rigid (>17 tonnes), average laden = 0.99773 kg CO2e/km",
+      "is_sample": true,
+      "source_url": "https://assets.publishing.service.gov.uk/media/6a29392bade52dc0882218a8/ghg-conversion-factors-2026-full-set.xlsx",
+      "notes": "Cost per km is a sample value. The emission factor is sourced; mapping this vehicle class to rigid >17 t is our assumption."
+    }
+  ],
+  "included_km": {
+    "value": 25,
+    "source": "DESNZ 2026 GHG conversion factors methodology, Table 51: waste factors include 25 km by refuse collection vehicle to the first point of treatment",
+    "source_url": "https://assets.publishing.service.gov.uk/media/6a2940543b15d05a7ce3202e/2026-GHG-conversion-factors-methodology-report.pdf",
+    "is_sample": false
+  }
 }

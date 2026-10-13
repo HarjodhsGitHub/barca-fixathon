@@ -124,6 +124,8 @@ const Pricing = z.object({
 const Tax = z.object({
   id: z.string(),
   route: routeId,
+  /** null = every material on this route */
+  materials: z.array(materialId).nullable(),
   name: z.string(),
   eur_per_t: z.number().nonnegative(),
   ...provenance,
@@ -201,6 +203,11 @@ export const treatments = rows(Treatment, treatmentsJson, "treatments.json");
 export const rules = rows(Rule, eligibilityJson, "eligibility.json");
 export const containers = rows(Container, containersJson, "containers.json");
 export const vehicles = rows(Vehicle, transportJson, "transport.json");
+export const transportIncludedKm = one(
+  z.object({ value: z.number().nonnegative(), ...provenance }),
+  transportJson.included_km,
+  "transport.json included_km",
+);
 export const pricing = one(Pricing, pricingJson, "pricing.json");
 export const taxes = rows(Tax, taxesJson, "taxes.json");
 export const emissionFactors = rows(EmissionFactor, emissionsJson, "emission-factors.json");

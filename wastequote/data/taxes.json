@@ -1,27 +1,50 @@
 {
   "_meta": {
     "table": "taxes",
-    "description": "Taxes per tonne by route. Applied to landfill and energy recovery only.",
+    "description": "Tax per tonne on landfill and incineration in Catalonia (where the demo runs): the state tax of Ley 7/2022 at Catalan rates. Applied only to the materials and routes listed. National Ley 7/2022 rates are lower (10 €/t landfill and 4 €/t R01 incineration for this kind of waste) and are kept for reference.",
     "units": {
       "eur_per_t": "EUR per tonne"
+    },
+    "reference_rates": {
+      "spain_national_landfill_other_non_hazardous": {
+        "eur_per_t": 10,
+        "source": "Ley 7/2022, art. 93.1.a) 4.º",
+        "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-5809"
+      },
+      "spain_national_incineration_R01_other": {
+        "eur_per_t": 4,
+        "source": "Ley 7/2022, art. 93.1.e)",
+        "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-5809"
+      },
+      "catalonia_landfill_path": "25 (2026), 30 (2027), 35 (2028), 40 (2029), 45 (2030), 50 €/t from 2031 per Decret llei 3/2026"
     }
   },
   "rows": [
     {
-      "id": "landfill_tax",
+      "id": "cat_landfill_tax",
       "route": "landfill",
-      "name": "Landfill tax (placeholder)",
-      "eur_per_t": 40,
-      "source": "Placeholder, to be replaced with Ley 7/2022 rate",
-      "is_sample": true
+      "materials": null,
+      "name": "Landfill tax (Catalonia 2026)",
+      "eur_per_t": 25,
+      "source": "Decret llei 3/2026 (Catalonia), annex A) 3-4: landfill of non-municipal non-hazardous waste, 2026 rate",
+      "source_url": "https://residus.gencat.cat/web/.content/home/consultes_i_tramits_-_nou/impost_cedit_residus/decret_llei_3_2026.pdf",
+      "is_sample": false,
+      "notes": "Rises 5 €/t a year to 50 €/t from 2031."
     },
     {
-      "id": "incineration_tax",
+      "id": "cat_incineration_tax",
       "route": "recovery",
-      "name": "Incineration tax (placeholder)",
+      "materials": [
+        "cardboard_paper",
+        "plastic_film",
+        "organic_food"
+      ],
+      "name": "Incineration tax, R1 energy recovery (Catalonia)",
       "eur_per_t": 15,
-      "source": "Placeholder, to be replaced with Ley 7/2022 rate",
-      "is_sample": true
+      "source": "Decret llei 3/2026 (Catalonia), annex E) 3: incineration with energy recovery (R01) of non-municipal waste",
+      "source_url": "https://residus.gencat.cat/web/.content/home/consultes_i_tramits_-_nou/impost_cedit_residus/decret_llei_3_2026.pdf",
+      "is_sample": false,
+      "notes": "Flat 15 €/t through 2031. Applies to the energy-from-waste routes; biomass and RDF go to co-incineration, which is taxed at 0 €/t (annex G)."
     }
   ]
 }

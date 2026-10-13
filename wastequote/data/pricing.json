@@ -11,133 +11,145 @@
       "material": "cardboard_paper",
       "route": "recycling",
       "eur_per_t": 0,
-      "source": "Sample price (placeholder)",
+      "source": "Sample: paper mills buy clean OCC, so no gate fee is charged",
       "is_sample": true
     },
     {
       "material": "cardboard_paper",
       "route": "recovery",
-      "eur_per_t": 95,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 152.7,
+      "source": "Sample (UK proxy): WRAP Gate Fees Report 2025/26, EfW residual waste median £129/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "cardboard_paper",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP Gate Fees Report 2025/26, non-hazardous landfill excl. tax median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "clean_wood",
       "route": "reuse",
       "eur_per_t": 0,
-      "source": "Sample price (placeholder)",
+      "source": "Sample: pallet repairers take intact pallets without a gate fee",
       "is_sample": true
     },
     {
       "material": "clean_wood",
       "route": "recycling",
-      "eur_per_t": 40,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 35.5,
+      "source": "Sample (UK proxy): letsrecycle Sep 2026 high-grade waste wood £0 to -60/t, midpoint £30/t gate fee, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.letsrecycle.com/prices/wood/wood-prices-2026/",
       "is_sample": true
     },
     {
       "material": "clean_wood",
       "route": "recovery",
-      "eur_per_t": 50,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 88.8,
+      "source": "Sample (UK proxy): letsrecycle Sep 2026 low-grade waste wood -£70 to -80/t, midpoint £75/t gate fee, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.letsrecycle.com/prices/wood/wood-prices-2026/",
       "is_sample": true
     },
     {
       "material": "clean_wood",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP 2025/26 landfill median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "mixed_cd",
       "route": "recycling",
-      "eur_per_t": 70,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 45,
+      "source": "Sample: no Spanish gate-fee survey found. Barcelona's 2026 public price for clean rubble at punts verds is 30 €/t; mixed loads need sorting",
       "is_sample": true
     },
     {
       "material": "mixed_cd",
       "route": "recovery",
-      "eur_per_t": 105,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 95,
+      "source": "Sample: no public RDF gate fee found",
       "is_sample": true
     },
     {
       "material": "mixed_cd",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP 2025/26 landfill median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "scrap_metal",
       "route": "reuse",
       "eur_per_t": 0,
-      "source": "Sample price (placeholder)",
+      "source": "Sample: no gate fee on resold offcuts",
       "is_sample": true
     },
     {
       "material": "scrap_metal",
       "route": "recycling",
       "eur_per_t": 0,
-      "source": "Sample price (placeholder)",
+      "source": "Sample: scrap merchants buy metal, no gate fee",
       "is_sample": true
     },
     {
       "material": "scrap_metal",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP 2025/26 landfill median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "plastic_film",
       "route": "recycling",
-      "eur_per_t": 20,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 0,
+      "source": "Sample: film recyclers buy clean natural film",
       "is_sample": true
     },
     {
       "material": "plastic_film",
       "route": "recovery",
-      "eur_per_t": 95,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 152.7,
+      "source": "Sample (UK proxy): WRAP 2025/26 EfW residual median £129/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "plastic_film",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP 2025/26 landfill median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "organic_food",
       "route": "recycling",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 15.4,
+      "source": "Sample (UK proxy): WRAP 2025/26 AD food waste median £13/t (local-authority contracts), converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "organic_food",
       "route": "recovery",
-      "eur_per_t": 95,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 152.7,
+      "source": "Sample (UK proxy): WRAP 2025/26 EfW residual median £129/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     },
     {
       "material": "organic_food",
       "route": "landfill",
-      "eur_per_t": 55,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 40.3,
+      "source": "Sample (UK proxy): WRAP 2025/26 landfill median £34/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.wrap.ngo/sites/default/files/2026-07/Gate-Fees-Report-2025-26-V1.0.pdf",
       "is_sample": true
     }
   ],
@@ -145,36 +157,39 @@
     {
       "material": "cardboard_paper",
       "route": "recycling",
-      "eur_per_t": 60,
-      "source": "Sample price (placeholder)",
-      "is_sample": true
+      "eur_per_t": 71,
+      "source": "REPACAR / Universidad Complutense, Observatorio de precios de papel y cartón recuperado, Q2 2026, grade 1.04 'Cartón supermercado', average sale price at origin in Spain",
+      "source_url": "https://www.repacar.org/wp-content/uploads/2026/07/ESTADISTICA-PRECIOS-2026_2T.pdf",
+      "is_sample": false
     },
     {
       "material": "clean_wood",
       "route": "reuse",
-      "eur_per_t": 40,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 20,
+      "source": "Sample: price a pallet repairer pays for intact euro pallets, no public source found",
       "is_sample": true
     },
     {
       "material": "scrap_metal",
       "route": "reuse",
-      "eur_per_t": 320,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 180,
+      "source": "Sample: resale of clean offcuts to fabricators, no public source found",
       "is_sample": true
     },
     {
       "material": "scrap_metal",
       "route": "recycling",
-      "eur_per_t": 200,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 136.2,
+      "source": "Sample (UK proxy): letsrecycle Sep 2026 'No 1 old steel scrap' £95-135/t, midpoint £115/t, converted at ECB reference rate 13 Oct 2026, 0.84460 GBP per EUR",
+      "source_url": "https://www.letsrecycle.com/prices/metals/ferrous-metal-prices/ferrous-scrap-metal-prices-2026/",
       "is_sample": true
     },
     {
       "material": "plastic_film",
       "route": "recycling",
-      "eur_per_t": 40,
-      "source": "Sample price (placeholder)",
+      "eur_per_t": 150,
+      "source": "Sample: UK clear natural film trades at £450-620/t baled (letsrecycle, Sep 2026); loose site film needs baling and grading, so a lower value is assumed",
+      "source_url": "https://www.letsrecycle.com/prices/plastics/plastic-film/plastic-film-2026/",
       "is_sample": true
     }
   ],

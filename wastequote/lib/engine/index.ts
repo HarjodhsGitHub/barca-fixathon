@@ -13,6 +13,7 @@ import {
   rules,
   service,
   taxes,
+  transportIncludedKm,
   treatments,
   vehicles,
   type Rule,
@@ -234,7 +235,7 @@ function priceRoute(
   }
 
   // Taxes (landfill, incineration)
-  for (const tax of taxes.filter((x) => x.route === route)) {
+  for (const tax of taxes.filter((x) => x.route === route && (!x.materials || x.materials.includes(stream.material)))) {
     lines.push({
       key: "tax",
       label: tax.name,
@@ -281,7 +282,9 @@ function co2Route(
   const vehicle = vehicles.find((v) => v.id === container.vehicle)!;
   const km = config.distanceKm[route] ?? defaultDistance(stream.material, route);
   const liftsTotal = capacity.liftsPerMonth * config.containerCount;
-  const transportKgPerMonth = liftsTotal * 2 * km * vehicle.distance_share * vehicle.kg_co2e_per_km;
+  // The waste factors already include a default collection leg; only count the extra km.
+  const extraKm = Math.max(0, km - transportIncludedKm.value);
+  const transportKgPerMonth = liftsTotal * 2 * extraKm * vehicle.distance_share * vehicle.kg_co2e_per_km;
   const t = capacity.tonnesPerMonth;
   const transportKgPerT = t > 0 ? transportKgPerMonth / t : 0;
   const totalKgPerT = ef.net_kg_co2e_per_t + transportKgPerT;
@@ -309,7 +312,12 @@ function co2Route(
         "kg CO2e/t",
         { source: ef.direct_source ?? ef.source, source_url: ef.direct_source_url ?? ef.source_url, is_sample: ef.is_sample, notes: ef.notes },
       ),
-      cite("transport", vehicle.id, "Vehicle emissions", vehicle.kg_co2e_per_km, "kg CO2e/km", vehicle),
+      cite("transport", vehicle.id, "Vehicle emissions", vehicle.kg_co2e_per_km, "kg CO2e/km", {
+        ...vehicle,
+        source: "DESNZ 2026 full set, Delivery vehicles, HGV (all diesel), Rigid (>17 tonnes), average laden",
+        is_sample: false,
+      }),
+      cite("transport", "included_km", "Collection leg already in the factors", transportIncludedKm.value, "km", transportIncludedKm),
     ],
   };
 }

@@ -86,6 +86,17 @@
       "regel": "PF-4: soiled film is rejected by film recyclers"
     },
     {
+      "namn": "Clean cardboard to energy from waste",
+      "val": {
+        "feat-material": "feat-material-cardboard-paper",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-cardboard-paper-recovery",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "ES-1: Ley 7/2022 art. 25.1, separately collected waste may not be incinerated"
+    },
+    {
       "namn": "Food waste in an open skip",
       "val": {
         "feat-material": "feat-material-organic-food",
