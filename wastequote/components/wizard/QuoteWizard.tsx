@@ -242,7 +242,21 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
 
   return (
     <div className="mx-auto max-w-[1320px] px-4 pb-16 pt-6 sm:px-6">
-      <ol className="mb-8 flex flex-wrap items-center gap-2 text-sm">
+      <div className="mb-6 sm:hidden">
+        <div className="flex items-baseline justify-between text-sm">
+          <span className="font-semibold">{STEPS[stepIndex].label}</span>
+          <span className="font-mono text-[11px] text-muted">
+            Step {stepIndex + 1} of {STEPS.length}
+          </span>
+        </div>
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-sunken">
+          <div
+            className="h-full rounded-full bg-circular transition-[width] duration-500 ease-out"
+            style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+          />
+        </div>
+      </div>
+      <ol className="mb-8 hidden flex-wrap items-center gap-2 text-sm sm:flex">
         {STEPS.map((s, i) => (
           <li key={s.id} className="flex items-center gap-2">
             <button

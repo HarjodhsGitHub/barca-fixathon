@@ -86,12 +86,12 @@ export function Citations({ items }: { items: Citation[] }) {
 
 export function SectionTitle({ step, title, hint }: { step?: string; title: string; hint?: ReactNode }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
+    <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div>
         {step && <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{step}</div>}
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
       </div>
-      {hint && <div className="text-right text-xs text-muted">{hint}</div>}
+      {hint && <div className="text-xs text-muted sm:text-right">{hint}</div>}
     </div>
   );
 }

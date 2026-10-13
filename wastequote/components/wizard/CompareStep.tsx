@@ -316,7 +316,15 @@ export function CompareStep({
         {ev.routes.map((r, i) => {
           const s = st(r);
           return (
-            <div key={r.route} style={{ "--i": i } as React.CSSProperties} className="flex">
+            <div
+              key={r.route}
+              style={{ "--i": i } as React.CSSProperties}
+              className={cx(
+                "flex",
+                !isOpen(r) && "order-last xl:order-none",
+                r.tags.includes("circular_choice") && isOpen(r) && "order-first xl:order-none",
+              )}
+            >
             <RouteCard
               r={r}
               spec={availability?.source === "sailsrep" ? availability.specs.routes[r.route] : undefined}
@@ -334,18 +342,26 @@ export function CompareStep({
 
       <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-line bg-paper/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="ghost" onClick={onBack}>
-            ← Back to configuration
-          </Button>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="hidden sm:block">
+            <Button variant="ghost" onClick={onBack}>
+              ← Back to configuration
+            </Button>
+          </div>
+          <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
             {error && <span className="max-w-md text-xs text-danger">{error}</span>}
             {chosenRoute?.price && (
               <span className="text-sm text-ink-2">
-                {chosenRoute.routeName}: <span className="font-semibold text-ink">{eur(chosenRoute.price.totalPerMonth)}/month</span>
+                <span className="hidden sm:inline">{chosenRoute.routeName}: </span>
+                <span className="font-semibold text-ink">{eur(chosenRoute.price.totalPerMonth)}/mo</span>
               </span>
             )}
             <Button variant="circular" onClick={onAccept} disabled={!chosenRoute || accepting} className="wq-press">
-              {accepting ? "Generating quote…" : "Accept route & generate quote"}
+              {accepting ? "Generating quote…" : (
+                <>
+                  <span className="sm:hidden">Accept &amp; quote</span>
+                  <span className="hidden sm:inline">Accept route &amp; generate quote</span>
+                </>
+              )}
             </Button>
           </div>
         </div>
