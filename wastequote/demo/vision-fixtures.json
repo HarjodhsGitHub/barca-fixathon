@@ -1,6 +1,120 @@
 {
   "_meta": {
-    "description": "Recorded vision results for the demo photos, used only by the vision stub when no ANTHROPIC_API_KEY is set. Not live inference."
+    "description": "Recorded vision results for the demo photos, used only by the vision stub when no ANTHROPIC_API_KEY is set. Written by Claude (the coding agent) looking at each photo while building the prototype; not live inference from the app. With a key set, the app calls Claude live instead and these are ignored."
   },
-  "fixtures": []
+  "fixtures": [
+    {
+      "file": "01-cardboard.jpg",
+      "result": {
+        "image_ok": true,
+        "image_issue": null,
+        "summary": "Open roll-off container about three-quarters full of corrugated cardboard boxes, with some bubble wrap, plastic bags and taped packaging.",
+        "materials_seen": [
+          { "stream": "cardboard_paper", "share_pct": 90, "evidence": "Opened and flattened corrugated boxes, packaging inserts, a few paper leaflets" },
+          { "stream": "plastic_film", "share_pct": 6, "evidence": "Bubble wrap and clear plastic bags between the boxes" },
+          { "stream": "other", "share_pct": 4, "evidence": "Printed packaging tape and labels" }
+        ],
+        "primary_stream": { "value": "cardboard_paper", "confidence": 0.94, "rationale": "Almost all visible material is corrugated cardboard packaging." },
+        "contamination": {
+          "value": "low",
+          "confidence": 0.62,
+          "contaminants": ["bubble wrap", "plastic bags", "packaging tape"],
+          "rationale": "Mostly clean, dry cardboard, but plastic film is visible in several places and may be close to the 5% limit for low."
+        },
+        "volume_m3": {
+          "value": 18,
+          "confidence": 0.5,
+          "basis": "Only the top of a large open roll-off is visible; assuming a 25-30 m³ container about three-quarters full."
+        },
+        "ewc_code": { "value": "15 01 01", "confidence": 0.88, "rationale": "Boxes and transit packaging, so packaging waste (chapter 15) rather than municipal paper." },
+        "hazard_flags": [],
+        "segregation_tip": "Pull out the bubble wrap and plastic bags (about 6%) so the load stays a clean recycling grade."
+      }
+    },
+    {
+      "file": "02-mixed-construction.jpg",
+      "result": {
+        "image_ok": true,
+        "image_issue": null,
+        "summary": "Overfilled builders' skip of mixed renovation waste: broken plasterboard and plaster, blocks and bricks, timber offcuts, insulation, plastic pipe and bin bags.",
+        "materials_seen": [
+          { "stream": "mixed_cd", "share_pct": 55, "evidence": "Broken plasterboard, plaster, concrete blocks and brick fragments" },
+          { "stream": "clean_wood", "share_pct": 15, "evidence": "Timber battens and offcuts on top of the load" },
+          { "stream": "other", "share_pct": 20, "evidence": "Yellow insulation, black bin bags, a dark storage unit" },
+          { "stream": "plastic_film", "share_pct": 10, "evidence": "Plastic pipe, plastic sheeting and bags" }
+        ],
+        "primary_stream": { "value": "mixed_cd", "confidence": 0.93, "rationale": "Typical mixed renovation waste from a building site." },
+        "contamination": {
+          "value": "medium",
+          "confidence": 0.66,
+          "contaminants": ["plasterboard", "insulation", "bin bags", "plastic pipe"],
+          "rationale": "Inert rubble mixed with plasterboard, insulation and bagged general waste. The bags hide what is inside, so it could be high."
+        },
+        "volume_m3": {
+          "value": 7,
+          "confidence": 0.78,
+          "basis": "Standard builders' skip (about 3.7 m long, 6 m³ level) heaped well above the rim; traffic cone for scale."
+        },
+        "ewc_code": { "value": "17 09 04", "confidence": 0.9, "rationale": "Mixed construction and demolition waste with no visible hazardous items." },
+        "hazard_flags": ["Old plaster, boards and insulation from a renovation: confirm the building's age and check for asbestos-containing materials before collection."],
+        "segregation_tip": "Keep timber and plasterboard in separate skips: clean timber can go to wood recycling and plasterboard to gypsum recycling, which lowers the gate fee."
+      }
+    },
+    {
+      "file": "03-wood.jpg",
+      "result": {
+        "image_ok": true,
+        "image_issue": null,
+        "summary": "Large pile of softwood pallets in a depot yard, many broken, with loose boards and a stretch-wrapped stack of pallet scrap.",
+        "materials_seen": [
+          { "stream": "clean_wood", "share_pct": 92, "evidence": "Untreated softwood pallets and pallet boards" },
+          { "stream": "plastic_film", "share_pct": 6, "evidence": "Stretch wrap around several pallets" },
+          { "stream": "other", "share_pct": 2, "evidence": "Metal banding" }
+        ],
+        "primary_stream": { "value": "clean_wood", "confidence": 0.92, "rationale": "Bare, unpainted softwood pallets." },
+        "contamination": {
+          "value": "medium",
+          "confidence": 0.71,
+          "contaminants": ["broken pallets with nails", "stretch wrap", "metal banding"],
+          "rationale": "Clean wood, but many pallets are broken and some are wrapped in film, which matches medium rather than low."
+        },
+        "volume_m3": {
+          "value": 20,
+          "confidence": 0.45,
+          "basis": "No container; estimated from euro pallets (1.2 × 0.8 m) stacked roughly 2 m high over several metres. Rough."
+        },
+        "ewc_code": { "value": "15 01 03", "confidence": 0.86, "rationale": "Pallets are wooden packaging (chapter 15)." },
+        "hazard_flags": [],
+        "segregation_tip": "Set aside the intact pallets: graded as low contamination they qualify for pallet reuse, which pays a rebate instead of a gate fee."
+      }
+    },
+    {
+      "file": "04-scrap-metal.jpg",
+      "result": {
+        "image_ok": true,
+        "image_issue": null,
+        "summary": "Open roll-off container about two-thirds full of mixed scrap metal: tube frames, wire shelving, a rusty fire bowl and a small appliance, with plastic parts mixed in.",
+        "materials_seen": [
+          { "stream": "scrap_metal", "share_pct": 80, "evidence": "Steel tube frames, wire mesh shelving, rusty steel bowl" },
+          { "stream": "other", "share_pct": 12, "evidence": "Plastic parts: a child's scooter, tool handles" },
+          { "stream": "other", "share_pct": 8, "evidence": "Fabric, a small electrical appliance and some wood" }
+        ],
+        "primary_stream": { "value": "scrap_metal", "confidence": 0.9, "rationale": "Mostly ferrous tube and wire." },
+        "contamination": {
+          "value": "medium",
+          "confidence": 0.8,
+          "contaminants": ["plastic parts", "fabric", "small appliance", "wood"],
+          "rationale": "Mixed metals with plastic and fabric attached or mixed in."
+        },
+        "volume_m3": {
+          "value": 15,
+          "confidence": 0.6,
+          "basis": "Large open roll-off (about 6 m long) roughly two-thirds full; loose, airy load."
+        },
+        "ewc_code": { "value": "17 04 07", "confidence": 0.72, "rationale": "Mixed metals. 17 04 05 would apply if it were sorted iron and steel only." },
+        "hazard_flags": ["A small electrical appliance is visible: electrical equipment belongs in a separate WEEE stream."],
+        "segregation_tip": "Remove the plastic parts and the appliance to sell the load at the clean-metal rebate."
+      }
+    }
+  ]
 }

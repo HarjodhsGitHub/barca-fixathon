@@ -7,7 +7,8 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const Body = z.object({
-  image: z.string().min(100),
+  // About 6 MB of JPEG; the browser downscales to 1568 px first, so real uploads are far smaller.
+  image: z.string().min(100).max(8_000_000),
   mediaType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
   sha256: z.string().nullish(),
   filename: z.string().nullish(),

@@ -36,7 +36,7 @@ export const QuoteSubmission = z.object({
   chosenRoute: z.enum(ROUTE_IDS),
   /** Fields the salesperson confirmed or changed after the vision step. */
   confirmedFields: z.array(z.string()).default([]),
-  photo: z.object({ dataUrl: z.string().startsWith("data:image/"), filename: z.string().nullish() }),
+  photo: z.object({ dataUrl: z.string().startsWith("data:image/").max(8_000_000), filename: z.string().nullish() }),
 });
 export type QuoteSubmission = z.infer<typeof QuoteSubmission>;
 

@@ -4,14 +4,15 @@
   "private": true,
   "description": "CPQ for waste with AI vision: photo of a waste stream to a priced, circular-first quote.",
   "scripts": {
-    "dev": "next dev -p 3456",
-    "start:demo": "npm install --no-audit --no-fund && next dev -p 3456",
+    "dev": "next dev -H 127.0.0.1 -p 3456",
+    "start:demo": "npm install --no-audit --no-fund && next dev -H 127.0.0.1 -p 3456",
     "build": "next build",
-    "start": "next start -p 3456",
+    "start": "next start -H 127.0.0.1 -p 3456",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "tsx scripts/test-engine.ts",
-    "sailsrep:export": "tsx scripts/sailsrep-export.ts"
+    "sailsrep:export": "tsx scripts/sailsrep-export.ts",
+    "dev:lan": "next dev -H 0.0.0.0 -p 3456"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
