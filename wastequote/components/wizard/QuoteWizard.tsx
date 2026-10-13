@@ -314,6 +314,11 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
               onAccept={onAccept}
               accepting={accepting}
               error={acceptError}
+              onWhatIf={(level) => {
+                updateStream({ ...stream!, contamination: level });
+                setChosen(null);
+                showToast(`Re-quoted at ${level} contamination: the customer separates general waste at source`);
+              }}
             />
           )}
         </main>

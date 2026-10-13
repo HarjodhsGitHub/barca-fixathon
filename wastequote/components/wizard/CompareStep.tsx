@@ -1,5 +1,6 @@
 "use client";
-import type { Evaluation, RouteId, RouteResult } from "@/lib/types";
+import { evaluate } from "@/lib/engine";
+import { CONTAMINATION_LEVELS, type Contamination, type Evaluation, type RouteId, type RouteResult } from "@/lib/types";
 import { eur, eur2, int, signedKg } from "@/lib/format";
 import { Markdown } from "../Markdown";
 import { AnimatedNumber } from "./AnimatedNumber";
@@ -10,17 +11,65 @@ import { routeStatus, type Availability } from "./shared";
 const TAG_LABEL = { circular_choice: "Circular choice", lowest_cost: "Lowest cost", lowest_co2: "Lowest CO₂e" } as const;
 
 /** The one-line case for the circular route, against the best non-circular alternative. */
-export function DecisionStrip({ ev, open }: { ev: Evaluation; open: (r: RouteResult) => boolean }) {
-  const eligible = ev.routes.filter((r) => open(r) && r.price && r.co2);
-  const circ = eligible.find((r) => r.route === ev.recommendedRoute);
-  const alt = eligible.filter((r) => !r.circular).sort((a, b) => a.price!.totalPerMonth - b.price!.totalPerMonth)[0];
-  if (!circ) {
+/**
+ * When no circular route is open, ask the same rules what would open one if
+ * the site separated better (one contamination level lower), and price it.
+ */
+function UnlockStrip({ ev, onWhatIf }: { ev: Evaluation; onWhatIf?: (l: Contamination) => void }) {
+  const current = ev.routes.filter((r) => r.eligible && r.price).sort((a, b) => a.price!.totalPerMonth - b.price!.totalPerMonth)[0];
+  const order = CONTAMINATION_LEVELS.indexOf(ev.stream.contamination);
+  const unlock = CONTAMINATION_LEVELS.slice(0, order)
+    .reverse()
+    .map((level) => {
+      const what = evaluate({ ...ev.stream, contamination: level }, ev.config);
+      const circ = what.routes.find((r) => r.route === what.recommendedRoute);
+      return circ?.price && circ.co2 ? { level, circ } : null;
+    })
+    .find((x) => x);
+  if (!unlock || !current?.price || !current.co2) {
     return (
-      <div className="rounded-xl border border-line bg-surface px-5 py-4 text-sm text-ink-2">
-        No circular route is open for this stream at this contamination level. Cleaner separation at source would open one.
+      <div className="rounded-2xl border border-line bg-surface px-5 py-4 text-sm text-ink-2">
+        No circular route is open for this stream. Separating it at source is the way to open one.
       </div>
     );
   }
+  const dEur = unlock.circ.price!.totalPerMonth - current.price.totalPerMonth;
+  const dCo2 = ((current.co2.totalKgPerT - unlock.circ.co2!.totalKgPerT) * ev.capacity.tonnesPerMonth * 12) / 1000;
+  return (
+    <div className="wq-fade-in flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-circular/30 bg-gradient-to-r from-circular-soft to-surface px-5 py-4">
+      <div className="max-w-2xl text-sm leading-relaxed">
+        <div className="font-semibold text-circular">No circular route is open at {ev.stream.contamination} contamination.</div>
+        If the site keeps general waste out of this container ({unlock.level} contamination),{" "}
+        <span className="font-semibold">{unlock.circ.routeName.toLowerCase()}</span> opens:{" "}
+        <span className="font-semibold">
+          {dEur <= 0 ? `${eur(-dEur)} a month cheaper` : `${eur(dEur)} a month more`}
+        </span>{" "}
+        than {current.routeName.toLowerCase()}, and {dCo2 >= 0 ? "about" : "adds"}{" "}
+        <span className="font-semibold">{Math.abs(dCo2) < 10 ? Math.abs(dCo2).toFixed(1) : int(Math.abs(dCo2))} t CO₂e a year</span>{" "}
+        {dCo2 >= 0 ? "less" : ""}.
+      </div>
+      {onWhatIf && (
+        <Button variant="circular" className="wq-press shrink-0" onClick={() => onWhatIf(unlock.level)}>
+          Quote it at {unlock.level} contamination
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function DecisionStrip({
+  ev,
+  open,
+  onWhatIf,
+}: {
+  ev: Evaluation;
+  open: (r: RouteResult) => boolean;
+  onWhatIf?: (l: Contamination) => void;
+}) {
+  const eligible = ev.routes.filter((r) => open(r) && r.price && r.co2);
+  const circ = eligible.find((r) => r.route === ev.recommendedRoute);
+  const alt = eligible.filter((r) => !r.circular).sort((a, b) => a.price!.totalPerMonth - b.price!.totalPerMonth)[0];
+  if (!circ) return <UnlockStrip ev={ev} onWhatIf={onWhatIf} />;
   if (!alt) {
     return (
       <div className="rounded-xl border border-circular/30 bg-circular-soft px-5 py-4 text-sm">
@@ -32,7 +81,7 @@ export function DecisionStrip({ ev, open }: { ev: Evaluation; open: (r: RouteRes
   const t = ev.capacity.tonnesPerMonth;
   const dCo2TonnesYear = ((alt.co2!.totalKgPerT - circ.co2!.totalKgPerT) * t * 12) / 1000;
   return (
-    <div className="rounded-xl border border-circular/30 bg-circular-soft px-5 py-4">
+    <div className="wq-fade-in rounded-2xl border border-circular/30 bg-gradient-to-r from-circular-soft to-surface px-5 py-4">
       <div className="text-sm leading-relaxed">
         <span className="font-semibold text-circular">{circ.routeName}</span> instead of {alt.routeName.toLowerCase()}{" "}
         {dEur <= 0 ? (
@@ -235,7 +284,9 @@ export function CompareStep({
   onAccept,
   accepting,
   error,
+  onWhatIf,
 }: {
+  onWhatIf?: (l: Contamination) => void;
   ev: Evaluation;
   availability: Availability | null;
   chosen: RouteId | null;
@@ -260,7 +311,7 @@ export function CompareStep({
           </span>
         }
       />
-      <DecisionStrip ev={ev} open={isOpen} />
+      <DecisionStrip ev={ev} open={isOpen} onWhatIf={onWhatIf} />
       <div className="wq-stagger mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {ev.routes.map((r, i) => {
           const s = st(r);
