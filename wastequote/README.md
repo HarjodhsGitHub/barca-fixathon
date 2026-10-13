@@ -34,6 +34,11 @@ photo ──► vision (Sailsrep assistant, or Claude) ──► salesperson con
 
 - **The LLM classifies and writes text. It never prices and never decides a route.** Route eligibility is the rules table `data/eligibility.json`, exported into the Sailsrep tenant by `npm run sailsrep:export`. Prices and CO₂e are deterministic code (`lib/engine/index.ts`) over the JSON tables in `/data`. Every number in the UI opens to its formula and the data row it came from.
 - **Sailsrep CPQ is the configuration engine.** The model lives in the demo tenant `wastequote-waste-collection-service-2610132242` (see `sailsrep/tenant.json`). The app reads route and container availability from the Configurator API, classifies the photo through the Sailsrep assistant (photo as a chat attachment), lets the salesperson ask follow-ups on the same configuration ("Ask Sailsrep"), and validates the accepted configuration before saving. API docs fetched from the API are in `sailsrep/api-docs/`.
+- **What the salesperson sees.**
+  - While the AI reads the photo, a live feed shows it filling in the configuration.
+  - Fields under 70% confidence must be confirmed.
+  - When contamination closes every circular route, the compare step works out what separating at source would unlock, prices it, and re-quotes in one click.
+  - The UI is white-labelled: it says "Selinsight AI" and "CPQ engine", never Sailsrep.
 - **Every price and factor has a source.** Each row in `/data` carries `source` and `is_sample`. Sample values show a striped "Sample data" badge everywhere they are used. The research behind the sourced values is in `data/SOURCES.md`; the full list is on the Price book page (`/pricebook`).
 
 ## Layout
