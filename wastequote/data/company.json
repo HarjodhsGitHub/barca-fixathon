@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "table": "company",
+    "description": "The waste company using WasteQuote (the seller on the quote) and the demo customer. Both are fictional sample companies."
+  },
+  "seller": {
+    "name": "Northwind Recycling S.L. (sample company)",
+    "address": "Carrer de la Mostra 1, 08040 Barcelona (fictional)",
+    "phone": "+34 900 000 000 (fictional)",
+    "email": "quotes@northwind-recycling.example",
+    "carrier_registration": "SAMPLE-CARRIER-0001",
+    "waste_manager_registration": "SAMPLE-GESTOR-0001",
+    "is_sample": true
+  },
+  "demo_customer": {
+    "company": "Acme Fabrication S.L. (sample customer)",
+    "site": "Zona Franca, Barcelona (fictional site)",
+    "contact": "Site manager",
+    "sic_or_nace": "25.11 Manufacture of metal structures",
+    "is_sample": true
+  },
+  "quote_terms": {
+    "valid_days": 30,
+    "currency": "EUR",
+    "vat_note": "Prices exclude VAT."
+  }
+}

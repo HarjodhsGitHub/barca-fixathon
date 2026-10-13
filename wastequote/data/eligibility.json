@@ -1,0 +1,462 @@
+{
+  "_meta": {
+    "table": "eligibility",
+    "description": "Which treatment routes are valid for a material at a contamination level. Deterministic: a route is valid only if at least one 'allow' rule matches and no 'deny' rule does (deny wins, default is deny). 'surcharge' and 'warn' rules attach a note; the surcharge amount itself lives in pricing.json. Legal rules cite the law; acceptance rules are the waste company's own (sample) criteria and are marked is_sample.",
+    "fields": {
+      "material": "a material id, a list of ids, or * for every material",
+      "contamination": "the contamination levels the rule applies to",
+      "effect": "allow | deny | surcharge | warn"
+    }
+  },
+  "rows": [
+    {
+      "id": "LF-1",
+      "material": "*",
+      "route": "landfill",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Non-hazardous landfill accepts the stream, subject to its waste acceptance criteria. Landfill tax applies.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "LF-2",
+      "material": [
+        "cardboard_paper",
+        "clean_wood",
+        "scrap_metal",
+        "plastic_film",
+        "organic_food"
+      ],
+      "route": "landfill",
+      "contamination": [
+        "low"
+      ],
+      "effect": "deny",
+      "text": "A clean, separately collected stream that is fit for recycling may not be landfilled.",
+      "source": "Directive 1999/31/EC (Landfill Directive), Article 5(3)(f) as amended by Directive (EU) 2018/850",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2018/850/oj",
+      "is_sample": false
+    },
+    {
+      "id": "LF-3",
+      "material": "mixed_cd",
+      "route": "landfill",
+      "contamination": [
+        "low"
+      ],
+      "effect": "allow",
+      "text": "Mixed C&D waste is not a separately collected recycling fraction, so the landfill ban in LF-2 does not apply to it.",
+      "source": "Directive 1999/31/EC, Article 5(3)(f) as amended by Directive (EU) 2018/850 (applies to separately collected waste only)",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2018/850/oj",
+      "is_sample": false
+    },
+    {
+      "id": "CB-1",
+      "material": "cardboard_paper",
+      "route": "reuse",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "No reuse outlet for loose cardboard in this service catalogue.",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "id": "CB-2",
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium"
+      ],
+      "effect": "allow",
+      "text": "Baled and sent to a paper mill as a standard recovered paper grade.",
+      "source": "Sample acceptance rule; grades per EN 643",
+      "is_sample": true
+    },
+    {
+      "id": "CB-3",
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "contamination": [
+        "medium"
+      ],
+      "effect": "surcharge",
+      "text": "Tape, film and damp patches lower the grade: contamination surcharge on the gate fee and a reduced rebate.",
+      "source": "Sample pricing rule",
+      "is_sample": true
+    },
+    {
+      "id": "CB-4",
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "contamination": [
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Wet or food-soiled cardboard is rejected by paper mills.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CB-5",
+      "material": "cardboard_paper",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Fibre that cannot be recycled can go to energy recovery.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "WD-1",
+      "material": "clean_wood",
+      "route": "reuse",
+      "contamination": [
+        "low"
+      ],
+      "effect": "allow",
+      "text": "Intact pallets and long offcuts go to a pallet repair and timber reuse partner.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "WD-2",
+      "material": "clean_wood",
+      "route": "reuse",
+      "contamination": [
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Broken, short or mixed wood is not fit for reuse.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "WD-3",
+      "material": "clean_wood",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium"
+      ],
+      "effect": "allow",
+      "text": "Chipped for particleboard; nails and screws are removed by magnet.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "WD-4",
+      "material": "clean_wood",
+      "route": "recycling",
+      "contamination": [
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Painted, treated or laminated wood is not clean wood. Panel board mills take untreated wood only; reclassify the stream.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "WD-5",
+      "material": "clean_wood",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Biomass or waste-wood energy recovery.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-1",
+      "material": "mixed_cd",
+      "route": "reuse",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Mixed construction waste cannot be prepared for reuse without separating it at source.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-2",
+      "material": "mixed_cd",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium"
+      ],
+      "effect": "allow",
+      "text": "Sorted at a C&D recycling plant: the inert fraction becomes aggregate, metals and wood are recovered.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-3",
+      "material": "mixed_cd",
+      "route": "recycling",
+      "contamination": [
+        "medium"
+      ],
+      "effect": "surcharge",
+      "text": "Plasterboard, plastics and insulation need extra sorting: contamination surcharge on the gate fee.",
+      "source": "Sample pricing rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-4",
+      "material": "mixed_cd",
+      "route": "recycling",
+      "contamination": [
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Too much non-inert residue for the sorting plant's acceptance criteria.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-5",
+      "material": "mixed_cd",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "The combustible residual fraction is processed into refuse-derived fuel.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "CD-6",
+      "material": "mixed_cd",
+      "route": "*",
+      "contamination": [
+        "high"
+      ],
+      "effect": "warn",
+      "text": "Check for hazardous items (asbestos, treated wood, paint tins) before collection; they need a separate hazardous code.",
+      "source": "Sample safety rule",
+      "is_sample": true
+    },
+    {
+      "id": "MT-1",
+      "material": "scrap_metal",
+      "route": "reuse",
+      "contamination": [
+        "low"
+      ],
+      "effect": "allow",
+      "text": "Clean sheet and bar offcuts are resold to fabricators.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "MT-2",
+      "material": "scrap_metal",
+      "route": "reuse",
+      "contamination": [
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Mixed or contaminated scrap is not fit for resale as offcuts.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "MT-3",
+      "material": "scrap_metal",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Sorted at a scrap yard and melted in an electric arc furnace.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "MT-4",
+      "material": "scrap_metal",
+      "route": "recycling",
+      "contamination": [
+        "medium",
+        "high"
+      ],
+      "effect": "surcharge",
+      "text": "Mixed or oily scrap needs sorting or pre-treatment: lower rebate, surcharge on handling.",
+      "source": "Sample pricing rule",
+      "is_sample": true
+    },
+    {
+      "id": "MT-5",
+      "material": "scrap_metal",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Metal does not burn: there is no energy recovery route.",
+      "source": "Physical property of the material",
+      "is_sample": false
+    },
+    {
+      "id": "PF-1",
+      "material": "plastic_film",
+      "route": "reuse",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "No reuse outlet for used film.",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "id": "PF-2",
+      "material": "plastic_film",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium"
+      ],
+      "effect": "allow",
+      "text": "Baled LDPE film goes to a film recycler and becomes regranulate.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "PF-3",
+      "material": "plastic_film",
+      "route": "recycling",
+      "contamination": [
+        "medium"
+      ],
+      "effect": "surcharge",
+      "text": "Printed or coloured film with labels sells at a lower grade: reduced rebate and a surcharge.",
+      "source": "Sample pricing rule",
+      "is_sample": true
+    },
+    {
+      "id": "PF-4",
+      "material": "plastic_film",
+      "route": "recycling",
+      "contamination": [
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Film with food or soil residue, or mixed plastics, is rejected by film recyclers.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "PF-5",
+      "material": "plastic_film",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Energy from waste.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "OR-1",
+      "material": "organic_food",
+      "route": "reuse",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Food waste cannot be prepared for reuse. Surplus food should be redistributed before it becomes waste.",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "id": "OR-2",
+      "material": "organic_food",
+      "route": "recycling",
+      "contamination": [
+        "low",
+        "medium"
+      ],
+      "effect": "allow",
+      "text": "Anaerobic digestion: biogas for energy and digestate as fertiliser. Counts as recycling under the Waste Framework Directive.",
+      "source": "Directive 2008/98/EC, Article 3(17) (recycling includes reprocessing of organic material); acceptance is a sample rule",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj",
+      "is_sample": true
+    },
+    {
+      "id": "OR-3",
+      "material": "organic_food",
+      "route": "recycling",
+      "contamination": [
+        "medium"
+      ],
+      "effect": "surcharge",
+      "text": "Packaging must be removed before digestion: depackaging surcharge.",
+      "source": "Sample pricing rule",
+      "is_sample": true
+    },
+    {
+      "id": "OR-4",
+      "material": "organic_food",
+      "route": "recycling",
+      "contamination": [
+        "high"
+      ],
+      "effect": "deny",
+      "text": "Heavily packaged or mixed food waste exceeds the AD plant's acceptance criteria.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    },
+    {
+      "id": "OR-5",
+      "material": "organic_food",
+      "route": "recovery",
+      "contamination": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "effect": "allow",
+      "text": "Energy from waste.",
+      "source": "Sample acceptance rule",
+      "is_sample": true
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "_meta": {
+    "table": "pricing",
+    "description": "Gate fees (what the treatment facility charges per tonne) and material rebates (what a clean recyclate is worth per tonne, paid back to the customer). Contamination raises the gate fee and lowers the rebate by the factors below.",
+    "units": {
+      "eur_per_t": "EUR per tonne"
+    }
+  },
+  "gate_fees": [
+    {
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "eur_per_t": 0,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "recovery",
+      "eur_per_t": 95,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "reuse",
+      "eur_per_t": 0,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recycling",
+      "eur_per_t": 40,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recovery",
+      "eur_per_t": 50,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recycling",
+      "eur_per_t": 70,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recovery",
+      "eur_per_t": 105,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "reuse",
+      "eur_per_t": 0,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "recycling",
+      "eur_per_t": 0,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recycling",
+      "eur_per_t": 20,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recovery",
+      "eur_per_t": 95,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recycling",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recovery",
+      "eur_per_t": 95,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "landfill",
+      "eur_per_t": 55,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    }
+  ],
+  "rebates": [
+    {
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "eur_per_t": 60,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "reuse",
+      "eur_per_t": 40,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "reuse",
+      "eur_per_t": 320,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "recycling",
+      "eur_per_t": 200,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recycling",
+      "eur_per_t": 40,
+      "source": "Sample price (placeholder)",
+      "is_sample": true
+    }
+  ],
+  "contamination_gate_fee_surcharge": {
+    "low": 0,
+    "medium": 0.15,
+    "high": 0.35,
+    "source": "Sample pricing rule: share added to the gate fee",
+    "is_sample": true
+  },
+  "contamination_rebate_factor": {
+    "low": 1,
+    "medium": 0.6,
+    "high": 0.2,
+    "source": "Sample pricing rule: share of the clean-grade rebate paid",
+    "is_sample": true
+  }
+}

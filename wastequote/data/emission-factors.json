@@ -1,0 +1,163 @@
+{
+  "_meta": {
+    "table": "emission_factors",
+    "description": "kg CO2e per tonne treated. direct = reporting basis (what the facility emits, no credits; used for Scope 3 category 5). net = lifecycle incl. avoided virgin production or avoided energy (negative = net saving). Transport is added separately from transport.json.",
+    "units": {
+      "kg_co2e_per_t": "kg CO2e per tonne"
+    }
+  },
+  "rows": [
+    {
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -3000,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "recovery",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -500,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 1000,
+      "net_kg_co2e_per_t": 200,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "reuse",
+      "direct_kg_co2e_per_t": 0,
+      "net_kg_co2e_per_t": -2500,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -2500,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recovery",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -600,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 800,
+      "net_kg_co2e_per_t": -500,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 1,
+      "net_kg_co2e_per_t": -50,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recovery",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -100,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 1,
+      "net_kg_co2e_per_t": 30,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "reuse",
+      "direct_kg_co2e_per_t": 0,
+      "net_kg_co2e_per_t": -4000,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -4000,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 9,
+      "net_kg_co2e_per_t": 30,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -800,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recovery",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": 1200,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 9,
+      "net_kg_co2e_per_t": 30,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recycling",
+      "direct_kg_co2e_per_t": 9,
+      "net_kg_co2e_per_t": -100,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recovery",
+      "direct_kg_co2e_per_t": 21,
+      "net_kg_co2e_per_t": -150,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "landfill",
+      "direct_kg_co2e_per_t": 700,
+      "net_kg_co2e_per_t": 600,
+      "source": "Placeholder values pending sourced factors",
+      "is_sample": true
+    }
+  ]
+}

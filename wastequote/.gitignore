@@ -1,0 +1,15 @@
+/node_modules
+/.next/
+/out/
+/build
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+# local quote store (accepted quotes, uploaded photos)
+/.data/
+# Sailsrep API keys never leave this machine
+/sailsrep/keys/

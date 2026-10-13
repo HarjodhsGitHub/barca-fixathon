@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "table": "taxes",
+    "description": "Taxes per tonne by route. Applied to landfill and energy recovery only.",
+    "units": {
+      "eur_per_t": "EUR per tonne"
+    }
+  },
+  "rows": [
+    {
+      "id": "landfill_tax",
+      "route": "landfill",
+      "name": "Landfill tax (placeholder)",
+      "eur_per_t": 40,
+      "source": "Placeholder, to be replaced with Ley 7/2022 rate",
+      "is_sample": true
+    },
+    {
+      "id": "incineration_tax",
+      "route": "recovery",
+      "name": "Incineration tax (placeholder)",
+      "eur_per_t": 15,
+      "source": "Placeholder, to be replaced with Ley 7/2022 rate",
+      "is_sample": true
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "table": "routes",
+    "description": "The four treatment routes, ordered by the EU waste hierarchy. Reuse and recycling count as circular.",
+    "source": "Directive 2008/98/EC (Waste Framework Directive), Article 4 waste hierarchy; recycling definition Article 3(17) includes reprocessing of organic material (composting, anaerobic digestion) but not energy recovery.",
+    "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj"
+  },
+  "rows": [
+    {
+      "id": "reuse",
+      "name": "Reuse",
+      "hierarchy_rank": 1,
+      "hierarchy_level": "Preparing for re-use",
+      "circular": true,
+      "description": "The item keeps its form and goes back into use, e.g. pallets or metal offcuts resold.",
+      "source": "Directive 2008/98/EC, Article 4(1)(b)",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj",
+      "is_sample": false
+    },
+    {
+      "id": "recycling",
+      "name": "Recycling",
+      "hierarchy_rank": 2,
+      "hierarchy_level": "Recycling",
+      "circular": true,
+      "description": "The material is reprocessed into new material: paper mill, steelworks, film regranulate, panel board, anaerobic digestion.",
+      "source": "Directive 2008/98/EC, Article 4(1)(c) and Article 3(17)",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj",
+      "is_sample": false
+    },
+    {
+      "id": "recovery",
+      "name": "Recovery",
+      "hierarchy_rank": 3,
+      "hierarchy_level": "Other recovery, e.g. energy recovery",
+      "circular": false,
+      "description": "The material is burned for energy (energy from waste, biomass, refuse-derived fuel). The material itself is lost.",
+      "source": "Directive 2008/98/EC, Article 4(1)(d)",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj",
+      "is_sample": false
+    },
+    {
+      "id": "landfill",
+      "name": "Landfill",
+      "hierarchy_rank": 4,
+      "hierarchy_level": "Disposal",
+      "circular": false,
+      "description": "Deposit in a non-hazardous landfill. Lowest in the hierarchy and taxed.",
+      "source": "Directive 2008/98/EC, Article 4(1)(e)",
+      "source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj",
+      "is_sample": false
+    }
+  ]
+}

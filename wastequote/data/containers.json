@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "table": "containers",
+    "description": "Containers the waste company rents out. Rent is per container per month; the lift fee is charged per emptying and covers handling plus the first part of the trip. Which materials a container may hold is a deterministic rule here too.",
+    "units": { "size_m3": "m³", "rent_eur_per_month": "EUR per container per month", "lift_fee_eur": "EUR per lift", "max_payload_t": "tonnes per lift" }
+  },
+  "rows": [
+    { "id": "bin_240", "name": "240 L wheelie bin", "type": "wheelie_bin", "size_m3": 0.24, "rent_eur_per_month": 3, "lift_fee_eur": 5, "vehicle": "rcv", "max_payload_t": 0.1, "compaction_ratio": 1, "materials": ["cardboard_paper", "plastic_film", "organic_food"], "source": "Sample price list", "is_sample": true },
+    { "id": "bin_1100", "name": "1,100 L wheelie bin", "type": "wheelie_bin", "size_m3": 1.1, "rent_eur_per_month": 9, "lift_fee_eur": 14, "vehicle": "rcv", "max_payload_t": 0.44, "compaction_ratio": 1, "materials": ["cardboard_paper", "plastic_film", "organic_food", "clean_wood"], "source": "Sample price list", "is_sample": true },
+    { "id": "skip_6", "name": "6 m³ open skip", "type": "skip", "size_m3": 6, "rent_eur_per_month": 45, "lift_fee_eur": 95, "vehicle": "skip_loader", "max_payload_t": 8, "compaction_ratio": 1, "materials": ["clean_wood", "mixed_cd", "scrap_metal"], "source": "Sample price list", "is_sample": true },
+    { "id": "skip_8_lid", "name": "8 m³ lidded skip", "type": "skip", "size_m3": 8, "rent_eur_per_month": 60, "lift_fee_eur": 100, "vehicle": "skip_loader", "max_payload_t": 8, "compaction_ratio": 1, "materials": ["cardboard_paper", "clean_wood", "mixed_cd", "plastic_film"], "source": "Sample price list", "is_sample": true },
+    { "id": "roro_20", "name": "20 m³ roll-off container", "type": "roll_off", "size_m3": 20, "rent_eur_per_month": 95, "lift_fee_eur": 150, "vehicle": "hook_loader", "max_payload_t": 12, "compaction_ratio": 1, "materials": ["cardboard_paper", "clean_wood", "mixed_cd", "scrap_metal", "plastic_film"], "source": "Sample price list", "is_sample": true },
+    { "id": "roro_30", "name": "30 m³ roll-off container", "type": "roll_off", "size_m3": 30, "rent_eur_per_month": 110, "lift_fee_eur": 160, "vehicle": "hook_loader", "max_payload_t": 12, "compaction_ratio": 1, "materials": ["cardboard_paper", "clean_wood", "mixed_cd", "plastic_film"], "source": "Sample price list", "is_sample": true },
+    { "id": "roro_40", "name": "40 m³ roll-off container", "type": "roll_off", "size_m3": 40, "rent_eur_per_month": 125, "lift_fee_eur": 170, "vehicle": "hook_loader", "max_payload_t": 12, "compaction_ratio": 1, "materials": ["cardboard_paper", "clean_wood", "plastic_film"], "source": "Sample price list", "is_sample": true },
+    { "id": "compactor_20", "name": "20 m³ portable compactor", "type": "compactor", "size_m3": 20, "rent_eur_per_month": 420, "lift_fee_eur": 170, "vehicle": "hook_loader", "max_payload_t": 12, "compaction_ratio": 3, "materials": ["cardboard_paper", "plastic_film", "organic_food"], "source": "Sample price list; 3:1 compaction is a sample assumption", "is_sample": true }
+  ]
+}

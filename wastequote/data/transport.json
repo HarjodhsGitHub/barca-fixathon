@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "table": "transport",
+    "description": "Per-km cost and emissions by vehicle class. A trip is the round trip site -> facility -> back (2 x one-way km). Wheelie bins are emptied on a shared collection round, so only a share of the trip is allocated to this customer.",
+    "units": { "eur_per_km": "EUR per vehicle km", "kg_co2e_per_km": "kg CO2e per vehicle km", "distance_share": "fraction of the round trip allocated to one lift" }
+  },
+  "rows": [
+    { "id": "rcv", "name": "Refuse collection vehicle (shared round)", "eur_per_km": 2.4, "distance_share": 0.1, "kg_co2e_per_km": 1.0, "source": "Sample cost; emission factor placeholder", "is_sample": true },
+    { "id": "skip_loader", "name": "Skip loader", "eur_per_km": 1.9, "distance_share": 1, "kg_co2e_per_km": 0.8, "source": "Sample cost; emission factor placeholder", "is_sample": true },
+    { "id": "hook_loader", "name": "Hook-lift truck", "eur_per_km": 2.1, "distance_share": 1, "kg_co2e_per_km": 1.0, "source": "Sample cost; emission factor placeholder", "is_sample": true }
+  ]
+}

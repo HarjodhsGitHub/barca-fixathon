@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "table": "service",
+    "description": "Service definitions: pickup frequencies and how much of a container is usable. Definitions, not prices."
+  },
+  "weeks_per_month": 4.333,
+  "fill_factor": { "value": 0.85, "source": "Sample assumption: containers are emptied at about 85% full", "is_sample": true },
+  "frequencies": [
+    { "id": "twice_weekly", "name": "Twice a week", "lifts_per_week": 2 },
+    { "id": "weekly", "name": "Weekly", "lifts_per_week": 1 },
+    { "id": "fortnightly", "name": "Every 2 weeks", "lifts_per_week": 0.5 },
+    { "id": "four_weekly", "name": "Every 4 weeks", "lifts_per_week": 0.25 }
+  ]
+}

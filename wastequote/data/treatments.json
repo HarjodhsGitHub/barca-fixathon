@@ -1,0 +1,250 @@
+{
+  "_meta": {
+    "table": "treatments",
+    "description": "What each route means for each material: the treatment, the (fictional) facility and its default one-way distance from the customer site. Whether a route is allowed is decided by eligibility.json, not here. R/D codes are the recovery and disposal operations of the Waste Framework Directive, Annexes I and II.",
+    "rd_code_source": "Directive 2008/98/EC, Annex I (disposal operations) and Annex II (recovery operations)",
+    "rd_code_source_url": "https://eur-lex.europa.eu/eli/dir/2008/98/oj"
+  },
+  "rows": [
+    {
+      "material": "cardboard_paper",
+      "route": "reuse",
+      "treatment": "Box reuse",
+      "facility": "Not offered",
+      "default_distance_km": 0,
+      "rd_code": "-",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "recycling",
+      "treatment": "Baled to paper mill",
+      "facility": "Northwind fibre yard (sample)",
+      "default_distance_km": 28,
+      "rd_code": "R3",
+      "source": "Sample service catalogue; R3 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "recovery",
+      "treatment": "Energy from waste",
+      "facility": "Regional EfW plant (sample)",
+      "default_distance_km": 22,
+      "rd_code": "R1",
+      "source": "Sample service catalogue; R1 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "cardboard_paper",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "reuse",
+      "treatment": "Pallet and timber reuse",
+      "facility": "Pallet repair partner (sample)",
+      "default_distance_km": 15,
+      "rd_code": "R3",
+      "source": "Sample service catalogue; R3 per WFD Annex II, whose footnote includes preparing for re-use",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recycling",
+      "treatment": "Chipped for particleboard",
+      "facility": "Panel board mill (sample)",
+      "default_distance_km": 60,
+      "rd_code": "R3",
+      "source": "Sample service catalogue; R3 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "recovery",
+      "treatment": "Biomass energy recovery",
+      "facility": "Biomass plant (sample)",
+      "default_distance_km": 40,
+      "rd_code": "R1",
+      "source": "Sample service catalogue; R1 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "clean_wood",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "reuse",
+      "treatment": "Not applicable",
+      "facility": "Not offered",
+      "default_distance_km": 0,
+      "rd_code": "-",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recycling",
+      "treatment": "C&D sorting and aggregate recycling",
+      "facility": "C&D recycling plant (sample)",
+      "default_distance_km": 18,
+      "rd_code": "R5",
+      "source": "Sample service catalogue; R5 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "recovery",
+      "treatment": "Refuse-derived fuel",
+      "facility": "RDF facility (sample)",
+      "default_distance_km": 30,
+      "rd_code": "R1",
+      "source": "Sample service catalogue; R1 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "mixed_cd",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "reuse",
+      "treatment": "Offcut resale to fabricators",
+      "facility": "Metal reuse partner (sample)",
+      "default_distance_km": 20,
+      "rd_code": "R4",
+      "source": "Sample service catalogue; R4 per WFD Annex II, whose footnote includes preparing for re-use",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "recycling",
+      "treatment": "Scrap merchant to electric arc furnace",
+      "facility": "Scrap yard (sample)",
+      "default_distance_km": 25,
+      "rd_code": "R4",
+      "source": "Sample service catalogue; R4 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "recovery",
+      "treatment": "Not applicable",
+      "facility": "Not offered",
+      "default_distance_km": 0,
+      "rd_code": "-",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "material": "scrap_metal",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "reuse",
+      "treatment": "Not applicable",
+      "facility": "Not offered",
+      "default_distance_km": 0,
+      "rd_code": "-",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recycling",
+      "treatment": "Baled to film recycler (regranulate)",
+      "facility": "Film recycler (sample)",
+      "default_distance_km": 55,
+      "rd_code": "R3",
+      "source": "Sample service catalogue; R3 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "recovery",
+      "treatment": "Energy from waste",
+      "facility": "Regional EfW plant (sample)",
+      "default_distance_km": 22,
+      "rd_code": "R1",
+      "source": "Sample service catalogue; R1 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "plastic_film",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "reuse",
+      "treatment": "Not applicable",
+      "facility": "Not offered",
+      "default_distance_km": 0,
+      "rd_code": "-",
+      "source": "Sample service catalogue",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recycling",
+      "treatment": "Anaerobic digestion (biogas and digestate)",
+      "facility": "AD plant (sample)",
+      "default_distance_km": 32,
+      "rd_code": "R3",
+      "source": "Sample service catalogue; R3 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "recovery",
+      "treatment": "Energy from waste",
+      "facility": "Regional EfW plant (sample)",
+      "default_distance_km": 22,
+      "rd_code": "R1",
+      "source": "Sample service catalogue; R1 per WFD Annex II",
+      "is_sample": true
+    },
+    {
+      "material": "organic_food",
+      "route": "landfill",
+      "treatment": "Non-hazardous landfill",
+      "facility": "Regional landfill (sample)",
+      "default_distance_km": 35,
+      "rd_code": "D1",
+      "source": "Sample service catalogue; D1 per WFD Annex I",
+      "is_sample": true
+    }
+  ]
+}
