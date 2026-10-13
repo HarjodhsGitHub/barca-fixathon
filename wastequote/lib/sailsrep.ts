@@ -278,18 +278,44 @@ export interface SailsrepVision {
   agentNotes: string[];
 }
 
-/** Classify a photo with the Sailsrep assistant, on a fresh configuration that the quote then keeps using. */
-export async function classifyWithSailsrep(dataUrl: string): Promise<SailsrepVision> {
-  const cfg = await call("POST", "/configurations", {});
-  const res = await openChat(cfg.id, { message: visionMessage(), attachments: [{ name: "site-photo.jpg", data: dataUrl }] });
+async function chatTurn(configurationId: string, body: { message?: string; attachments?: Array<{ name?: string; data: string }> }) {
+  const res = await openChat(configurationId, body);
   if (!res.ok) {
     const j = (await res.json().catch(() => ({}))) as ApiError;
     throw new Error(`Sailsrep chat ${res.status}: ${j.error?.message ?? "refused"}`);
   }
   const events = parseSse(await res.text());
-  const err = events.find((e) => e.type === "error") as { error?: { message?: string } } | undefined;
-  const text = (events.filter((e) => e.type === "message.complete").pop()?.text as string | undefined) ?? "";
-  const lastDoc = events.filter((e) => e.type === "configuration.updated").pop()?.configuration as CfgDoc | undefined;
+  return {
+    error: (events.find((e) => e.type === "error") as { error?: { message?: string } } | undefined)?.error?.message ?? null,
+    text: (events.filter((e) => e.type === "message.complete").pop()?.text as string | undefined) ?? "",
+    lastDoc: events.filter((e) => e.type === "configuration.updated").pop()?.configuration as CfgDoc | undefined,
+  };
+}
+
+function parseWire(text: string) {
+  try {
+    return VisionWireSchema.safeParse(extractJson(text));
+  } catch {
+    return { success: false as const };
+  }
+}
+
+/** Classify a photo with the Sailsrep assistant, on a fresh configuration that the quote then keeps using. */
+export async function classifyWithSailsrep(dataUrl: string): Promise<SailsrepVision> {
+  const cfg = await call("POST", "/configurations", {});
+  const first = await chatTurn(cfg.id, { message: visionMessage(), attachments: [{ name: "site-photo.jpg", data: dataUrl }] });
+  let { text, lastDoc } = first;
+  let parsed = parseWire(text);
+  if (!parsed.success) {
+    // The assistant sometimes answers in prose first. Ask once more on the same
+    // configuration: it still has the photo.
+    const again = await chatTurn(cfg.id, {
+      message: "Now reply with ONLY the JSON object described in my first message, filled in for the photo. No prose, no code fence.",
+    });
+    text = again.text || text;
+    lastDoc = again.lastDoc ?? lastDoc;
+    parsed = parseWire(text);
+  }
   const agentSel = lastDoc?.modules.filter((m) => m.selection).map((m) => ({ moduleId: m.id, variantId: m.selection!.variantId })) ?? [];
   const agent = fromSailsrep(agentSel);
   const agentNotes =
@@ -297,15 +323,8 @@ export async function classifyWithSailsrep(dataUrl: string): Promise<SailsrepVis
       .filter((m) => m.selection?.source === "agent" && m.selection.reason)
       .map((m) => m.selection!.reason!) ?? [];
 
-  let wire: unknown = null;
-  try {
-    wire = extractJson(text);
-  } catch {
-    wire = null;
-  }
-  const parsed = VisionWireSchema.safeParse(wire);
   if (!parsed.success) {
-    if (!agent.material) throw new Error(err?.error?.message ?? "The Sailsrep assistant did not return a classification.");
+    if (!agent.material) throw new Error(first.error ?? "The Sailsrep assistant did not return a classification.");
     // Fall back to what the assistant selected in the configuration.
     const result = normalizeVision({
       image_ok: true,

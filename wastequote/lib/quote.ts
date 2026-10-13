@@ -109,7 +109,7 @@ export function evaluateSubmission(sub: QuoteSubmission) {
 }
 
 export function quoteNumber(seq: number, date = new Date()) {
-  return `WQ-${date.getFullYear()}-${String(seq).padStart(4, "0")}`;
+  return `SEL-${date.getFullYear()}-${String(seq).padStart(4, "0")}`;
 }
 
 export function validUntil(from: Date) {

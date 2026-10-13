@@ -59,9 +59,11 @@ export async function quotePdf(q: QuoteRecord, photo: Uint8Array | null): Promis
   y -= 66;
   y = text(k, q.vision.result.summary, M, y, { size: 8, color: C.ink2, maxWidth: W - 110 }) - 2;
   const vis =
-    q.vision.mode === "claude"
-      ? `Classified from a site photo with ${q.vision.model}, confirmed by the salesperson.`
-      : "Classified by the salesperson from a site photo (recorded demo classification, no live AI).";
+    q.vision.mode === "sailsrep"
+      ? "Classified from a site photo by the Sailsrep CPQ assistant, confirmed by the salesperson."
+      : q.vision.mode === "claude"
+        ? `Classified from a site photo with ${q.vision.model}, confirmed by the salesperson.`
+        : "Classified by the salesperson from a site photo (recorded demo classification, no live AI).";
   text(k, vis, M, y, { size: 7, color: C.muted });
 
   // ---- chosen service
