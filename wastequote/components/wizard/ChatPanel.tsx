@@ -162,7 +162,7 @@ export function ChatPanel({
         <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
           <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H9l-4 3v-3h0A2 2 0 0 1 3 12z" strokeLinejoin="round" />
         </svg>
-        Ask Sailsrep
+        Ask Selinsight
       </button>
       )}
 
@@ -177,7 +177,7 @@ export function ChatPanel({
             >
               ×
             </button>
-            <div className="text-sm font-semibold">Ask Sailsrep</div>
+            <div className="text-sm font-semibold">Ask Selinsight</div>
             <div className="text-xs text-muted">
               The CPQ assistant on this quote&apos;s configuration. It has seen the photo, knows the rules and specs, and can change the
               selection.
@@ -185,7 +185,7 @@ export function ChatPanel({
           </div>
           <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 text-sm">
             {!available && (
-              <div className="rounded-lg bg-flag-soft px-3 py-2 text-xs text-flag">{unavailableReason ?? "Sailsrep is not available."}</div>
+              <div className="rounded-lg bg-flag-soft px-3 py-2 text-xs text-flag">{unavailableReason ?? "The AI assistant is not available."}</div>
             )}
             {available && msgs.length === 0 && (
               <div className="space-y-2">

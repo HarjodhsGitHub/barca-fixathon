@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import "./motion.css";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { containerById, ewcByCode, frequencyById, materialById } from "@/lib/data";
 import { defaultDistances, evaluate, suggestContainer } from "@/lib/engine";
@@ -7,11 +8,12 @@ import { eur, signedKg, tonnes } from "@/lib/format";
 import { prepareImage } from "@/lib/image";
 import type { RouteId, ServiceConfig } from "@/lib/types";
 import type { VisionResponse } from "@/lib/vision/schema";
-import { Pill, SampleBadge, cx } from "../ui";
+import { Pill, ROUTE_COLOR, SampleBadge, cx } from "../ui";
+import { AnimatedNumber } from "./AnimatedNumber";
 import { ChatPanel } from "./ChatPanel";
 import { CompareStep } from "./CompareStep";
 import { ConfigureStep } from "./ConfigureStep";
-import { Analysing, PhotoStep } from "./PhotoStep";
+import { Analysing, PhotoStep, type ProgressItem } from "./PhotoStep";
 import { ReviewStep } from "./ReviewStep";
 import {
   STEPS,
@@ -25,6 +27,41 @@ import {
   type StepId,
   type StreamState,
 } from "./shared";
+
+/** POST the photo and read the SSE answer: progress events, then the result. */
+async function streamVision(
+  body: { image: string; mediaType: string; sha256: string; filename: string },
+  onProgress: (p: ProgressItem) => void,
+): Promise<VisionResponse> {
+  const res = await fetch("/api/vision", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...body, stream: true }),
+  });
+  if (!res.ok || !res.body) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.error ?? `Vision failed (${res.status})`);
+  }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let acc = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    acc += dec.decode(value, { stream: true });
+    const parts = acc.split("\n\n");
+    acc = parts.pop() ?? "";
+    for (const part of parts) {
+      const line = part.split("\n").find((l) => l.startsWith("data:"));
+      if (!line) continue;
+      const ev = JSON.parse(line.slice(5));
+      if (ev.type === "progress") onProgress(ev as ProgressItem);
+      else if (ev.type === "result") return ev.result as VisionResponse;
+      else if (ev.type === "error") throw new Error(ev.message);
+    }
+  }
+  throw new Error("The vision stream ended without a result.");
+}
 
 function defaultConfig(stream: StreamState, frequencyId = "weekly"): ServiceConfig {
   const pick = suggestContainer(stream, frequencyId);
@@ -43,6 +80,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
   const [vision, setVision] = useState<VisionResponse | null>(null);
   const [visionError, setVisionError] = useState<string | null>(null);
   const [analysing, setAnalysing] = useState(false);
+  const [progress, setProgress] = useState<ProgressItem[]>([]);
   const [stream, setStream] = useState<StreamState | null>(null);
   const [confirmed, setConfirmedSet] = useState<Set<FieldKey>>(new Set());
   const [config, setConfig] = useState<ServiceConfig | null>(null);
@@ -54,6 +92,18 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
   // step (or the first availability call) and reused by chat and validation.
   const [configurationId, setConfigurationId] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showToast(text: string) {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  }
+  /** Move to a step and bring its top into view. */
+  function goTo(next: StepId) {
+    setStep(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   // Ask Sailsrep which routes, containers and frequencies are open whenever
   // the two answers that drive eligibility change. The answer is stored with
@@ -120,13 +170,25 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
     try {
       const img = await prepareImage(file, filename);
       setPhoto(img);
-      const res = await fetch("/api/vision", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: img.base64, mediaType: img.mediaType, sha256: img.sha256, filename }),
-      });
-      const v = (await res.json()) as VisionResponse & { error?: string };
-      if (!res.ok) throw new Error(v.error ?? `Vision failed (${res.status})`);
+      setProgress([]);
+      const v = await streamVision(
+        { image: img.base64, mediaType: img.mediaType, sha256: img.sha256, filename },
+        (p) => setProgress((list) => [...list, p]),
+      );
+      // Show the finished configuration for a beat before moving on.
+      setProgress((list) => [
+        ...list,
+        ...(list.some((x) => x.kind === "selection" && x.module.startsWith("Waste"))
+          ? []
+          : [{ kind: "selection" as const, module: "Waste stream", value: materialById(v.result.primary_stream.value)?.name ?? "", reason: null }]),
+        ...(list.some((x) => x.kind === "selection" && x.module.startsWith("Contamination"))
+          ? []
+          : [{ kind: "selection" as const, module: "Contamination", value: v.result.contamination.value, reason: null }]),
+        { kind: "selection" as const, module: "Volume", value: `${v.result.volume_m3.value} m³`, reason: v.result.volume_m3.basis },
+        { kind: "selection" as const, module: "EWC code", value: v.result.ewc_code.value, reason: ewcByCode(v.result.ewc_code.value)?.description ?? null },
+        { kind: "activity" as const, label: "Done" },
+      ]);
+      await new Promise((r) => setTimeout(r, 900));
       const s = initialStream(v);
       setVision(v);
       setConfigurationId(v.configurationId ?? null);
@@ -201,10 +263,10 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
       </ol>
 
       <div className={cx("grid gap-8", step !== "photo" && "lg:grid-cols-[minmax(0,1fr)_280px]")}>
-        <main className="min-w-0">
+        <main key={`${step}${analysing ? "-busy" : ""}`} className="wq-fade-in min-w-0">
           {step === "photo" &&
             (analysing && photo ? (
-              <Analysing dataUrl={photo.dataUrl} provider={info.vision.provider} label={info.vision.label} />
+              <Analysing dataUrl={photo.dataUrl} provider={info.vision.provider} label={info.vision.label} progress={progress} />
             ) : (
               <>
                 {visionError && <div className="mb-4 rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger">{visionError}</div>}
@@ -226,8 +288,8 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
                   return next;
                 })
               }
-              onBack={() => setStep("photo")}
-              onNext={() => setStep("configure")}
+              onBack={() => goTo("photo")}
+              onNext={() => goTo("configure")}
             />
           )}
           {step === "configure" && stream && config && (
@@ -238,8 +300,8 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
               customer={customer}
               setCustomer={setCustomer}
               availability={availability}
-              onBack={() => setStep("review")}
-              onNext={() => setStep("compare")}
+              onBack={() => goTo("review")}
+              onNext={() => goTo("compare")}
             />
           )}
           {step === "compare" && ev && (
@@ -248,7 +310,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
               availability={availability}
               chosen={effectiveChosen}
               setChosen={setChosen}
-              onBack={() => setStep("configure")}
+              onBack={() => goTo("configure")}
               onAccept={onAccept}
               accepting={accepting}
               error={acceptError}
@@ -275,18 +337,39 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
                 const r = ev.routes.find((x) => x.route === effectiveChosen);
                 if (!r?.price || !r.co2) return null;
                 return (
-                  <div className="border-t border-line pt-3">
-                    <div className="text-xs text-muted">Selected route</div>
-                    <div className="font-medium">{r.routeName}</div>
-                    <div className="mt-1 text-2xl font-semibold tabular">{eur(r.price.totalPerMonth)}<span className="text-sm font-normal text-muted">/mo</span></div>
-                    <div className="font-mono text-xs text-ink-2">{signedKg(r.co2.totalKgPerT)} kg CO₂e/t</div>
-                    {r.usesSampleData && <div className="mt-2"><SampleBadge /></div>}
+                  <div
+                    key={r.route}
+                    className={cx(
+                      "wq-pop -mx-1 rounded-xl border px-3 py-3",
+                      r.circular ? "wq-ring border-circular/40 bg-circular-soft" : "border-line bg-paper",
+                    )}
+                  >
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted">
+                      <span>Selected route</span>
+                      {r.circular && <span className="font-semibold text-circular">circular</span>}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 font-medium">
+                      <span className="h-2 w-2 rounded-full" style={{ background: ROUTE_COLOR[r.route] }} />
+                      {r.routeName}
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold">
+                      <AnimatedNumber value={r.price.totalPerMonth} format={eur} />
+                      <span className="text-sm font-normal text-muted">/mo</span>
+                    </div>
+                    <div className="font-mono text-xs text-ink-2">
+                      <AnimatedNumber value={r.co2.totalKgPerT} format={(n) => signedKg(Math.round(n))} /> kg CO₂e/t
+                    </div>
+                    {r.usesSampleData && (
+                      <div className="mt-2">
+                        <SampleBadge />
+                      </div>
+                    )}
                   </div>
                 );
               })()}
               <div className="border-t border-line pt-3 text-xs text-muted">
                 {availability?.source === "sailsrep" ? (
-                  <Pill tone="good">Rules: Sailsrep CPQ</Pill>
+                  <Pill tone="good">Rules: live CPQ engine</Pill>
                 ) : availability ? (
                   <span title={availability.reason}><Pill tone="flag">Rules: local copy</Pill></span>
                 ) : (
@@ -298,6 +381,12 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
         )}
       </div>
 
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center px-4">
+          <div className="wq-pop rounded-full bg-ink px-4 py-2.5 text-sm text-white shadow-lg">{toast}</div>
+        </div>
+      )}
+
       {step !== "photo" && stream && config && (
         <ChatPanel
           open={chatOpen}
@@ -306,7 +395,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
           available={info.sailsrep.configured && availability?.source !== "local"}
           unavailableReason={
             !info.sailsrep.configured
-              ? `Sailsrep is not configured (${info.sailsrep.reason}).`
+              ? "The AI assistant is not set up on this machine."
               : availability?.source === "local"
                 ? availability.reason
                 : null
@@ -319,6 +408,14 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
             route: effectiveChosen ?? undefined,
           }}
           onSelections={(next) => {
+            const what = [
+              next.material && next.material !== stream.material ? `stream: ${materialById(next.material)?.name}` : null,
+              next.contamination && next.contamination !== stream.contamination ? `contamination: ${next.contamination}` : null,
+              next.containerId && next.containerId !== config.containerId ? `container: ${containerById(next.containerId)?.name}` : null,
+              next.frequencyId && next.frequencyId !== config.frequencyId ? `pickups: ${frequencyById(next.frequencyId)?.name}` : null,
+              next.route && next.route !== effectiveChosen ? `route: ${next.route}` : null,
+            ].filter(Boolean);
+            if (what.length) showToast(`Selinsight AI updated the quote · ${what.join(" · ")}`);
             if (stream && (next.material || next.contamination)) {
               updateStream({ ...stream, material: next.material ?? stream.material, contamination: next.contamination ?? stream.contamination });
             }

@@ -14,5 +14,5 @@ export function visionProvider(): VisionProvider {
 }
 
 export function visionLabel(p: VisionProvider) {
-  return p === "sailsrep" ? "Sailsrep assistant" : p === "claude" ? VISION_MODEL : "recorded demo results";
+  return p === "sailsrep" ? "Selinsight AI" : p === "claude" ? VISION_MODEL : "recorded demo results";
 }

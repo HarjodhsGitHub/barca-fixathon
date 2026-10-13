@@ -1,0 +1,93 @@
+/* Wizard motion. One easing curve, short durations, nothing loops except
+   the live indicators. Everything is off under prefers-reduced-motion. */
+:root {
+  --wq-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes wq-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes wq-pop {
+  0% { opacity: 0.4; transform: scale(0.97); }
+  60% { opacity: 1; transform: scale(1.01); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes wq-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(220%); }
+}
+@keyframes wq-flash {
+  0% { background-color: var(--color-circular-soft); }
+  100% { background-color: transparent; }
+}
+@keyframes wq-ring {
+  0% { box-shadow: 0 0 0 0 rgba(11, 113, 73, 0.35); }
+  100% { box-shadow: 0 0 0 14px rgba(11, 113, 73, 0); }
+}
+
+@keyframes wq-kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.07); }
+}
+@keyframes wq-beam {
+  0% { top: -12%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+@keyframes wq-bracket {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes wq-indeterminate {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(400%); }
+}
+@keyframes wq-text-in {
+  from { opacity: 0; transform: translateY(4px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+.wq-kenburns { animation: wq-kenburns 40s ease-out both; }
+.wq-beam { animation: wq-beam 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.wq-bracket { animation: wq-bracket 600ms var(--wq-ease) both; }
+.wq-indeterminate { animation: wq-indeterminate 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.wq-text-in { animation: wq-text-in 380ms var(--wq-ease) both; }
+
+.wq-fade-in { animation: wq-fade-up 420ms var(--wq-ease) both; }
+.wq-pop { animation: wq-pop 420ms var(--wq-ease) both; }
+.wq-shimmer { animation: wq-shimmer 1.3s ease-in-out infinite; }
+.wq-flash { animation: wq-flash 1.1s ease-out both; border-radius: 6px; }
+.wq-ring { animation: wq-ring 900ms var(--wq-ease) 1; }
+
+/* Children enter one after another: set --i on each child. */
+.wq-stagger > * {
+  animation: wq-fade-up 480ms var(--wq-ease) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.wq-stagger > *:nth-child(2) { --i: 1; }
+.wq-stagger > *:nth-child(3) { --i: 2; }
+.wq-stagger > *:nth-child(4) { --i: 3; }
+.wq-stagger > *:nth-child(5) { --i: 4; }
+.wq-stagger > *:nth-child(6) { --i: 5; }
+.wq-stagger > *:nth-child(7) { --i: 6; }
+.wq-stagger > *:nth-child(8) { --i: 7; }
+
+/* Interactive cards lift a little; pressed buttons sink a little. */
+.wq-lift {
+  transition: transform 200ms var(--wq-ease), box-shadow 200ms var(--wq-ease), border-color 200ms var(--wq-ease);
+}
+.wq-lift:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -12px rgba(21, 23, 26, 0.25);
+}
+.wq-press:active:not(:disabled) { transform: scale(0.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wq-fade-in, .wq-pop, .wq-shimmer, .wq-flash, .wq-ring, .wq-stagger > *,
+  .wq-kenburns, .wq-beam, .wq-bracket, .wq-indeterminate, .wq-text-in { animation: none !important; }
+  .wq-beam { display: none; }
+  .wq-lift, .wq-lift:hover { transition: none; transform: none; }
+}

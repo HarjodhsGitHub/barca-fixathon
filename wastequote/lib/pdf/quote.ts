@@ -60,7 +60,7 @@ export async function quotePdf(q: QuoteRecord, photo: Uint8Array | null): Promis
   y = text(k, q.vision.result.summary, M, y, { size: 8, color: C.ink2, maxWidth: W - 110 }) - 2;
   const vis =
     q.vision.mode === "sailsrep"
-      ? "Classified from a site photo by the Sailsrep CPQ assistant, confirmed by the salesperson."
+      ? "Classified from a site photo by Selinsight AI, confirmed by the salesperson."
       : q.vision.mode === "claude"
         ? `Classified from a site photo with ${q.vision.model}, confirmed by the salesperson.`
         : "Classified by the salesperson from a site photo (recorded demo classification, no live AI).";
@@ -182,7 +182,7 @@ export async function quotePdf(q: QuoteRecord, photo: Uint8Array | null): Promis
   text(
     k,
     `${company.quote_terms.vat_note} Valid ${company.quote_terms.valid_days} days. Weights are estimated from volume and bulk density; invoicing follows weighbridge tickets. Routes are opened or closed by the eligibility rules in the price book, and the configuration was ${
-      q.sailsrep.validated ? `validated in Sailsrep CPQ (configuration ${q.sailsrep.configurationId})` : "checked against the local copy of the rules"
+      q.sailsrep.validated ? `validated by the CPQ engine (configuration ${q.sailsrep.configurationId})` : "checked against the local copy of the rules"
     }.`,
     M,
     fy,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { classifyWithSailsrep } from "@/lib/sailsrep";
+import { classifyWithSailsrep, type VisionProgress } from "@/lib/sailsrep";
 import { visionProvider } from "@/lib/vision/provider";
 import { VISION_MODEL, classifyWithClaude } from "@/lib/vision/claude";
 import { stubClassify } from "@/lib/vision/stub";
@@ -14,14 +14,12 @@ const Body = z.object({
   mediaType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
   sha256: z.string().nullish(),
   filename: z.string().nullish(),
+  /** true: answer as an SSE stream of progress events ending in the result. */
+  stream: z.boolean().nullish(),
 });
 
-export async function POST(request: Request) {
-  const parsed = Body.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return Response.json({ error: "Send { image: base64, mediaType }." }, { status: 400 });
-  }
-  const { image, mediaType, sha256, filename } = parsed.data;
+async function runVision(body: z.infer<typeof Body>, onProgress: (p: VisionProgress) => void): Promise<VisionResponse> {
+  const { image, mediaType, sha256, filename } = body;
   const started = Date.now();
   const provider = visionProvider();
 
@@ -40,29 +38,56 @@ export async function POST(request: Request) {
 
   if (provider === "sailsrep") {
     try {
-      const v = await classifyWithSailsrep(`data:${mediaType};base64,${image}`);
-      const body: VisionResponse = {
+      onProgress({ kind: "activity", label: "Sending the photo to Selinsight AI" });
+      const v = await classifyWithSailsrep(`data:${mediaType};base64,${image}`, onProgress);
+      return {
         mode: "sailsrep",
-        model: "Sailsrep assistant",
+        model: "Selinsight AI",
         ms: Date.now() - started,
         result: v.result,
         note: null,
         configurationId: v.configurationId,
         agentNotes: v.agentNotes,
       };
-      return Response.json(body);
     } catch (e) {
-      return Response.json(fallback(`Sailsrep vision failed (${e instanceof Error ? e.message : String(e)}).`));
+      return fallback(`AI vision failed (${e instanceof Error ? e.message : String(e)}).`);
     }
   }
   if (provider === "claude") {
     try {
+      onProgress({ kind: "activity", label: `Asking ${VISION_MODEL}` });
       const result = await classifyWithClaude(image, mediaType);
-      const body: VisionResponse = { mode: "claude", model: VISION_MODEL, ms: Date.now() - started, result, note: null };
-      return Response.json(body);
+      return { mode: "claude", model: VISION_MODEL, ms: Date.now() - started, result, note: null };
     } catch (e) {
-      return Response.json(fallback(`Claude vision failed (${e instanceof Error ? e.message : String(e)}).`));
+      return fallback(`Claude vision failed (${e instanceof Error ? e.message : String(e)}).`);
     }
   }
-  return Response.json(fallback("No vision provider configured (no Sailsrep key, no ANTHROPIC_API_KEY)."));
+  return fallback("No AI vision is set up on this machine.");
+}
+
+export async function POST(request: Request) {
+  const parsed = Body.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return Response.json({ error: "Send { image: base64, mediaType }." }, { status: 400 });
+  }
+  if (!parsed.data.stream) {
+    return Response.json(await runVision(parsed.data, () => {}));
+  }
+  const enc = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (obj: unknown) => controller.enqueue(enc.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      try {
+        const result = await runVision(parsed.data, (p) => send({ type: "progress", ...p }));
+        send({ type: "result", result });
+      } catch (e) {
+        send({ type: "error", message: e instanceof Error ? e.message : String(e) });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(stream, {
+    headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform" },
+  });
 }

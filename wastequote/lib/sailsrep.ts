@@ -278,13 +278,48 @@ export interface SailsrepVision {
   agentNotes: string[];
 }
 
-async function chatTurn(configurationId: string, body: { message?: string; attachments?: Array<{ name?: string; data: string }> }) {
+export type VisionProgress =
+  | { kind: "activity"; label: string }
+  | { kind: "selection"; module: string; value: string; reason: string | null };
+
+async function chatTurn(
+  configurationId: string,
+  body: { message?: string; attachments?: Array<{ name?: string; data: string }> },
+  onProgress?: (p: VisionProgress) => void,
+) {
   const res = await openChat(configurationId, body);
-  if (!res.ok) {
+  if (!res.ok || !res.body) {
     const j = (await res.json().catch(() => ({}))) as ApiError;
     throw new Error(`Sailsrep chat ${res.status}: ${j.error?.message ?? "refused"}`);
   }
-  const events = parseSse(await res.text());
+  const events: SseEvent[] = [];
+  const seen = new Map<string, string>();
+  const handle = (e: SseEvent) => {
+    events.push(e);
+    if (!onProgress) return;
+    if (e.type === "activity" && e.label) onProgress({ kind: "activity", label: String(e.label) });
+    if (e.type === "configuration.updated") {
+      const doc = e.configuration as CfgDoc & { modules: Array<CfgModule & { name?: string }> };
+      for (const m of doc?.modules ?? []) {
+        if (m.selection?.source !== "agent" || seen.get(m.id) === m.selection.variantId) continue;
+        seen.set(m.id, m.selection.variantId);
+        const v = m.variants?.find((x) => x.id === m.selection!.variantId);
+        onProgress({ kind: "selection", module: m.name ?? m.id, value: v?.name ?? m.selection.variantId, reason: m.selection.reason ?? null });
+      }
+    }
+  };
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let acc = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    acc += dec.decode(value, { stream: true });
+    const parts = acc.split("\n\n");
+    acc = parts.pop() ?? "";
+    for (const part of parts) parseSse(part).forEach(handle);
+  }
+  if (acc.trim()) parseSse(acc).forEach(handle);
   return {
     error: (events.find((e) => e.type === "error") as { error?: { message?: string } } | undefined)?.error?.message ?? null,
     text: (events.filter((e) => e.type === "message.complete").pop()?.text as string | undefined) ?? "",
@@ -301,17 +336,20 @@ function parseWire(text: string) {
 }
 
 /** Classify a photo with the Sailsrep assistant, on a fresh configuration that the quote then keeps using. */
-export async function classifyWithSailsrep(dataUrl: string): Promise<SailsrepVision> {
+export async function classifyWithSailsrep(dataUrl: string, onProgress?: (p: VisionProgress) => void): Promise<SailsrepVision> {
   const cfg = await call("POST", "/configurations", {});
-  const first = await chatTurn(cfg.id, { message: visionMessage(), attachments: [{ name: "site-photo.jpg", data: dataUrl }] });
+  const first = await chatTurn(cfg.id, { message: visionMessage(), attachments: [{ name: "site-photo.jpg", data: dataUrl }] }, onProgress);
   let { text, lastDoc } = first;
   let parsed = parseWire(text);
   if (!parsed.success) {
     // The assistant sometimes answers in prose first. Ask once more on the same
     // configuration: it still has the photo.
-    const again = await chatTurn(cfg.id, {
-      message: "Now reply with ONLY the JSON object described in my first message, filled in for the photo. No prose, no code fence.",
-    });
+    onProgress?.({ kind: "activity", label: "Asking for the structured result" });
+    const again = await chatTurn(
+      cfg.id,
+      { message: "Now reply with ONLY the JSON object described in my first message, filled in for the photo. No prose, no code fence." },
+      onProgress,
+    );
     text = again.text || text;
     lastDoc = again.lastDoc ?? lastDoc;
     parsed = parseWire(text);

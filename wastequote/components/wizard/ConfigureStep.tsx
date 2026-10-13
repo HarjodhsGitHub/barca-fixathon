@@ -44,14 +44,14 @@ export function ConfigureStep({
         hint={
           availability?.source === "sailsrep" ? (
             <span title={`Configuration ${availability.configurationId}`}>
-              <Pill tone="good">Options from Sailsrep CPQ · {availability.ms} ms</Pill>
+              <Pill tone="good">Live CPQ rules · {availability.ms} ms</Pill>
             </span>
           ) : availability ? (
             <span title={availability.reason}>
-              <Pill tone="flag">Local rules (Sailsrep offline)</Pill>
+              <Pill tone="flag">Local rules (CPQ engine offline)</Pill>
             </span>
           ) : (
-            <Pill>Checking Sailsrep…</Pill>
+            <Pill>Checking rules…</Pill>
           )
         }
       />
@@ -105,7 +105,8 @@ export function ConfigureStep({
                   onClick={() => setConfig({ ...config, containerId: c.id })}
                   title={blocked ? (st.reason ?? "Not available") : undefined}
                   className={cx(
-                    "relative rounded-lg border p-3 text-left transition-colors",
+                    "wq-press relative rounded-lg border p-3 text-left",
+                    !blocked && "wq-lift",
                     selected
                       ? "border-ink bg-surface shadow-[inset_0_0_0_1px_var(--color-ink)]"
                       : blocked
@@ -120,7 +121,7 @@ export function ConfigureStep({
                   {blocked && (
                     <div className="mt-1.5 text-[11px] leading-snug text-muted">
                       Not offered for this stream
-                      {availability?.source === "sailsrep" && st.reason ? <span className="block text-muted/80">Sailsrep: {st.reason}</span> : null}
+                      {availability?.source === "sailsrep" && st.reason ? <span className="block text-muted/80">Rule: {st.reason}</span> : null}
                     </div>
                   )}
                   {!blocked && availability?.source === "sailsrep" && availability.specs.containers[c.id]?.longDescription && (
@@ -186,7 +187,7 @@ export function ConfigureStep({
             </div>
             <div className="relative mt-2.5 h-2.5 overflow-hidden rounded-full bg-surface">
               <div
-                className={cx("absolute inset-y-0 left-0 rounded-full", cap.utilisation > 1 ? "bg-danger" : cap.utilisation < 0.35 ? "bg-flag" : "bg-circular")}
+                className={cx("absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-500 ease-out", cap.utilisation > 1 ? "bg-danger" : cap.utilisation < 0.35 ? "bg-flag" : "bg-circular")}
                 style={{ width: `${(utilPct / 1.5) * 100}%` }}
               />
               <div className="absolute inset-y-0 w-px bg-ink" style={{ left: `${(1 / 1.5) * 100}%` }} title="100% of usable capacity" />

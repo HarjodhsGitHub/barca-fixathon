@@ -2,6 +2,7 @@
 import type { Evaluation, RouteId, RouteResult } from "@/lib/types";
 import { eur, eur2, int, signedKg } from "@/lib/format";
 import { Markdown } from "../Markdown";
+import { AnimatedNumber } from "./AnimatedNumber";
 import { Button, Citations, Pill, ROUTE_COLOR, SampleBadge, SectionTitle, cx } from "../ui";
 import type { Spec } from "./shared";
 import { routeStatus, type Availability } from "./shared";
@@ -36,16 +37,25 @@ export function DecisionStrip({ ev, open }: { ev: Evaluation; open: (r: RouteRes
         <span className="font-semibold text-circular">{circ.routeName}</span> instead of {alt.routeName.toLowerCase()}{" "}
         {dEur <= 0 ? (
           <>
-            <span className="font-semibold">saves {eur(-dEur)} a month</span>
+            <span className="font-semibold">
+              saves <AnimatedNumber value={-dEur} format={eur} /> a month
+            </span>
           </>
         ) : (
           <>
-            costs <span className="font-semibold">{eur(dEur)} more a month</span>
+            costs{" "}
+            <span className="font-semibold">
+              <AnimatedNumber value={dEur} format={eur} /> more a month
+            </span>
           </>
         )}{" "}
         and {dCo2TonnesYear >= 0 ? "avoids" : "adds"}{" "}
         <span className="font-semibold">
-          {Math.abs(dCo2TonnesYear) < 10 ? Math.abs(dCo2TonnesYear).toFixed(1) : int(Math.abs(dCo2TonnesYear))} t CO₂e a year
+          <AnimatedNumber
+            value={Math.abs(dCo2TonnesYear)}
+            format={(n) => (n < 10 ? n.toFixed(1) : int(n))}
+          />{" "}
+          t CO₂e a year
         </span>
         {dEur > 0 && dCo2TonnesYear > 0 && (
           <span className="text-ink-2"> ({eur2((dEur * 12) / dCo2TonnesYear)} per tonne CO₂e avoided)</span>
@@ -81,7 +91,8 @@ function RouteCard({
   return (
     <div
       className={cx(
-        "relative flex flex-col overflow-hidden rounded-xl border bg-surface transition-shadow",
+        "relative flex w-full flex-col overflow-hidden rounded-xl border bg-surface",
+        open && "wq-lift",
         !open && "bg-sunken/50",
         selected ? "border-ink shadow-[0_0_0_2px_var(--color-ink)]" : recommended && open ? "border-circular/60" : "border-line",
       )}
@@ -108,7 +119,7 @@ function RouteCard({
         {open && r.price && r.co2 ? (
           <>
             <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-3xl font-semibold tracking-tight tabular">{eur(r.price.totalPerMonth)}</span>
+              <AnimatedNumber value={r.price.totalPerMonth} format={eur} className="text-3xl font-semibold tracking-tight" />
               <span className="text-sm text-muted">/month</span>
             </div>
             <div className="font-mono text-xs tabular text-ink-2">
@@ -155,7 +166,7 @@ function RouteCard({
 
             {spec?.longDescription && (
               <details className="mt-3 text-[11px]">
-                <summary className="text-muted hover:text-ink">Specs from Sailsrep CPQ</summary>
+                <summary className="text-muted hover:text-ink">Specs</summary>
                 <Markdown text={spec.longDescription} dropHeading={r.routeName} className="mt-1 space-y-1 leading-snug text-ink-2" />
               </details>
             )}
@@ -180,7 +191,7 @@ function RouteCard({
                 {r.usesSampleData && <SampleBadge />}
               </div>
             </div>
-            <Button variant={selected ? "primary" : recommended ? "circular" : "secondary"} onClick={onSelect} className="mt-3 w-full">
+            <Button variant={selected ? "primary" : recommended ? "circular" : "secondary"} onClick={onSelect} className="wq-press mt-3 w-full">
               {selected ? "Selected" : `Choose ${r.routeName.toLowerCase()}`}
             </Button>
           </>
@@ -202,12 +213,12 @@ function RouteCard({
                 </div>
               </div>
             ))}
-            {sailsrepReason && <div className="text-[11px] text-muted">Sailsrep: {sailsrepReason}</div>}
+            {sailsrepReason && <div className="text-[11px] text-muted">Rules engine: {sailsrepReason}</div>}
           </div>
         )}
         {mismatch && (
           <div className="mt-3 rounded bg-danger-soft px-2 py-1.5 text-[11px] text-danger">
-            Sailsrep and the local rules disagree on this route. Re-export and re-upload the model.
+            The CPQ engine and the local rules disagree on this route. Re-export and re-upload the model.
           </div>
         )}
       </div>
@@ -245,17 +256,17 @@ export function CompareStep({
         hint={
           <span>
             Routes ordered by the EU waste hierarchy · prices per month excl. VAT
-            {availability?.source === "sailsrep" && <span className="block">Eligibility from Sailsrep CPQ · {availability.tenant}</span>}
+            {availability?.source === "sailsrep" && <span className="block">Eligibility from the live CPQ rules engine</span>}
           </span>
         }
       />
       <DecisionStrip ev={ev} open={isOpen} />
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {ev.routes.map((r) => {
+      <div className="wq-stagger mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {ev.routes.map((r, i) => {
           const s = st(r);
           return (
+            <div key={r.route} style={{ "--i": i } as React.CSSProperties} className="flex">
             <RouteCard
-              key={r.route}
               r={r}
               spec={availability?.source === "sailsrep" ? availability.specs.routes[r.route] : undefined}
               open={isOpen(r)}
@@ -265,6 +276,7 @@ export function CompareStep({
               onSelect={() => setChosen(r.route)}
               tonnesPerMonth={ev.capacity.tonnesPerMonth}
             />
+            </div>
           );
         })}
       </div>
@@ -281,7 +293,7 @@ export function CompareStep({
                 {chosenRoute.routeName}: <span className="font-semibold text-ink">{eur(chosenRoute.price.totalPerMonth)}/month</span>
               </span>
             )}
-            <Button variant="circular" onClick={onAccept} disabled={!chosenRoute || accepting}>
+            <Button variant="circular" onClick={onAccept} disabled={!chosenRoute || accepting} className="wq-press">
               {accepting ? "Generating quote…" : "Accept route & generate quote"}
             </Button>
           </div>

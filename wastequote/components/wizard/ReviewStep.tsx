@@ -109,7 +109,7 @@ export function ReviewStep({
         hint={
           vision.mode === "claude" || vision.mode === "sailsrep" ? (
             <Pill tone="good">
-              {vision.mode === "sailsrep" ? "Sailsrep assistant" : `Claude vision · ${vision.model}`} · {(vision.ms / 1000).toFixed(1)} s
+              {vision.mode === "sailsrep" ? "Selinsight AI" : `Claude vision · ${vision.model}`} · {(vision.ms / 1000).toFixed(1)} s
             </Pill>
           ) : (
             <span title={vision.note ?? undefined}>
@@ -120,7 +120,7 @@ export function ReviewStep({
       />
       {vision.mode === "sailsrep" && vision.agentNotes && vision.agentNotes.length > 0 && (
         <div className="mb-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-xs text-ink-2">
-          <span className="font-semibold text-ink">Set in the Sailsrep configuration by the assistant:</span>{" "}
+          <span className="font-semibold text-ink">Selinsight AI set in the configuration:</span>{" "}
           {vision.agentNotes.join(" ")}
         </div>
       )}
@@ -180,7 +180,7 @@ export function ReviewStep({
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="wq-stagger space-y-3">
           <Field
             label="Material stream"
             confidence={f("Material stream").conf}
