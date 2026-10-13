@@ -1,0 +1,6 @@
+{
+  "_meta": {
+    "description": "Recorded vision results for the demo photos, used only by the vision stub when no ANTHROPIC_API_KEY is set. Not live inference."
+  },
+  "fixtures": []
+}

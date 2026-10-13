@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f3f1ea;
+  --color-surface: #ffffff;
+  --color-sunken: #ebe8df;
+  --color-ink: #15171a;
+  --color-ink-2: #4b5157;
+  --color-muted: #81878d;
+  --color-line: #e2ded4;
+  --color-line-2: #cdc8ba;
+  --color-circular: #0b7149;
+  --color-circular-soft: #e1f0e7;
+  --color-reuse: #0f766e;
+  --color-recycling: #2c8a3b;
+  --color-recovery: #b26e12;
+  --color-landfill: #8f4a3a;
+  --color-flag: #b45309;
+  --color-flag-soft: #fcf0de;
+  --color-danger: #b42318;
+  --color-danger-soft: #fbe9e7;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Sample data" marker: a quiet hazard stripe, so invented numbers never pass as real ones. */
+.sample-stripe {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-flag-soft) 0 6px,
+    #f7e2c2 6px 12px
+  );
+}
+
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+.scanline {
+  animation: scan 1.6s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scanline { animation: none; }
+}

@@ -1,0 +1,111 @@
+{
+  "giltiga": [
+    {
+      "namn": "Clean cardboard to recycling, 20 m³ roll-off, weekly",
+      "val": {
+        "feat-material": "feat-material-cardboard-paper",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-cardboard-paper-recycling",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      }
+    },
+    {
+      "namn": "Clean pallets to reuse, 6 m³ skip, every 2 weeks",
+      "val": {
+        "feat-material": "feat-material-clean-wood",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-clean-wood-reuse",
+        "mod-container": "mod-container-skip-6",
+        "mod-frequency": "mod-frequency-fortnightly"
+      }
+    },
+    {
+      "namn": "Mixed site waste to C&D recycling, 8 m³ skip, weekly",
+      "val": {
+        "feat-material": "feat-material-mixed-cd",
+        "feat-contamination": "feat-contamination-medium",
+        "mod-route": "mod-route-mixed-cd-recycling",
+        "mod-container": "mod-container-skip-8-lid",
+        "mod-frequency": "mod-frequency-weekly"
+      }
+    },
+    {
+      "namn": "Steel offcuts to reuse, 20 m³ roll-off, every 4 weeks",
+      "val": {
+        "feat-material": "feat-material-scrap-metal",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-scrap-metal-reuse",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-four-weekly"
+      }
+    },
+    {
+      "namn": "Canteen food waste to anaerobic digestion, 240 L bins, twice a week",
+      "val": {
+        "feat-material": "feat-material-organic-food",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-organic-food-recycling",
+        "mod-container": "mod-container-bin-240",
+        "mod-frequency": "mod-frequency-twice-weekly"
+      }
+    }
+  ],
+  "ogiltiga": [
+    {
+      "namn": "Wet cardboard to recycling",
+      "val": {
+        "feat-material": "feat-material-cardboard-paper",
+        "feat-contamination": "feat-contamination-high",
+        "mod-route": "mod-route-cardboard-paper-recycling",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "CB-4: wet or food-soiled cardboard is rejected by paper mills"
+    },
+    {
+      "namn": "Clean cardboard to landfill",
+      "val": {
+        "feat-material": "feat-material-cardboard-paper",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-cardboard-paper-landfill",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "LF-2: separately collected recyclables may not be landfilled"
+    },
+    {
+      "namn": "Dirty film to recycling",
+      "val": {
+        "feat-material": "feat-material-plastic-film",
+        "feat-contamination": "feat-contamination-high",
+        "mod-route": "mod-route-plastic-film-recycling",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "PF-4: soiled film is rejected by film recyclers"
+    },
+    {
+      "namn": "Food waste in an open skip",
+      "val": {
+        "feat-material": "feat-material-organic-food",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-organic-food-recycling",
+        "mod-container": "mod-container-skip-6",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "Container table: a 6 m³ open skip is not offered for food waste"
+    },
+    {
+      "namn": "Scrap metal sent down the cardboard recycling route",
+      "val": {
+        "feat-material": "feat-material-scrap-metal",
+        "feat-contamination": "feat-contamination-low",
+        "mod-route": "mod-route-cardboard-paper-recycling",
+        "mod-container": "mod-container-roro-20",
+        "mod-frequency": "mod-frequency-weekly"
+      },
+      "regel": "Waste stream allows only its own routes"
+    }
+  ]
+}
