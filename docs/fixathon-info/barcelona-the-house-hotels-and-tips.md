@@ -4,23 +4,25 @@ Source: https://app.notion.com/p/norrskenfoundation/Fixathon-at-Impact-Week-3994
 
 ## Norrsken **House Barcelona**
 
-**Norrsken House Barcelona **is Europe's largest hub for impact and tech, and with 7,600 square meters across four floors, it's Norrsken's second-largest house.
+**Norrsken House Barcelona** is Europe's largest hub for impact and tech, and with 7,600 square meters across four floors, it's Norrsken's second-largest house.
 
 A landmark workspace and community in the heart of Barcelona, it is home to 1,400+ members across entrepreneurship, innovation, and sustainability. The house is located in the southern part of La Barceloneta. With an ocean view and beachfront location, it offers the best of both worlds: deep focus to get things done, and fresh sea air to clear your head. Who wouldn't want a beach walk or swim in between a full day of solving the world's greatest challenges?
 
-**Address: **[Passeig del Mare Nostrum, 15, Ciutat Vella, 08039 Barcelona, Spain](https://www.google.com/maps/place//data=!4m2!3m1!1s0x12a4a367244549c5:0x683cfd3471cf948a?sa=X&ved=1t:8290&ictx=111)
+**Address:** [Passeig del Mare Nostrum, 15, Ciutat Vella, 08039 Barcelona, Spain](https://www.google.com/maps/place//data=!4m2!3m1!1s0x12a4a367244549c5:0x683cfd3471cf948a?sa=X&ved=1t:8290&ictx=111)
 
 >
-> ❗ **Norrsken House Barcelona **is a private venue. Be mindful of the furniture, trash, venue space, and other attendees, and clean up after yourselves.
+> ❗ **Norrsken House Barcelona** is a private venue. Be mindful of the furniture, trash, venue space, and other attendees, and clean up after yourselves.
 >
 
 ## Where to stay in Barcelona?
 
 [Barcelona_Areas_Map.pdf](assets/barcelona-areas-map.pdf)
 
-Check out the** attached Map **(above) to learn more about Barcelona and its different neighborhoods (click on the PDF to access the map).
+Text version: [Where to stay](barcelona-areas-map.md).
 
-Norrsken House Barcelona is located in the southern part of Area 1, in** Barceloneta**.
+Check out the **attached Map** (above) to learn more about Barcelona and its different neighborhoods (click on the PDF to access the map).
+
+Norrsken House Barcelona is located in the southern part of Area 1, in **Barceloneta**.
 
 Below, we've written down some **hotel and hostel recommendations**, collected from staff at Norrsken Barcelona and Norrsken Stockholm. Please note that we don't have any collaborations with accommodations in Barcelona. You can decide on a place to stay by yourself or together with your team (of course, also outside of the list).
 
@@ -88,14 +90,14 @@ Cards and Apple/Google Pay are widely accepted, but it's smart to carry some sma
 
 Barcelona is a **walkable city**, a couple of streets are car-free, and **biking** is a great option. For the (red) AmBici bikes, you'll need a Spanish identification number. If you don't have one, other options are Bird, Voi, Cooltra, Lime, Donkey Republic, and Ridemovi.
 
-**Traveling by public transport **is easy and accessible. It will get you almost everywhere.
+**Traveling by public transport** is easy and accessible. It will get you almost everywhere.
 
 - You have to buy tickets in advance, as it isn't possible to tap your card directly.
 - Suggestion from a local: buy the "T-casual" for 10 single journeys on one ticket.  Buy at [t-mobilitat.cat](https://t-mobilitat.cat/en/web/t-mobilitat).
 - Make sure to keep your metro/train ticket until you actually exit the station. You can get fined for not having it, and often need it to exit the stations.
 
 >
-> 🚌** Bus V15 and V19 will take you to Norrsken House Barcelona **→ Pg Joan de Borbó - Moll Orienta → Pg Joan de Borbó - Moll de Catalunya
+> 🚌 **Bus V15 and V19 will take you to Norrsken House Barcelona** → Pg Joan de Borbó - Moll Orienta → Pg Joan de Borbó - Moll de Catalunya
 >
 
 **From Airport to City Centre**
@@ -103,13 +105,13 @@ Barcelona is a **walkable city**, a couple of streets are car-free, and **biking
 The airport is about 12km from the centre. Get yourself to a central point like Plaça Catalunya, then take the metro, taxi, or rent a bike to your specific accommodation.
 
 >
-> 1️⃣ **Aerobus: **Direct to Plaça Catalunya, no transfers, runs every 5–10 min, roughly 6:00 AM to 1:00 AM. See here: [aerobusbarcelona.es](https://aerobusbarcelona.es/en/)
+> 1️⃣ **Aerobus:** Direct to Plaça Catalunya, no transfers, runs every 5–10 min, roughly 6:00 AM to 1:00 AM. See here: [aerobusbarcelona.es](https://aerobusbarcelona.es/en/)
 >
 
 >
-> 2️⃣ **Metro - L9 Sud: **Cheapest option, but could require a transfer to reach the centre.  Needs a special airport ticket (not the standard T-Casual card). See here [t-mobilitat.cat](https://t-mobilitat.cat/en/web/t-mobilitat) and here: [tmb.cat](https://www.tmb.cat/en/visit-barcelona/public-transport/metro-airport)
+> 2️⃣ **Metro - L9 Sud:** Cheapest option, but could require a transfer to reach the centre.  Needs a special airport ticket (not the standard T-Casual card). See here [t-mobilitat.cat](https://t-mobilitat.cat/en/web/t-mobilitat) and here: [tmb.cat](https://www.tmb.cat/en/visit-barcelona/public-transport/metro-airport)
 >
 
 >
-> 3️⃣ **Taxi / Uber / Bolt: **Use the official rank at arrivals (black & yellow cars). Fixed airport supplement plus meter, usually the most expensive option unless traveling in a group or for 1+ hour. Pre-book a fixed price: [Welcome Pickups](https://www.welcomepickups.com/barcelona) Uber and Bolt are also available, but used less in Barcelona.
+> 3️⃣ **Taxi / Uber / Bolt:** Use the official rank at arrivals (black & yellow cars). Fixed airport supplement plus meter, usually the most expensive option unless traveling in a group or for 1+ hour. Pre-book a fixed price: [Welcome Pickups](https://www.welcomepickups.com/barcelona) Uber and Bolt are also available, but used less in Barcelona.
 >

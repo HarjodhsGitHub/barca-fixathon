@@ -40,12 +40,12 @@ AI is the most powerful tool humanity has ever held. The question is what we cho
 
 There's probably no better place to host the next Fixathon edition than **Impact/Week**.
 
-[**Impact/Week**](https://www.norrsken.org/impactweek)** **is Norrsken's two-day flagship conference, gathering the world's foremost founders, funders, thinkers, and doers accelerating solutions for people and planet.
+[**Impact/Week**](https://www.norrsken.org/impactweek) is Norrsken's two-day flagship conference, gathering the world's foremost founders, funders, thinkers, and doers accelerating solutions for people and planet.
 
 The conference will take place **October 14-15** **at Norrsken House Barcelona**.
 
-Get a glimpse of last year's atmosphere in the video* below, and make sure to check out the conference's agenda and speakers** **[**here**](https://www.norrsken.org/impactweek).
+Get a glimpse of last year's atmosphere in the video* below, and make sure to check out the conference's agenda and speakers [**here**](https://www.norrsken.org/impactweek).
 
 Video attachment not included: IW_KEBAB_2026_Comp.mp4 (2.9 MiB).
 
-** Please don't download, copy, or share the videos displayed in this document.*
+*Please don't download, copy, or share the videos displayed in this document.*

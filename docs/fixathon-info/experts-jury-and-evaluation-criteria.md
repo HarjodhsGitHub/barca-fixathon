@@ -13,7 +13,7 @@ Source: https://app.notion.com/p/norrskenfoundation/Fixathon-at-Impact-Week-3994
 3. Hanna Grahn: Head of Sustainability & Climate Action, Spotify | [LinkedIn](http://linkedin.com/in/hanna-grahn-08668542)
 4. Thomas Annicq: CEO & Co-Founder, OneShot | [LinkedIn](http://linkedin.com/in/thomasannicq)
 5. Michael Langguth, Founding Partner, Carbon 13 | [LinkedIn](http://linkedin.com/in/langguthmichael)
-6. Tsvetelina Kuzmanova: EU Sustainable Finance Policy Lead,** **CISL [LinkedIn](http://linkedin.com/in/tskuzmanova)
+6. Tsvetelina Kuzmanova: EU Sustainable Finance Policy Lead, CISL [LinkedIn](http://linkedin.com/in/tskuzmanova)
 7. Katarina Wangler Björk: Chief Impact Officer, Exponential Roadmap | [LinkedIn](http://linkedin.com/in/katarinabjork)
 8. Iris ten Have: Founding Partner, Visionaries Tomorrow | [LinkedIn](http://linkedin.com/in/iris-ten-have)
 9. Carmel Rafaeli: Founding Partner, The Table VC | [LinkedIn](http://linkedin.com/in/carmelrafaeli)
