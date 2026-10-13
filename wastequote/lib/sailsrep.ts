@@ -1,8 +1,8 @@
 // Server-side client for the Sailsrep Configurator (Self-Service) API, docs in
-// sailsrep/api-docs/. The WasteQuote model lives in a Sailsrep demo tenant,
+// sailsrep/api-docs/. The Selinsight model lives in a Sailsrep demo tenant,
 // generated from /data by scripts/sailsrep-export.ts. Sailsrep decides which
 // routes, containers and frequencies are open, reads the photo through its
-// assistant, and answers follow-up questions; WasteQuote's engine prices the
+// assistant, and answers follow-up questions; Selinsight's engine prices the
 // open routes per tonne. The key never leaves the server.
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -91,6 +91,13 @@ interface ApiError {
   error?: { code?: string; message?: string; details?: unknown };
 }
 
+/** Sailsrep configuration ids look like cfg_<hex>. Anything else never reaches a URL path. */
+export const CONFIGURATION_ID = /^cfg_[A-Za-z0-9]{8,64}$/;
+function cfgPath(id: string, suffix = "") {
+  if (!CONFIGURATION_ID.test(id)) throw new Error("Invalid configuration id");
+  return `/configurations/${id}${suffix}`;
+}
+
 export class SailsrepConflict extends Error {
   constructor(message: string, public details: unknown) {
     super(message);
@@ -139,7 +146,7 @@ export async function getAvailability(
   let doc: CfgDoc;
   try {
     doc = configurationId
-      ? await call("PUT", `/configurations/${configurationId}`, { selections })
+      ? await call("PUT", cfgPath(configurationId), { selections })
       : await call("POST", "/configurations", { selections });
   } catch (e) {
     // A configuration from an earlier session may be gone: start a fresh one.
@@ -186,7 +193,7 @@ export async function syncConfiguration(configurationId: string, sel: WizardSele
   const attempts = [sel, { material: sel.material, contamination: sel.contamination, containerId: sel.containerId, frequencyId: sel.frequencyId }, { material: sel.material, contamination: sel.contamination }];
   for (const a of attempts) {
     try {
-      return await call("PUT", `/configurations/${configurationId}`, { selections: toSailsrep(a) });
+      return await call("PUT", cfgPath(configurationId), { selections: toSailsrep(a) });
     } catch (e) {
       if (!(e instanceof SailsrepConflict)) throw e;
     }
@@ -201,7 +208,7 @@ export async function validateConfiguration(
 ) {
   const selections = toSailsrep(sel);
   const doc = configurationId
-    ? await call("PUT", `/configurations/${configurationId}`, { selections }).catch((e) => {
+    ? await call("PUT", cfgPath(configurationId), { selections }).catch((e) => {
         if (e instanceof SailsrepConflict) throw e;
         return call("POST", "/configurations", { selections });
       })
@@ -212,7 +219,7 @@ export async function validateConfiguration(
 /** Open a chat turn and hand back the raw SSE response for streaming. */
 export async function openChat(configurationId: string, body: { message?: string; attachments?: Array<{ name?: string; data: string }> }) {
   const a = auth();
-  return fetch(`${a.base}/configurations/${configurationId}/chat`, {
+  return fetch(a.base + cfgPath(configurationId, "/chat"), {
     method: "POST",
     headers: a.headers,
     body: JSON.stringify(body),
@@ -248,7 +255,7 @@ export function parseSse(raw: string): SseEvent[] {
 
 function visionMessage() {
   const codes = ewcCatalogue.map((e) => `${e.code} (${e.material})`).join(", ");
-  return `WasteQuote vision step. A salesperson photographed a customer's waste at a factory or construction site. Look at the attached photo and classify it.
+  return `Selinsight vision step. A salesperson photographed a customer's waste at a factory or construction site. Look at the attached photo and classify it.
 
 1. Select the waste stream (Waste stream module) and the contamination level (Contamination module) that fit the photo, using each stream's own contamination definitions. Do not pick a route, container or frequency.
 2. Then reply with ONLY one JSON object, no prose, in this shape:

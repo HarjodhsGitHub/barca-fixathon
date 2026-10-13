@@ -65,8 +65,8 @@ export interface Kit {
 export async function newKit(title: string): Promise<Kit> {
   const doc = await PDFDocument.create();
   doc.setTitle(safe(title));
-  doc.setProducer("WasteQuote (hackathon prototype)");
-  doc.setCreator("WasteQuote");
+  doc.setProducer("Selinsight (hackathon prototype)");
+  doc.setCreator("Selinsight");
   const page = doc.addPage([A4.w, A4.h]);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);

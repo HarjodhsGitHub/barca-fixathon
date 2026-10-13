@@ -170,7 +170,7 @@ export async function quotePdf(q: QuoteRecord, photo: Uint8Array | null): Promis
     box(k, M, fy - 22, W, 26, C.flagSoft);
     text(
       k,
-      "SAMPLE DATA: some prices or factors in this quote come from sample tables marked is_sample in the WasteQuote price book. Indicative only; not an offer until confirmed against the seller's price list.",
+      "SAMPLE DATA: some prices or factors in this quote come from sample tables marked is_sample in the Selinsight price book. Indicative only; not an offer until confirmed against the seller's price list.",
       M + 8,
       fy - 6,
       { size: 7, color: C.flag, maxWidth: W - 16 },
@@ -191,7 +191,7 @@ export async function quotePdf(q: QuoteRecord, photo: Uint8Array | null): Promis
     color: C.muted,
     maxWidth: W,
   });
-  text(k, `WasteQuote · ${q.number}`, A4.w - M, 30, { size: 6.5, color: C.muted, align: "right" });
+  text(k, `Selinsight · ${q.number}`, A4.w - M, 30, { size: 6.5, color: C.muted, align: "right" });
   return k.doc.save();
 }
 

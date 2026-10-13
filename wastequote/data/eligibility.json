@@ -41,7 +41,7 @@
       "source": "Directive 1999/31/EC (Landfill Directive), Art. 5(3)(f) as amended by Directive (EU) 2018/850; Spain: Ley 7/2022, art. 25.1",
       "source_url": "https://eur-lex.europa.eu/eli/dir/2018/850/oj",
       "is_sample": false,
-      "notes": "WasteQuote treats low contamination as a clean, separately collected stream."
+      "notes": "Selinsight treats low contamination as a clean, separately collected stream."
     },
     {
       "id": "LF-3",
@@ -73,7 +73,7 @@
       "source": "Ley 7/2022 de residuos y suelos contaminados para una economía circular, art. 25.1 (Spain)",
       "source_url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-5809",
       "is_sample": false,
-      "notes": "Applies in Spain. WasteQuote treats low contamination as a clean, separately collected stream; residues from sorting are exempt."
+      "notes": "Applies in Spain. Selinsight treats low contamination as a clean, separately collected stream; residues from sorting are exempt."
     },
     {
       "id": "CB-1",

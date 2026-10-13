@@ -1,4 +1,4 @@
-// Module and variant ids of the WasteQuote model in Sailsrep. Shared by the
+// Module and variant ids of the Selinsight model in Sailsrep. Shared by the
 // exporter (scripts/sailsrep-export.ts) and the Configurator API client, so
 // both sides address the same ids.
 import type { Contamination, MaterialId, RouteId } from "./types";
@@ -30,7 +30,7 @@ export interface WizardSelections {
   frequencyId?: string;
 }
 
-/** Read Sailsrep module selections back into WasteQuote terms. Unknown ids are ignored. */
+/** Read Sailsrep module selections back into Selinsight terms. Unknown ids are ignored. */
 export function fromSailsrep(selections: Array<{ moduleId: string; variantId: string | number }>): WizardSelections {
   const out: WizardSelections = {};
   for (const s of selections) {
@@ -46,7 +46,7 @@ export function fromSailsrep(selections: Array<{ moduleId: string; variantId: st
   return out;
 }
 
-/** WasteQuote selections as a Sailsrep selection set, most important first (Sailsrep keeps the last pick on conflict). */
+/** Selinsight selections as a Sailsrep selection set, most important first (Sailsrep keeps the last pick on conflict). */
 export function toSailsrep(sel: WizardSelections) {
   const out: Array<{ moduleId: string; variantId: string }> = [];
   if (sel.containerId) out.push({ moduleId: SAILSREP_IDS.container, variantId: SAILSREP_IDS.containerVariant(sel.containerId) });

@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const maxDuration = 180;
 
 const Body = z.object({
-  configurationId: z.string().min(4),
+  configurationId: z.string().regex(/^cfg_[A-Za-z0-9]{8,64}$/),
   message: z.string().min(1).max(4000),
   selections: z.object({
     material: z.enum(MATERIAL_IDS),

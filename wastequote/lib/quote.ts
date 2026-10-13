@@ -35,7 +35,7 @@ export const QuoteSubmission = z.object({
   }),
   chosenRoute: z.enum(ROUTE_IDS),
   /** The Sailsrep configuration this quote was built on (vision, chat and validation share it). */
-  configurationId: z.string().nullish(),
+  configurationId: z.string().regex(/^cfg_[A-Za-z0-9]{8,64}$/).nullish(),
   /** Fields the salesperson confirmed or changed after the vision step. */
   confirmedFields: z.array(z.string()).default([]),
   photo: z.object({ dataUrl: z.string().startsWith("data:image/").max(8_000_000), filename: z.string().nullish() }),

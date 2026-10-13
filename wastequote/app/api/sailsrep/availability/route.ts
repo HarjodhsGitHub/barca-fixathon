@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 const Body = z.object({
   material: z.enum(MATERIAL_IDS),
   contamination: z.enum(CONTAMINATION_LEVELS),
-  configurationId: z.string().nullish(),
+  configurationId: z.string().regex(/^cfg_[A-Za-z0-9]{8,64}$/).nullish(),
 });
 
 export async function POST(request: Request) {

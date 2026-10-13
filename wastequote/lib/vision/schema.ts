@@ -180,7 +180,7 @@ export function buildSystemPrompt() {
     )
     .join("\n");
   const ewc = ewcCatalogue.map((e) => `- ${e.code} ${e.description} (stream: ${e.material})`).join("\n");
-  return `You are the vision step in WasteQuote, a quoting tool used by a waste-management company's sales team. A salesperson photographs a customer's waste (a bin, skip, container or pile at a factory or construction site). You classify it so the quote can be configured. A deterministic rules engine, not you, decides treatment routes and prices, and the salesperson confirms or corrects every field you return.
+  return `You are the vision step in Selinsight, a quoting tool used by a waste-management company's sales team. A salesperson photographs a customer's waste (a bin, skip, container or pile at a factory or construction site). You classify it so the quote can be configured. A deterministic rules engine, not you, decides treatment routes and prices, and the salesperson confirms or corrects every field you return.
 
 Classify into exactly one primary stream from this list, and grade contamination against that stream's definitions:
 ${streams}

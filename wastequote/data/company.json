@@ -1,7 +1,7 @@
 {
   "_meta": {
     "table": "company",
-    "description": "The waste company using WasteQuote (the seller on the quote) and the demo customer. Both are fictional sample companies."
+    "description": "The waste company using Selinsight (the seller on the quote) and the demo customer. Both are fictional sample companies."
   },
   "seller": {
     "name": "Northwind Recycling S.L. (sample company)",

@@ -144,7 +144,7 @@ for (const m of materials) {
           rebate ? `- Material rebate: ${eurT(rebate.eur_per_t)} at clean grade${rebate.is_sample ? " (indicative)" : ""}` : null,
           ...tax.map((x) => `- ${x.name}: ${eurT(x.eur_per_t)}`),
           "",
-          "Priced per tonne in WasteQuote from the estimated weight, so the list price here is 0.",
+          "Priced per tonne in Selinsight from the estimated weight, so the list price here is 0.",
         ]
           .filter((x) => x !== null)
           .join("\n"),
@@ -179,7 +179,7 @@ const frequencyVariants = service.frequencies.map((f, i) =>
   variant(ID.frequency, ID.frequencyVariant(f.id), (i + 1) * 10, {
     name: f.name,
     description: `${Math.round(f.lifts_per_week * service.weeks_per_month * 100) / 100} lifts per container per month.`,
-    longDescription: `## ${f.name}\nThe lift fee and transport are charged per lift in WasteQuote, from the container's lift fee and the distance to the facility.`,
+    longDescription: `## ${f.name}\nThe lift fee and transport are charged per lift in Selinsight, from the container's lift fee and the distance to the facility.`,
     sku: `WQ-FREQ-${f.id.toUpperCase()}`,
     price: 0,
   }),
@@ -246,8 +246,8 @@ const modules = [
     {
       name: "Waste stream",
       question: "Which waste stream is it?",
-      description: "The material in the container. WasteQuote suggests it from a photo.",
-      longDescription: "## Waste stream\nThe vision step in WasteQuote suggests the stream from a photo; the salesperson confirms it.",
+      description: "The material in the container. Selinsight suggests it from a photo.",
+      longDescription: "## Waste stream\nThe vision step in Selinsight suggests the stream from a photo; the salesperson confirms it.",
       feature: true,
       displayOrder: 5,
     },
@@ -272,7 +272,7 @@ const modules = [
       question: "Where should the waste go?",
       description: "Reuse, recycling, recovery or landfill: the EU waste hierarchy, circular first.",
       longDescription:
-        "## Treatment route\nOnly routes allowed for the stream and its contamination are open. The rules come from the WasteQuote eligibility table, generated into this model.",
+        "## Treatment route\nOnly routes allowed for the stream and its contamination are open. The rules come from the Selinsight eligibility table, generated into this model.",
       feature: false,
       displayOrder: 8,
     },
@@ -284,7 +284,7 @@ const modules = [
       name: "Container",
       question: "Which container?",
       description: "Rented per month. Only containers offered for the stream are open.",
-      longDescription: "## Container\nRent per month is the list price here. Lift fees and transport are priced per lift in WasteQuote.",
+      longDescription: "## Container\nRent per month is the list price here. Lift fees and transport are priced per lift in Selinsight.",
       feature: false,
       displayOrder: 10,
     },

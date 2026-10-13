@@ -1,4 +1,4 @@
-# WasteQuote: sourced reference data
+# Selinsight: sourced reference data
 
 Researched 14 October 2026. Every value below was read from the source document named in its row: a downloaded XLSX/PDF parsed locally, or a fetched web page. Nothing is estimated. Converted values say so in the notes and show the formula. Anything that could not be found is marked **NOT FOUND** and collected in the list at the end.
 

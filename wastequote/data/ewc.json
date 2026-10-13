@@ -1,7 +1,7 @@
 {
   "_meta": {
     "table": "ewc",
-    "description": "The European Waste Catalogue (List of Waste) entries WasteQuote can suggest. The vision model may only pick from this list. None of these is a hazardous (*) entry.",
+    "description": "The European Waste Catalogue (List of Waste) entries Selinsight can suggest. The vision model may only pick from this list. None of these is a hazardous (*) entry.",
     "source": "Commission Decision 2000/532/EC as replaced by Commission Decision 2014/955/EU (List of Waste)",
     "source_url": "https://eur-lex.europa.eu/eli/dec/2014/955/oj"
   },
