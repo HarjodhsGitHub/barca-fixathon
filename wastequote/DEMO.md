@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | 0:00 | Click the **builders' skip** photo. | "A waste company's salesperson is at a building site. Today a quote like this takes days: someone visits, guesses the material, phones three plants for prices, and the customer gets one price for one route, usually the cheapest, usually landfill." |
 | 0:10 | (The AI is reading the photo.) | "We take a photo. Selinsight AI reads it and fills in the CPQ configuration: material, contamination, volume, EWC code. The AI only classifies. It never sets a price." |
-| ~0:35 | Classify step appears. Point at the **orange flag** on the field under 70% (usually volume). | "Every field has a confidence score. Under 70% the salesperson must check it before going on." Tick **I checked this**. |
+| ~0:35 | Classify step appears. Point at the **orange flag** on the field under 70% (usually volume). | "Every field has a confidence score. Under 70% the salesperson must check it before going on." Click **Confirm** on it. |
 | 0:40 | Point at the red **Check before collection** box, then the green **Circular opportunity** box. | "It flags possible asbestos in the old plaster, and tells you what to separate to unlock recycling." |
 | 0:45 | If contamination says **High**: click **Medium** and watch the price in the right rail. If it already says Medium, click High and back to show it. | "The site manager says the bags are packaging. Medium. Recycling opens, and the monthly price drops by about a third." (Live run on 14 Oct: Recovery €2,526/month became Recycling €1,571/month.) |
 | 0:50 | **Configure service** → **Compare routes**. | "Containers the rules don't allow for this stream are greyed out with the reason. Those rules live in the CPQ engine." |

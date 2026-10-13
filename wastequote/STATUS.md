@@ -4,6 +4,8 @@ Running log for the overnight build (13-14 October 2026). Newest state first. Se
 
 ## Where it stands
 
+**White-label.** The UI never says Sailsrep. The assistant is "Selinsight AI" and the rules are the "CPQ engine". Sailsrep is the engine underneath and appears only in developer docs and code.
+
 The demo works end to end: photo → AI classification with confidence flags → configure → every route priced side by side with CO₂e → accept → quote PDF and draft waste transfer note. Tested in the browser with the live Sailsrep API on 14 Oct (see DEMO.md). `npm test`, `npm run typecheck` and `npm run lint` pass.
 
 ## Real, sample or faked
@@ -48,6 +50,10 @@ The demo works end to end: photo → AI classification with confidence flags →
 3. Vision: Sailsrep assistant (default), Claude direct (optional), labelled stub; normalisation of loose model output; fields under 0.7 must be confirmed.
 4. Sailsrep: model exported from `/data`, three catalog versions uploaded, live availability, specs, chat, validation on accept. A test key with `price` scope only, so the `/quote` endpoint that sends email is never called.
 5. Wizard UI, quote page, quote PDF, draft WTN PDF, JSON quote store.
+5b. Smooth UX pass:
+    - Vision streams progress: a dark viewfinder stage with a scan beam, the AI's live status, and the configuration filling in field by field.
+    - Step transitions, staggered route cards, prices that glide to new values, a ring when the circular route is picked, toasts when the AI changes the quote.
+    - All motion respects prefers-reduced-motion.
 6. Docs: README (one command), DEMO (60 s script), this file. Design pass on the shell, home, quote page and price book by a parallel agent.
 
 ## Next (if there is time)
@@ -55,7 +61,6 @@ The demo works end to end: photo → AI classification with confidence flags →
 - Apply the remaining wizard design fixes from `DESIGN-NOTES.md`.
 - Mobile pass at 390 px on the compare step.
 - Prices as a Sailsrep price list: the API supports formulas over numeric inputs, so per-tonne pricing could move into the tenant instead of `lib/engine`. The import format for formulas is not documented in what we have, so it stays local for now.
-- Stream the Sailsrep `activity` events during vision so the 30 s wait shows progress.
 - Revoke the demo API key after the event (Sailsrep Admin `revoke_api_key`, key hint `ss_test_…e34f`).
 
 ## Open issues and known limits

@@ -6,6 +6,16 @@ import { CONFIDENCE_THRESHOLD, type VisionResponse } from "@/lib/vision/schema";
 import { Button, Card, ConfidenceMeter, Pill, SectionTitle, Segmented, cx } from "../ui";
 import type { FieldKey, PhotoState, StreamState } from "./shared";
 
+const STREAM_COLOR: Record<string, string> = {
+  cardboard_paper: "#b98b4e",
+  clean_wood: "#8a6b3f",
+  mixed_cd: "#6b7078",
+  scrap_metal: "#3f4650",
+  plastic_film: "#7aa7d9",
+  organic_food: "#6f9a2c",
+  other: "#cdc8ba",
+};
+
 function Field({
   label,
   confidence,
@@ -14,7 +24,8 @@ function Field({
   confirmed,
   onConfirm,
   children,
-  note,
+  hint,
+  why,
 }: {
   label: FieldKey;
   confidence: number;
@@ -23,41 +34,71 @@ function Field({
   confirmed: boolean;
   onConfirm: (v: boolean) => void;
   children: ReactNode;
-  note?: ReactNode;
+  /** One line that stays visible under the control. */
+  hint?: ReactNode;
+  /** The AI's reasoning, folded away until asked for. */
+  why?: ReactNode;
 }) {
   const flagged = confidence < CONFIDENCE_THRESHOLD;
   const needs = flagged && !edited && !confirmed;
   return (
     <div
       className={cx(
-        "rounded-lg border bg-surface p-4 transition-colors",
-        needs ? "border-flag/60 shadow-[inset_3px_0_0_var(--color-flag)]" : "border-line",
+        "rounded-xl border bg-surface p-4 transition-[border-color,box-shadow] duration-300",
+        needs ? "border-flag/50 shadow-[inset_3px_0_0_var(--color-flag)]" : "border-line",
       )}
     >
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{label}</span>
+          <span className="text-sm font-semibold">{label}</span>
           {edited ? (
             <Pill tone="ink">Edited · AI said {aiValue}</Pill>
-          ) : flagged ? (
-            <Pill tone="flag">Low confidence: check this</Pill>
+          ) : needs ? (
+            <Pill tone="flag">Check this</Pill>
+          ) : flagged && confirmed ? (
+            <Pill tone="good">Confirmed</Pill>
           ) : null}
         </div>
         <ConfidenceMeter value={confidence} threshold={CONFIDENCE_THRESHOLD} />
       </div>
       {children}
-      {note && <div className="mt-2 text-xs leading-relaxed text-muted">{note}</div>}
-      {flagged && !edited && (
-        <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs font-medium text-ink-2">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => onConfirm(e.target.checked)}
-            className="h-4 w-4 accent-[var(--color-circular)]"
-          />
-          I checked this against the photo or the site
-        </label>
-      )}
+      {hint && <div className="mt-2 text-xs leading-relaxed text-ink-2">{hint}</div>}
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+        {why ? (
+          <details className="group min-w-0 flex-1 text-xs text-muted">
+            <summary className="flex items-center gap-1.5 hover:text-ink">
+              <svg viewBox="0 0 12 12" className="h-3 w-3 transition-transform group-open:rotate-90" aria-hidden>
+                <path d="M4 2.5L7.5 6 4 9.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              Why the AI said this
+            </summary>
+            <div className="wq-fade-in mt-1.5 leading-relaxed text-ink-2">{why}</div>
+          </details>
+        ) : (
+          <span />
+        )}
+        {flagged && !edited && (
+          <button
+            type="button"
+            onClick={() => onConfirm(!confirmed)}
+            className={cx(
+              "wq-press inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+              confirmed ? "bg-circular text-white" : "border border-flag/50 bg-flag-soft text-flag hover:border-flag",
+            )}
+          >
+            {confirmed ? (
+              <>
+                <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d="M3.5 8.5l3 3 6-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Confirmed
+              </>
+            ) : (
+              "Confirm"
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -118,40 +159,35 @@ export function ReviewStep({
           )
         }
       />
-      {vision.mode === "sailsrep" && vision.agentNotes && vision.agentNotes.length > 0 && (
-        <div className="mb-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-xs text-ink-2">
-          <span className="font-semibold text-ink">Selinsight AI set in the configuration:</span>{" "}
-          {vision.agentNotes.join(" ")}
-        </div>
-      )}
       {vision.note && vision.mode !== "claude" && vision.mode !== "sailsrep" && (
         <div className="mb-4 rounded-lg border border-flag/30 bg-flag-soft px-4 py-2.5 text-xs text-flag">{vision.note}</div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="space-y-4">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden rounded-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photo.dataUrl} alt="Waste stream" className="max-h-[420px] w-full bg-ink object-contain" />
-            <div className="space-y-3 p-4">
-              <p className="text-sm leading-relaxed">{r.summary}</p>
+            <div className="space-y-4 p-5">
+              <p className="text-[15px] leading-relaxed text-ink">{r.summary}</p>
               {r.materials_seen.length > 0 && (
                 <div>
                   <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-muted">Materials seen</div>
-                  <div className="flex h-2.5 overflow-hidden rounded-full bg-sunken">
+                  <div className="flex h-3 gap-0.5 overflow-hidden rounded-full">
                     {r.materials_seen.map((m, i) => (
                       <div
                         key={i}
-                        title={`${m.stream}: ${m.share_pct}%`}
-                        style={{ width: `${m.share_pct}%`, opacity: 1 - i * 0.2 }}
-                        className={cx(i === 0 ? "bg-ink" : "bg-ink-2", "border-r border-surface last:border-r-0")}
+                        title={`${materialById(m.stream)?.name ?? "Other"}: ${m.share_pct}%`}
+                        style={{ width: `${m.share_pct}%`, background: STREAM_COLOR[m.stream] ?? STREAM_COLOR.other }}
+                        className="h-full first:rounded-l-full last:rounded-r-full"
                       />
                     ))}
                   </div>
-                  <ul className="mt-2 space-y-1">
+                  <ul className="mt-3 space-y-1.5">
                     {r.materials_seen.map((m, i) => (
-                      <li key={i} className="flex gap-2 text-xs text-ink-2">
-                        <span className="w-9 shrink-0 text-right font-mono tabular text-ink">{m.share_pct}%</span>
+                      <li key={i} className="flex gap-2.5 text-xs text-ink-2">
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full" style={{ background: STREAM_COLOR[m.stream] ?? STREAM_COLOR.other }} />
+                        <span className="w-8 shrink-0 font-mono tabular text-ink">{m.share_pct}%</span>
                         <span>
                           <span className="font-medium text-ink">{materialById(m.stream)?.name ?? "Other"}</span> · {m.evidence}
                         </span>
@@ -163,7 +199,7 @@ export function ReviewStep({
             </div>
           </Card>
           {r.hazard_flags.length > 0 && (
-            <div className="rounded-lg border border-danger/25 bg-danger-soft px-4 py-3">
+            <div className="rounded-xl border border-danger/25 bg-danger-soft px-4 py-3">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-danger">Check before collection</div>
               <ul className="list-disc space-y-1 pl-4 text-sm text-ink">
                 {r.hazard_flags.map((h, i) => (
@@ -173,7 +209,7 @@ export function ReviewStep({
             </div>
           )}
           {r.segregation_tip && (
-            <div className="rounded-lg border border-circular/25 bg-circular-soft px-4 py-3">
+            <div className="rounded-xl border border-circular/25 bg-circular-soft px-4 py-3">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-circular">Circular opportunity</div>
               <p className="text-sm text-ink">{r.segregation_tip}</p>
             </div>
@@ -188,7 +224,7 @@ export function ReviewStep({
             edited={f("Material stream").edited}
             confirmed={confirmed.has("Material stream")}
             onConfirm={(v) => setConfirmed("Material stream", v)}
-            note={r.primary_stream.rationale}
+            why={r.primary_stream.rationale}
           >
             <select
               value={stream.material}
@@ -210,13 +246,16 @@ export function ReviewStep({
             edited={f("Contamination").edited}
             confirmed={confirmed.has("Contamination")}
             onConfirm={(v) => setConfirmed("Contamination", v)}
-            note={
-              <>
-                <span className="font-medium text-ink-2">{material.name}, {stream.contamination}:</span>{" "}
+            hint={
+              <span key={stream.contamination} className="wq-text-in block">
+                <span className="font-medium text-ink">{stream.contamination[0].toUpperCase() + stream.contamination.slice(1)}:</span>{" "}
                 {material.contamination[stream.contamination]}
-                {r.contamination.contaminants.length > 0 && (
-                  <span className="mt-1 block">AI saw: {r.contamination.contaminants.join(", ")}. {r.contamination.rationale}</span>
-                )}
+              </span>
+            }
+            why={
+              <>
+                {r.contamination.contaminants.length > 0 && <span className="block">AI saw: {r.contamination.contaminants.join(", ")}.</span>}
+                {r.contamination.rationale}
               </>
             }
           >
@@ -234,11 +273,8 @@ export function ReviewStep({
             edited={f("Volume (m³ per week)").edited}
             confirmed={confirmed.has("Volume (m³ per week)")}
             onConfirm={(v) => setConfirmed("Volume (m³ per week)", v)}
-            note={
-              <>
-                AI: {r.volume_m3.value} m³ in the photo. {r.volume_m3.basis} Adjust to what the site produces per week.
-              </>
-            }
+            hint={<>The AI estimated {r.volume_m3.value} m³ in the photo. Adjust to what the site produces per week.</>}
+            why={r.volume_m3.basis}
           >
             <div className="flex items-center gap-2">
               <input
@@ -260,7 +296,8 @@ export function ReviewStep({
             edited={f("EWC code").edited}
             confirmed={confirmed.has("EWC code")}
             onConfirm={(v) => setConfirmed("EWC code", v)}
-            note={r.ewc_code.rationale}
+            hint={ewcCatalogue.find((e) => e.code === stream.ewc)?.chapter}
+            why={r.ewc_code.rationale}
           >
             <select
               value={stream.ewc}
@@ -275,17 +312,17 @@ export function ReviewStep({
             </select>
           </Field>
 
-          <div className="flex items-center justify-between gap-3 pt-2">
+          <div className="sticky bottom-3 z-10 flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface/90 px-3 py-2.5 shadow-[0_12px_32px_-18px_rgba(0,0,0,.35)] backdrop-blur">
             <Button variant="ghost" onClick={onBack}>
               ← New photo
             </Button>
             <div className="flex items-center gap-3">
-              {pending.length > 0 && (
-                <span className="text-xs text-flag">
-                  {pending.length} field{pending.length > 1 ? "s" : ""} below {Math.round(CONFIDENCE_THRESHOLD * 100)}% confidence to confirm
-                </span>
-              )}
-              <Button onClick={onNext} disabled={pending.length > 0}>
+              <span className={cx("text-xs", pending.length ? "text-flag" : "text-circular")}>
+                {pending.length
+                  ? `${pending.length} to confirm`
+                  : "All fields checked"}
+              </span>
+              <Button onClick={onNext} disabled={pending.length > 0} className="wq-press">
                 Configure service →
               </Button>
             </div>
