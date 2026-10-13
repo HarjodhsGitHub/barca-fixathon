@@ -100,7 +100,9 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
     toastTimer.current = setTimeout(() => setToast(null), 4000);
   }
   /** Move to a step and bring its top into view. */
+  const [dir, setDir] = useState<1 | -1>(1);
   function goTo(next: StepId) {
+    setDir(STEPS.findIndex((x) => x.id === next) >= STEPS.findIndex((x) => x.id === step) ? 1 : -1);
     setStep(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -205,8 +207,10 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
     }
   }
 
-  async function onAccept() {
-    if (!photo || !vision || !stream || !config || !effectiveChosen) return;
+  async function onAccept(routeOverride?: RouteId) {
+    const route = routeOverride ?? effectiveChosen;
+    if (!photo || !vision || !stream || !config || !route) return;
+    if (routeOverride) setChosen(routeOverride);
     setAccepting(true);
     setAcceptError(null);
     try {
@@ -218,7 +222,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
           vision: { mode: vision.mode, model: vision.model, ms: vision.ms, result: vision.result },
           stream,
           config: { ...config, distanceKm: { ...defaultDistances(stream.material), ...config.distanceKm } },
-          chosenRoute: effectiveChosen,
+          chosenRoute: route,
           configurationId,
           confirmedFields: [...confirmed],
           photo: { dataUrl: photo.dataUrl, filename: photo.filename },
@@ -271,13 +275,20 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
               <span className="font-mono text-[11px]">{String(i + 1).padStart(2, "0")}</span>
               {s.label}
             </button>
-            {i < STEPS.length - 1 && <span className="h-px w-6 bg-line-2" />}
+            {i < STEPS.length - 1 && (
+              <span className="relative h-px w-8 overflow-hidden bg-line-2">
+                <span
+                  className="absolute inset-0 origin-left bg-ink transition-transform duration-500 ease-out-expo"
+                  style={{ transform: `scaleX(${i < stepIndex ? 1 : 0})` }}
+                />
+              </span>
+            )}
           </li>
         ))}
       </ol>
 
       <div className={cx("grid gap-8", step !== "photo" && "lg:grid-cols-[minmax(0,1fr)_280px]")}>
-        <main key={`${step}${analysing ? "-busy" : ""}`} className="wq-fade-in min-w-0">
+        <main key={`${step}${analysing ? "-busy" : ""}`} className={cx("min-w-0", dir === 1 ? "wq-step-fwd" : "wq-step-back")}>
           {step === "photo" &&
             (analysing && photo ? (
               <Analysing dataUrl={photo.dataUrl} provider={info.vision.provider} label={info.vision.label} progress={progress} />
@@ -386,6 +397,16 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
                   </div>
                 );
               })()}
+              <button
+                type="button"
+                onClick={() => setChatOpen(true)}
+                className="wq-press hidden w-full items-center justify-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-medium text-white hover:bg-ink/85 lg:flex"
+              >
+                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
+                  <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H9l-4 3v-3h0A2 2 0 0 1 3 12z" strokeLinejoin="round" />
+                </svg>
+                Ask Selinsight
+              </button>
               <div className="border-t border-line pt-3 text-xs text-muted">
                 {availability?.source === "sailsrep" ? (
                   <Pill tone="good">Rules: live CPQ engine</Pill>

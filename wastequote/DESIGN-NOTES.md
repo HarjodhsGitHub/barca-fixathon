@@ -1,5 +1,12 @@
 # Selinsight wizard: design notes
 
+> **Applied 14 Oct 2026.** Done: tokens and motion alignment, chat panel offset, P1 (status-weighted compare
+> cards), P2 (verdict strip with its own accept), P3 (one-pass price lines), P4 (direction-tinted number
+> changes, count-up on the recommended card), P5 (directional step transitions, filling stepper), P6, P8
+> (continue jumps to the first field to check, meter refinements, sentence case), P9, P10 (launcher in the side
+> panel on large screens, icon-only on phones), P11, most of P12. Skipped for the demo: P7.1 shared-element View
+> Transitions (uneven browser support) and P7.2 dark drop zone.
+
 Fixes for the files the design pass did not touch: `components/wizard/*.tsx`, `components/wizard/motion.css`
 and `components/ui.tsx`. Reviewed live on 14 Oct 2026 at 1440x900 and 390x844 with the "Builders' skip" demo
 photo, at high and medium contamination. Priorities run P1 (most visible at the demo) to P12.

@@ -39,13 +39,16 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
 export function ConfidenceMeter({ value, threshold }: { value: number; threshold: number }) {
   const low = value < threshold;
   return (
-    <span className="inline-flex items-center gap-1.5" title={`Model confidence ${Math.round(value * 100)}%`}>
-      <span className="relative h-1.5 w-14 overflow-hidden rounded-full bg-sunken">
+    <span
+      className="inline-flex items-center gap-1.5"
+      title={`Model confidence ${Math.round(value * 100)}%. Fields under ${Math.round(threshold * 100)}% need a check.`}
+    >
+      <span className="relative h-1.5 w-20 overflow-hidden rounded-full bg-sunken">
         <span
-          className={cx("absolute inset-y-0 left-0 rounded-full", low ? "bg-flag" : "bg-circular")}
+          className={cx("absolute inset-y-0 left-0 origin-left animate-grow-x rounded-full", low ? "bg-flag" : "bg-circular")}
           style={{ width: `${Math.max(4, value * 100)}%` }}
         />
-        <span className="absolute inset-y-0 w-px bg-ink/40" style={{ left: `${threshold * 100}%` }} />
+        <span className="absolute inset-y-0 w-0.5 bg-ink" style={{ left: `${threshold * 100}%` }} />
       </span>
       <span className={cx("font-mono text-[11px] tabular", low ? "text-flag" : "text-ink-2")}>{Math.round(value * 100)}%</span>
     </span>
@@ -84,14 +87,11 @@ export function Citations({ items }: { items: Citation[] }) {
   );
 }
 
-export function SectionTitle({ step, title, hint }: { step?: string; title: string; hint?: ReactNode }) {
+export function SectionTitle({ title, hint }: { step?: string; title: string; hint?: ReactNode }) {
   return (
-    <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-      <div>
-        {step && <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{step}</div>}
-        <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-      </div>
-      {hint && <div className="text-xs text-muted sm:text-right">{hint}</div>}
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.025em] sm:text-[32px]">{title}</h2>
+      {hint && <div className="hidden shrink-0 text-right text-[12px] text-muted sm:block">{hint}</div>}
     </div>
   );
 }

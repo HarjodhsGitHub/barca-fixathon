@@ -157,17 +157,17 @@ export function ChatPanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-ink px-4 py-3 sm:bottom-5 sm:right-5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-ink/85"
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-ink p-0 sm:bottom-5 sm:right-5 sm:h-auto sm:w-auto sm:px-4 sm:py-3 lg:hidden text-sm font-medium text-white shadow-lg transition-colors hover:bg-ink/85"
       >
         <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
           <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H9l-4 3v-3h0A2 2 0 0 1 3 12z" strokeLinejoin="round" />
         </svg>
-        Ask Selinsight
+        <span className="sr-only sm:not-sr-only">Ask Selinsight</span>
       </button>
       )}
 
       {open && (
-        <aside className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col border-l border-line bg-surface shadow-2xl sm:left-auto sm:w-[420px]">
+        <aside className="fixed inset-x-0 bottom-0 top-16 z-30 flex flex-col border-l border-line bg-surface shadow-2xl sm:left-auto sm:w-[420px]">
           <div className="relative border-b border-line px-4 py-3 pr-12">
             <button
               type="button"

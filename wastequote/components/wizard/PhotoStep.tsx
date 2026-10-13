@@ -54,8 +54,7 @@ export function PhotoStep({
       <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col justify-between gap-8 py-2">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">New quote</div>
-            <h1 className="mt-3 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
+            <h1 className=" text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
               What are we
               <br />
               quoting today?
@@ -259,8 +258,8 @@ export function Analysing({
             <Bracket className="bottom-4 left-4 rounded-bl-lg border-b-2 border-l-2 sm:bottom-6 sm:left-6" />
             <Bracket className="bottom-4 right-4 rounded-br-lg border-b-2 border-r-2 sm:bottom-6 sm:right-6" />
 
-            <div className="absolute left-6 top-6 hidden font-mono text-[10px] uppercase tracking-[0.2em] text-white/60 sm:left-9 sm:top-9 sm:block">
-              {provider === "stub" ? "Recorded result" : label} · reading
+            <div className="absolute left-6 top-6 hidden text-[12px] text-white/70 sm:left-9 sm:top-9 sm:block">
+              {provider === "stub" ? "Recorded result" : `${label} is reading`}
             </div>
             <div className="absolute right-6 top-6 font-mono text-[11px] tabular text-white/70 sm:right-9 sm:top-9">
               {String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}
@@ -280,7 +279,7 @@ export function Analysing({
 
           {/* what the AI has filled in so far */}
           <div className="relative border-t border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl lg:border-l lg:border-t-0">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">Configuration</div>
+            <div className="text-[12px] text-white/55">Configuration</div>
             <div className="mt-1 text-lg font-semibold text-white">
               {done === 0 ? "Looking at the photo" : done < FIELDS.length ? "Filling in the quote" : "Ready"}
             </div>
@@ -299,7 +298,7 @@ export function Analysing({
                     )}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-[11px] uppercase tracking-wider text-white/50">{f.key}</span>
+                      <span className="text-[12px] text-white/55">{f.key}</span>
                       {h ? (
                         <svg viewBox="0 0 16 16" className="h-4 w-4 text-[#7fd6a8]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                           <path d="M3.5 8.5l3 3 6-7" strokeLinecap="round" strokeLinejoin="round" />

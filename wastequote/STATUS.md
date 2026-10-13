@@ -54,12 +54,14 @@ The demo works end to end: photo → AI classification with confidence flags →
     - Vision streams progress: a dark viewfinder stage with a scan beam, the AI's live status, and the configuration filling in field by field.
     - Step transitions, staggered route cards, prices that glide to new values, a ring when the circular route is picked, toasts when the AI changes the quote.
     - All motion respects prefers-reduced-motion.
-6. Docs: README (one command), DEMO (60 s script), this file. Design pass on the shell, home, quote page and price book by a parallel agent.
+6. Docs: README (one command), DEMO (60 s script), this file.
+7. Design pass:
+   - A parallel agent redesigned the shell, home, quote page and price book.
+   - Its wizard notes are applied (see the top of DESIGN-NOTES.md): status-weighted route cards, a verdict strip with its own Accept button, direction-tinted price changes, directional step transitions.
 
 ## Next (if there is time)
 
-- Apply the remaining wizard design fixes from `DESIGN-NOTES.md`.
-- Mobile pass at 390 px on the compare step.
+- The two skipped design items: shared-element photo transition and the dark drop zone.
 - Prices as a Sailsrep price list: the API supports formulas over numeric inputs, so per-tonne pricing could move into the tenant instead of `lib/engine`. The import format for formulas is not documented in what we have, so it stays local for now.
 - Revoke the demo API key after the event (Sailsrep Admin `revoke_api_key`, key hint `ss_test_…e34f`).
 

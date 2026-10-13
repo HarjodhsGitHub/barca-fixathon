@@ -1,5 +1,5 @@
 "use client";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ewcCatalogue, materialById, materials } from "@/lib/data";
 import { CONTAMINATION_LEVELS, type Contamination, type MaterialId } from "@/lib/types";
 import { CONFIDENCE_THRESHOLD, type VisionResponse } from "@/lib/vision/schema";
@@ -17,6 +17,7 @@ const STREAM_COLOR: Record<string, string> = {
 };
 
 function Field({
+  pulse,
   label,
   confidence,
   aiValue,
@@ -38,13 +39,16 @@ function Field({
   hint?: ReactNode;
   /** The AI's reasoning, folded away until asked for. */
   why?: ReactNode;
+  pulse?: boolean;
 }) {
   const flagged = confidence < CONFIDENCE_THRESHOLD;
   const needs = flagged && !edited && !confirmed;
   return (
     <div
+      id={`field-${label}`}
       className={cx(
-        "rounded-xl border bg-surface p-4 transition-[border-color,box-shadow] duration-300",
+        "scroll-mt-28 rounded-xl border bg-surface p-4 transition-[border-color,box-shadow] duration-300 ease-out-quart",
+        pulse && "wq-ring-flag",
         needs ? "border-flag/50 shadow-[inset_3px_0_0_var(--color-flag)]" : "border-line",
       )}
     >
@@ -133,6 +137,13 @@ export function ReviewStep({
     { key: "Volume (m³ per week)", conf: r.volume_m3.confidence, edited: stream.volumePerWeekM3 !== Math.max(0.1, Math.round(r.volume_m3.value * 10) / 10) },
     { key: "EWC code", conf: r.ewc_code.confidence, edited: stream.ewc !== r.ewc_code.value },
   ];
+  const [pulse, setPulse] = useState<{ key: FieldKey; n: number } | null>(null);
+  function next() {
+    if (!pending.length) return onNext();
+    const key = pending[0].key;
+    document.getElementById(`field-${key}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    setPulse((p) => ({ key, n: (p?.n ?? 0) + 1 }));
+  }
   const pending = fields.filter((f) => f.conf < CONFIDENCE_THRESHOLD && !f.edited && !confirmed.has(f.key));
   const f = (k: FieldKey) => fields.find((x) => x.key === k)!;
 
@@ -172,7 +183,7 @@ export function ReviewStep({
               <p className="text-[15px] leading-relaxed text-ink">{r.summary}</p>
               {r.materials_seen.length > 0 && (
                 <div>
-                  <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-muted">Materials seen</div>
+                  <div className="mb-1.5 text-[12px] text-muted">Materials seen</div>
                   <div className="flex h-3 gap-0.5 overflow-hidden rounded-full">
                     {r.materials_seen.map((m, i) => (
                       <div
@@ -200,7 +211,7 @@ export function ReviewStep({
           </Card>
           {r.hazard_flags.length > 0 && (
             <div className="rounded-xl border border-danger/25 bg-danger-soft px-4 py-3">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-danger">Check before collection</div>
+              <div className="mb-1 text-sm font-semibold text-danger">Check before collection</div>
               <ul className="list-disc space-y-1 pl-4 text-sm text-ink">
                 {r.hazard_flags.map((h, i) => (
                   <li key={i}>{h}</li>
@@ -210,7 +221,7 @@ export function ReviewStep({
           )}
           {r.segregation_tip && (
             <div className="rounded-xl border border-circular/25 bg-circular-soft px-4 py-3">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-circular">Circular opportunity</div>
+              <div className="mb-1 text-sm font-semibold text-circular">Circular opportunity</div>
               <p className="text-sm text-ink">{r.segregation_tip}</p>
             </div>
           )}
@@ -218,6 +229,8 @@ export function ReviewStep({
 
         <div className="wq-stagger space-y-3">
           <Field
+            key={pulse?.key === "Material stream" ? `p${pulse.n}` : "Material stream"}
+            pulse={pulse?.key === "Material stream"}
             label="Material stream"
             confidence={f("Material stream").conf}
             aiValue={aiMaterial.name}
@@ -240,6 +253,8 @@ export function ReviewStep({
           </Field>
 
           <Field
+            key={pulse?.key === "Contamination" ? `p${pulse.n}` : "Contamination"}
+            pulse={pulse?.key === "Contamination"}
             label="Contamination"
             confidence={f("Contamination").conf}
             aiValue={r.contamination.value}
@@ -267,6 +282,8 @@ export function ReviewStep({
           </Field>
 
           <Field
+            key={pulse?.key === "Volume (m³ per week)" ? `p${pulse.n}` : "Volume (m³ per week)"}
+            pulse={pulse?.key === "Volume (m³ per week)"}
             label="Volume (m³ per week)"
             confidence={f("Volume (m³ per week)").conf}
             aiValue={`${r.volume_m3.value} m³`}
@@ -290,6 +307,8 @@ export function ReviewStep({
           </Field>
 
           <Field
+            key={pulse?.key === "EWC code" ? `p${pulse.n}` : "EWC code"}
+            pulse={pulse?.key === "EWC code"}
             label="EWC code"
             confidence={f("EWC code").conf}
             aiValue={r.ewc_code.value}
@@ -317,12 +336,21 @@ export function ReviewStep({
               ← New photo
             </Button>
             <div className="flex items-center gap-3">
-              <span className={cx("text-xs", pending.length ? "text-flag" : "text-circular")}>
-                {pending.length
-                  ? `${pending.length} to confirm`
-                  : "All fields checked"}
+              <span
+                className={cx(
+                  "rounded-full px-2.5 py-1 text-xs font-medium",
+                  pending.length ? "bg-flag-soft text-flag" : "bg-circular-soft text-circular",
+                )}
+              >
+                {pending.length ? (
+                  <>
+                    <span className="font-mono">{pending.length}</span> field{pending.length > 1 ? "s" : ""} to check
+                  </>
+                ) : (
+                  "All checked"
+                )}
               </span>
-              <Button onClick={onNext} disabled={pending.length > 0} className="wq-press">
+              <Button onClick={next} className="wq-press">
                 Configure service →
               </Button>
             </div>
