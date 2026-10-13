@@ -153,7 +153,7 @@ export function normalizeVision(w: VisionWire): VisionResult {
   });
 }
 
-export type VisionMode = "claude" | "stub" | "stub_fallback";
+export type VisionMode = "sailsrep" | "claude" | "stub" | "stub_fallback";
 
 export interface VisionResponse {
   mode: VisionMode;
@@ -162,6 +162,10 @@ export interface VisionResponse {
   result: VisionResult;
   /** Why the stub was used, when it was. */
   note: string | null;
+  /** Sailsrep configuration the photo was classified on (the quote keeps using it). */
+  configurationId?: string | null;
+  /** The Sailsrep assistant's reasons for the selections it made. */
+  agentNotes?: string[];
 }
 
 export function buildSystemPrompt() {

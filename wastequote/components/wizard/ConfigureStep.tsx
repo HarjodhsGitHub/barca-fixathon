@@ -3,6 +3,7 @@ import { containers, routes, service, treatments } from "@/lib/data";
 import { computeCapacity, suggestContainer } from "@/lib/engine";
 import { num, pct, tonnes } from "@/lib/format";
 import type { RouteId, ServiceConfig } from "@/lib/types";
+import { Markdown } from "../Markdown";
 import { Button, Card, Pill, SampleBadge, SectionTitle, Segmented, cx } from "../ui";
 import { containerStatus, routeStatus, type Availability, type Customer, type StreamState } from "./shared";
 
@@ -121,6 +122,16 @@ export function ConfigureStep({
                       Not offered for this stream
                       {availability?.source === "sailsrep" && st.reason ? <span className="block text-muted/80">Sailsrep: {st.reason}</span> : null}
                     </div>
+                  )}
+                  {!blocked && availability?.source === "sailsrep" && availability.specs.containers[c.id]?.longDescription && (
+                    <details className="mt-1.5 text-[11px] text-ink-2" onClick={(e) => e.stopPropagation()}>
+                      <summary className="text-muted hover:text-ink">Specs</summary>
+                      <Markdown
+                        text={availability.specs.containers[c.id].longDescription!}
+                        dropHeading={c.name}
+                        className="mt-1 space-y-1 leading-snug"
+                      />
+                    </details>
                   )}
                   {best?.containerId === c.id && !blocked && (
                     <span className="absolute right-2 top-2 rounded bg-circular-soft px-1.5 py-0.5 text-[10px] font-medium text-circular">best fit</span>

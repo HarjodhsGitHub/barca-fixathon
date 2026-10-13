@@ -43,13 +43,16 @@ export async function POST(request: Request) {
   };
   if (status.configured) {
     try {
-      const v = await validateConfiguration({
-        material: sub.stream.material,
-        contamination: sub.stream.contamination,
-        route: sub.chosenRoute,
-        containerId: sub.config.containerId,
-        frequencyId: sub.config.frequencyId,
-      });
+      const v = await validateConfiguration(
+        {
+          material: sub.stream.material,
+          contamination: sub.stream.contamination,
+          route: sub.chosenRoute,
+          containerId: sub.config.containerId,
+          frequencyId: sub.config.frequencyId,
+        },
+        sub.configurationId,
+      );
       sailsrep = { ...sailsrep, validated: true, configurationId: v.configurationId, catalogVersion: v.catalogVersion };
     } catch (e) {
       if (e instanceof SailsrepConflict) {

@@ -107,9 +107,9 @@ export function ReviewStep({
         step="Step 2"
         title="Check what the AI saw"
         hint={
-          vision.mode === "claude" ? (
+          vision.mode === "claude" || vision.mode === "sailsrep" ? (
             <Pill tone="good">
-              Claude vision · {vision.model} · {(vision.ms / 1000).toFixed(1)} s
+              {vision.mode === "sailsrep" ? "Sailsrep assistant" : `Claude vision · ${vision.model}`} · {(vision.ms / 1000).toFixed(1)} s
             </Pill>
           ) : (
             <span title={vision.note ?? undefined}>
@@ -118,7 +118,13 @@ export function ReviewStep({
           )
         }
       />
-      {vision.note && vision.mode !== "claude" && (
+      {vision.mode === "sailsrep" && vision.agentNotes && vision.agentNotes.length > 0 && (
+        <div className="mb-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-xs text-ink-2">
+          <span className="font-semibold text-ink">Set in the Sailsrep configuration by the assistant:</span>{" "}
+          {vision.agentNotes.join(" ")}
+        </div>
+      )}
+      {vision.note && vision.mode !== "claude" && vision.mode !== "sailsrep" && (
         <div className="mb-4 rounded-lg border border-flag/30 bg-flag-soft px-4 py-2.5 text-xs text-flag">{vision.note}</div>
       )}
 

@@ -9,6 +9,12 @@ export interface OptionStatus {
   reason: string | null;
 }
 
+export interface Spec {
+  name: string;
+  description: string | null;
+  longDescription: string | null;
+}
+
 export type Availability =
   | {
       source: "sailsrep";
@@ -19,6 +25,7 @@ export type Availability =
       routes: Partial<Record<RouteId, OptionStatus>>;
       containers: Record<string, OptionStatus>;
       frequencies: Record<string, OptionStatus>;
+      specs: { routes: Partial<Record<RouteId, Spec>>; containers: Record<string, Spec> };
       listPrice: { total: number; currency: string } | null;
     }
   | { source: "local"; reason: string };
@@ -50,7 +57,7 @@ export type FieldKey = "Material stream" | "Contamination" | "Volume (m³ per we
 
 export interface AppInfo {
   demoPhotos: string[];
-  vision: { live: boolean; model: string };
+  vision: { provider: "sailsrep" | "claude" | "stub"; label: string };
   sailsrep: { configured: boolean; tenant: string | null; reason: string | null };
   customer: Customer;
 }

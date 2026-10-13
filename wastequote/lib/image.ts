@@ -10,7 +10,8 @@ export interface PreparedImage {
   height: number;
 }
 
-const MAX_EDGE = 1568;
+// Within Claude's recommended 1568 px, and small enough for a quick Sailsrep chat turn.
+const MAX_EDGE = 1280;
 
 async function sha256Hex(buf: ArrayBuffer) {
   const digest = await crypto.subtle.digest("SHA-256", buf);

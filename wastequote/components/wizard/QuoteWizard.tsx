@@ -8,6 +8,7 @@ import { prepareImage } from "@/lib/image";
 import type { RouteId, ServiceConfig } from "@/lib/types";
 import type { VisionResponse } from "@/lib/vision/schema";
 import { Pill, SampleBadge, cx } from "../ui";
+import { ChatPanel } from "./ChatPanel";
 import { CompareStep } from "./CompareStep";
 import { ConfigureStep } from "./ConfigureStep";
 import { Analysing, PhotoStep } from "./PhotoStep";
@@ -46,61 +47,72 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
   const [confirmed, setConfirmedSet] = useState<Set<FieldKey>>(new Set());
   const [config, setConfig] = useState<ServiceConfig | null>(null);
   const [customer, setCustomer] = useState(info.customer);
-  const [availability, setAvailability] = useState<Availability | null>(null);
-  const [chosen, setChosen] = useState<RouteId | null>(null);
+    const [chosen, setChosen] = useState<RouteId | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptError, setAcceptError] = useState<string | null>(null);
+  // The Sailsrep configuration this quote lives on: created by the vision
+  // step (or the first availability call) and reused by chat and validation.
+  const [configurationId, setConfigurationId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Ask Sailsrep which routes, containers and frequencies are open whenever
-  // the two answers that drive eligibility change.
+  // the two answers that drive eligibility change. The answer is stored with
+  // the key it was asked for, so a stale answer is never shown.
   const material = stream?.material;
   const contamination = stream?.contamination;
+  const avKey = material && contamination ? `${material}|${contamination}` : null;
+  const [avState, setAvState] = useState<{ key: string; data: Availability } | null>(null);
+  const availability = avState && avState.key === avKey ? avState.data : null;
   useEffect(() => {
-    if (!material || !contamination) return;
+    if (!material || !contamination || !avKey) return;
     let stale = false;
-    setAvailability(null);
     fetch("/api/sailsrep/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ material, contamination }),
+      body: JSON.stringify({ material, contamination, configurationId }),
     })
       .then((r) => r.json())
       .then((a: Availability) => {
-        if (!stale) setAvailability(a);
+        if (stale) return;
+        setAvState({ key: avKey, data: a });
+        if (a.source === "sailsrep") setConfigurationId(a.configurationId);
       })
       .catch((e) => {
-        if (!stale) setAvailability({ source: "local", reason: String(e) });
+        if (!stale) setAvState({ key: avKey, data: { source: "local", reason: String(e) } });
       });
     return () => {
       stale = true;
     };
-  }, [material, contamination]);
-
-  // Keep the configuration valid when the stream changes: facility distances
-  // follow the material, and a container that is no longer offered is replaced.
-  useEffect(() => {
-    if (!material) return;
-    setConfig((c) => (c ? { ...c, distanceKm: defaultDistances(material) } : c));
-  }, [material]);
-  useEffect(() => {
-    if (!stream) return;
-    setConfig((c) => {
-      if (!c) return c;
-      const ok = containerStatus(availability, stream.material, c.containerId).status !== "blocked";
-      return ok ? c : defaultConfig(stream, c.frequencyId);
-    });
+    // configurationId is read, not watched: availability follows the stream facts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream?.material, availability]);
+  }, [avKey]);
+
+  /** Change the stream; when the material changes, distances and an unoffered container follow. */
+  function updateStream(next: StreamState) {
+    const prev = stream;
+    setStream(next);
+    if (prev && prev.material !== next.material) {
+      setConfig((c) => {
+        if (!c) return c;
+        const ok = containerStatus(null, next.material, c.containerId).status !== "blocked";
+        return ok ? { ...c, distanceKm: defaultDistances(next.material) } : defaultConfig(next, c.frequencyId);
+      });
+    }
+  }
 
   const ev = useMemo(() => (stream && config ? evaluate(stream, config) : null), [stream, config]);
 
-  // Preselect the circular route; drop a choice that has become ineligible.
-  useEffect(() => {
-    if (!ev || !stream) return;
-    const open = (r: RouteId) =>
-      routeStatus(availability, stream.material, stream.contamination, r).open && !!ev.routes.find((x) => x.route === r)?.eligible;
-    if (!chosen || !open(chosen)) setChosen(ev.recommendedRoute && open(ev.recommendedRoute) ? ev.recommendedRoute : (ev.routes.find((r) => open(r.route))?.route ?? null));
-  }, [ev, availability, stream, chosen]);
+  // The route on screen: the salesperson's pick while it stays open, else the
+  // circular recommendation, else the first open route.
+  const isOpen = (r: RouteId) =>
+    !!ev && !!stream && routeStatus(availability, stream.material, stream.contamination, r).open && !!ev.routes.find((x) => x.route === r)?.eligible;
+  const effectiveChosen: RouteId | null = !ev
+    ? null
+    : chosen && isOpen(chosen)
+      ? chosen
+      : ev.recommendedRoute && isOpen(ev.recommendedRoute)
+        ? ev.recommendedRoute
+        : (ev.routes.find((r) => isOpen(r.route))?.route ?? null);
 
   async function onPick(file: Blob, filename: string) {
     setVisionError(null);
@@ -117,6 +129,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
       if (!res.ok) throw new Error(v.error ?? `Vision failed (${res.status})`);
       const s = initialStream(v);
       setVision(v);
+      setConfigurationId(v.configurationId ?? null);
       setStream(s);
       setConfirmedSet(new Set());
       setConfig(defaultConfig(s));
@@ -131,7 +144,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
   }
 
   async function onAccept() {
-    if (!photo || !vision || !stream || !config || !chosen) return;
+    if (!photo || !vision || !stream || !config || !effectiveChosen) return;
     setAccepting(true);
     setAcceptError(null);
     try {
@@ -143,7 +156,8 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
           vision: { mode: vision.mode, model: vision.model, ms: vision.ms, result: vision.result },
           stream,
           config: { ...config, distanceKm: { ...defaultDistances(stream.material), ...config.distanceKm } },
-          chosenRoute: chosen,
+          chosenRoute: effectiveChosen,
+          configurationId,
           confirmedFields: [...confirmed],
           photo: { dataUrl: photo.dataUrl, filename: photo.filename },
         }),
@@ -190,7 +204,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
         <main className="min-w-0">
           {step === "photo" &&
             (analysing && photo ? (
-              <Analysing dataUrl={photo.dataUrl} live={info.vision.live} />
+              <Analysing dataUrl={photo.dataUrl} provider={info.vision.provider} label={info.vision.label} />
             ) : (
               <>
                 {visionError && <div className="mb-4 rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger">{visionError}</div>}
@@ -202,7 +216,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
               photo={photo}
               vision={vision}
               stream={stream}
-              setStream={setStream}
+              setStream={updateStream}
               confirmed={confirmed}
               setConfirmed={(k, v) =>
                 setConfirmedSet((prev) => {
@@ -232,7 +246,7 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
             <CompareStep
               ev={ev}
               availability={availability}
-              chosen={chosen}
+              chosen={effectiveChosen}
               setChosen={setChosen}
               onBack={() => setStep("configure")}
               onAccept={onAccept}
@@ -257,8 +271,8 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
                 <Row k="Container" v={`${config.containerCount} × ${containerById(config.containerId)?.name}`} />
                 <Row k="Pickups" v={frequencyById(config.frequencyId)?.name} />
               </dl>
-              {chosen && (() => {
-                const r = ev.routes.find((x) => x.route === chosen);
+              {effectiveChosen && (() => {
+                const r = ev.routes.find((x) => x.route === effectiveChosen);
                 if (!r?.price || !r.co2) return null;
                 return (
                   <div className="border-t border-line pt-3">
@@ -283,6 +297,53 @@ export function QuoteWizard({ info }: { info: AppInfo }) {
           </aside>
         )}
       </div>
+
+      {step !== "photo" && stream && config && (
+        <ChatPanel
+          open={chatOpen}
+          setOpen={setChatOpen}
+          configurationId={configurationId}
+          available={info.sailsrep.configured && availability?.source !== "local"}
+          unavailableReason={
+            !info.sailsrep.configured
+              ? `Sailsrep is not configured (${info.sailsrep.reason}).`
+              : availability?.source === "local"
+                ? availability.reason
+                : null
+          }
+          selections={{
+            material: stream.material,
+            contamination: stream.contamination,
+            containerId: config.containerId,
+            frequencyId: config.frequencyId,
+            route: effectiveChosen ?? undefined,
+          }}
+          onSelections={(next) => {
+            if (stream && (next.material || next.contamination)) {
+              updateStream({ ...stream, material: next.material ?? stream.material, contamination: next.contamination ?? stream.contamination });
+            }
+            if (next.containerId || next.frequencyId) {
+              setConfig((c) => (c ? { ...c, containerId: next.containerId ?? c.containerId, frequencyId: next.frequencyId ?? c.frequencyId } : c));
+            }
+            if (next.route) setChosen(next.route);
+          }}
+          suggestions={
+            step === "review"
+              ? [
+                  "What in the photo decides the contamination level?",
+                  "Is there anything hazardous in this photo?",
+                  "Which EWC code fits best, and why?",
+                ]
+              : step === "configure"
+                ? ["Which container suits this stream and volume?", "What does each container hold and weigh?", "How often should we collect?"]
+                : [
+                    "Why are some routes not allowed for this stream?",
+                    "What does the recycling route accept?",
+                    "How could the customer make this stream recyclable?",
+                  ]
+          }
+        />
+      )}
     </div>
   );
 }

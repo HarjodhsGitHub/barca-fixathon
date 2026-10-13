@@ -1,7 +1,9 @@
 "use client";
 import type { Evaluation, RouteId, RouteResult } from "@/lib/types";
 import { eur, eur2, int, signedKg } from "@/lib/format";
+import { Markdown } from "../Markdown";
 import { Button, Citations, Pill, ROUTE_COLOR, SampleBadge, SectionTitle, cx } from "../ui";
+import type { Spec } from "./shared";
 import { routeStatus, type Availability } from "./shared";
 
 const TAG_LABEL = { circular_choice: "Circular choice", lowest_cost: "Lowest cost", lowest_co2: "Lowest CO₂e" } as const;
@@ -56,6 +58,7 @@ export function DecisionStrip({ ev, open }: { ev: Evaluation; open: (r: RouteRes
 
 function RouteCard({
   r,
+  spec,
   open,
   sailsrepReason,
   mismatch,
@@ -64,6 +67,7 @@ function RouteCard({
   tonnesPerMonth,
 }: {
   r: RouteResult;
+  spec?: Spec;
   open: boolean;
   sailsrepReason: string | null;
   mismatch: boolean;
@@ -148,6 +152,13 @@ function RouteCard({
                 </li>
               ))}
             </ul>
+
+            {spec?.longDescription && (
+              <details className="mt-3 text-[11px]">
+                <summary className="text-muted hover:text-ink">Specs from Sailsrep CPQ</summary>
+                <Markdown text={spec.longDescription} dropHeading={r.routeName} className="mt-1 space-y-1 leading-snug text-ink-2" />
+              </details>
+            )}
 
             {notes.length > 0 && (
               <ul className="mt-3 space-y-1">
@@ -246,6 +257,7 @@ export function CompareStep({
             <RouteCard
               key={r.route}
               r={r}
+              spec={availability?.source === "sailsrep" ? availability.specs.routes[r.route] : undefined}
               open={isOpen(r)}
               sailsrepReason={s.sailsrep?.status === "blocked" ? s.sailsrep.reason : null}
               mismatch={s.mismatch}

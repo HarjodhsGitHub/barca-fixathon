@@ -4,7 +4,11 @@ import { CONTAMINATION_LEVELS, MATERIAL_IDS } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const Body = z.object({ material: z.enum(MATERIAL_IDS), contamination: z.enum(CONTAMINATION_LEVELS) });
+const Body = z.object({
+  material: z.enum(MATERIAL_IDS),
+  contamination: z.enum(CONTAMINATION_LEVELS),
+  configurationId: z.string().nullish(),
+});
 
 export async function POST(request: Request) {
   const parsed = Body.safeParse(await request.json().catch(() => null));
@@ -14,7 +18,7 @@ export async function POST(request: Request) {
     return Response.json({ source: "local", reason: `Sailsrep not used: ${status.reason}.` });
   }
   try {
-    return Response.json(await getAvailability(parsed.data.material, parsed.data.contamination));
+    return Response.json(await getAvailability(parsed.data.material, parsed.data.contamination, parsed.data.configurationId));
   } catch (e) {
     return Response.json({
       source: "local",

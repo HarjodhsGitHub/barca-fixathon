@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, Pill, SectionTitle, cx } from "../ui";
 import type { AppInfo } from "./shared";
 
@@ -34,10 +34,10 @@ export function PhotoStep({
         step="Step 1"
         title="Photograph the waste stream"
         hint={
-          info.vision.live ? (
-            <Pill tone="good">Claude vision live · {info.vision.model}</Pill>
+          info.vision.provider === "stub" ? (
+            <Pill tone="flag">Vision stub · recorded demo results only</Pill>
           ) : (
-            <Pill tone="flag">Vision stub · no API key</Pill>
+            <Pill tone="good">Vision: {info.vision.label}</Pill>
           )
         }
       />
@@ -65,7 +65,7 @@ export function PhotoStep({
         <div>
           <p className="text-base font-medium">Drop a photo of a bin, skip or pile</p>
           <p className="mt-1 text-sm text-muted">
-            Claude suggests the material, contamination, volume and EWC code. You confirm every field.
+            AI vision suggests the material, contamination, volume and EWC code. You confirm every field.
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
@@ -146,10 +146,25 @@ export function PhotoStep({
   );
 }
 
-export function Analysing({ dataUrl, live }: { dataUrl: string; live: boolean }) {
+export function Analysing({ dataUrl, provider, label }: { dataUrl: string; provider: AppInfo["vision"]["provider"]; label: string }) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSeconds((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
   return (
     <div>
-      <SectionTitle step="Step 1" title={live ? "Claude is reading the photo…" : "Loading the recorded classification…"} />
+      <SectionTitle
+        step="Step 1"
+        title={provider === "stub" ? "Loading the recorded classification…" : `${label} is reading the photo…`}
+        hint={
+          provider === "sailsrep" ? (
+            <span className="font-mono tabular">{seconds} s · usually 20-40 s, and it fills in the Sailsrep configuration as it goes</span>
+          ) : (
+            <span className="font-mono tabular">{seconds} s</span>
+          )
+        }
+      />
       <div className="relative mx-auto max-w-3xl overflow-hidden rounded-xl border border-line bg-ink">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={dataUrl} alt="Uploaded waste" className="max-h-[60vh] w-full object-contain opacity-80" />

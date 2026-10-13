@@ -16,7 +16,7 @@ export const QuoteSubmission = z.object({
     nace: z.string().default(""),
   }),
   vision: z.object({
-    mode: z.enum(["claude", "stub", "stub_fallback"]),
+    mode: z.enum(["sailsrep", "claude", "stub", "stub_fallback"]),
     model: z.string().nullable(),
     ms: z.number(),
     result: VisionSchema,
@@ -34,6 +34,8 @@ export const QuoteSubmission = z.object({
     distanceKm: z.record(z.enum(ROUTE_IDS), z.number().nonnegative()),
   }),
   chosenRoute: z.enum(ROUTE_IDS),
+  /** The Sailsrep configuration this quote was built on (vision, chat and validation share it). */
+  configurationId: z.string().nullish(),
   /** Fields the salesperson confirmed or changed after the vision step. */
   confirmedFields: z.array(z.string()).default([]),
   photo: z.object({ dataUrl: z.string().startsWith("data:image/").max(8_000_000), filename: z.string().nullish() }),
