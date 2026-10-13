@@ -1,14 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Card, Pill, SectionTitle, cx } from "../ui";
+import { Pill, cx } from "../ui";
 import type { AppInfo } from "./shared";
 
-const DEMO_LABELS: Record<string, string> = {
-  "01-cardboard.jpg": "Cardboard in a roll-off",
-  "02-mixed-construction.jpg": "Builders' skip, mixed site waste",
-  "03-wood.jpg": "Pallets and wood scrap",
-  "04-scrap-metal.jpg": "Mixed scrap metal",
+const DEMO: Record<string, { label: string; tag: string }> = {
+  "01-cardboard.jpg": { label: "Cardboard in a roll-off", tag: "Factory packaging" },
+  "02-mixed-construction.jpg": { label: "Builders' skip", tag: "Construction site" },
+  "03-wood.jpg": { label: "Pallets and wood scrap", tag: "Distribution yard" },
+  "04-scrap-metal.jpg": { label: "Mixed scrap metal", tag: "Recycling centre" },
 };
+
+const HOW = [
+  { n: "01", t: "Photo", d: "Snap the bin, skip or pile on site." },
+  { n: "02", t: "AI fills the quote", d: "Material, contamination, volume, EWC code. You confirm." },
+  { n: "03", t: "Every route priced", d: "Reuse to landfill, cost and CO₂e side by side." },
+];
 
 export function PhotoStep({
   info,
@@ -28,119 +34,153 @@ export function PhotoStep({
     onPick(await res.blob(), name);
   }
 
+  const fileInput = (ref: React.RefObject<HTMLInputElement | null>, capture?: boolean) => (
+    <input
+      ref={ref}
+      type="file"
+      accept="image/*"
+      capture={capture ? "environment" : undefined}
+      hidden
+      onChange={(e) => {
+        const f = e.target.files?.[0];
+        if (f) onPick(f, f.name);
+        e.target.value = "";
+      }}
+    />
+  );
+
   return (
     <div>
-      <SectionTitle
-        step="Step 1"
-        title="Photograph the waste stream"
-        hint={
-          info.vision.provider === "stub" ? (
-            <Pill tone="flag">Vision stub · recorded demo results only</Pill>
-          ) : (
-            <Pill tone="good">Vision: {info.vision.label}</Pill>
-          )
-        }
-      />
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDrag(true);
-        }}
-        onDragLeave={() => setDrag(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDrag(false);
-          const f = e.dataTransfer.files?.[0];
-          if (f) onPick(f, f.name);
-        }}
-        className={cx(
-          "flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed px-6 py-14 text-center transition-colors",
-          drag ? "border-circular bg-circular-soft" : "border-line-2 bg-surface",
-        )}
-      >
-        <svg viewBox="0 0 48 48" className="h-12 w-12 text-muted" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-          <path d="M6 16h8l3-5h14l3 5h8v22H6z" strokeLinejoin="round" />
-          <circle cx="24" cy="26" r="7" />
-        </svg>
-        <div>
-          <p className="text-base font-medium">Drop a photo of a bin, skip or pile</p>
-          <p className="mt-1 text-sm text-muted">
-            AI vision suggests the material, contamination, volume and EWC code. You confirm every field.
-          </p>
+      <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <div className="flex flex-col justify-between gap-8 py-2">
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">New quote</div>
+            <h1 className="mt-3 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
+              What are we
+              <br />
+              quoting today?
+            </h1>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-ink-2">
+              One photo of the customer&apos;s waste. Selinsight works out what it is, opens only the routes the rules allow, and prices
+              every one of them, circular first.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => camRef.current?.click()}
+                className="wq-press inline-flex items-center gap-2 rounded-xl bg-circular px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_-12px_rgba(11,113,73,.7)] hover:bg-circular/90 disabled:opacity-40"
+              >
+                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <path d="M3 7h3l1.5-2.5h5L14 7h3v9H3z" strokeLinejoin="round" />
+                  <circle cx="10" cy="11.5" r="3" />
+                </svg>
+                Take a photo
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => fileRef.current?.click()}
+                className="wq-press rounded-xl border border-line-2 bg-surface px-5 py-3 text-sm font-semibold hover:border-ink disabled:opacity-40"
+              >
+                Upload one
+              </button>
+              {info.vision.provider === "stub" && <Pill tone="flag">Recorded demo results only</Pill>}
+            </div>
+          </div>
+          <ol className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            {HOW.map((h) => (
+              <li key={h.n} className="rounded-xl border border-line bg-surface/70 p-3">
+                <div className="font-mono text-[11px] text-circular">{h.n}</div>
+                <div className="mt-1 text-sm font-semibold">{h.t}</div>
+                <div className="mt-0.5 text-xs leading-snug text-ink-2">{h.d}</div>
+              </li>
+            ))}
+          </ol>
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => fileRef.current?.click()}
-            className="rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-white hover:bg-ink/85 disabled:opacity-40"
-          >
-            Upload photo
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => camRef.current?.click()}
-            className="rounded-lg border border-line-2 bg-surface px-4 py-2.5 text-sm font-medium hover:border-ink disabled:opacity-40"
-          >
-            Take photo
-          </button>
+
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDrag(true);
+          }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDrag(false);
+            const f = e.dataTransfer.files?.[0];
+            if (f) onPick(f, f.name);
+          }}
+          onClick={() => !busy && fileRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") fileRef.current?.click();
+          }}
+          className={cx(
+            "group relative flex min-h-[360px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border transition-all duration-300",
+            drag ? "scale-[1.01] border-circular bg-circular-soft" : "border-line bg-surface hover:border-line-2",
+          )}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,var(--color-circular-soft),transparent_60%)] opacity-70" />
+          {(["left-6 top-6 border-l-2 border-t-2 rounded-tl-xl", "right-6 top-6 border-r-2 border-t-2 rounded-tr-xl", "bottom-6 left-6 border-b-2 border-l-2 rounded-bl-xl", "bottom-6 right-6 border-b-2 border-r-2 rounded-br-xl"] as const).map((c) => (
+            <span
+              key={c}
+              className={cx("pointer-events-none absolute h-10 w-10 transition-colors duration-300", c, drag ? "border-circular" : "border-ink/25 group-hover:border-ink/50")}
+            />
+          ))}
+          <div className="relative flex flex-col items-center px-8 text-center">
+            <div className={cx("flex h-16 w-16 items-center justify-center rounded-2xl bg-ink text-white shadow-lg transition-transform duration-300", drag ? "scale-110" : "group-hover:-translate-y-1")}>
+              <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+                <path d="M12 16V5M7.5 9.5 12 5l4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p className="mt-5 text-lg font-semibold">{drag ? "Drop it" : "Drop a photo here"}</p>
+            <p className="mt-1 text-sm text-muted">A bin, a skip, a roll-off or a pile. JPEG, PNG or WebP.</p>
+          </div>
+          {fileInput(fileRef)}
+          {fileInput(camRef, true)}
         </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPick(f, f.name);
-            e.target.value = "";
-          }}
-        />
-        <input
-          ref={camRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPick(f, f.name);
-            e.target.value = "";
-          }}
-        />
       </div>
 
       {info.demoPhotos.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-10">
           <div className="mb-3 flex items-baseline justify-between">
-            <h3 className="text-sm font-medium">Or try a demo photo</h3>
-            <span className="text-xs text-muted">Wikimedia Commons, CC BY-SA (demo/CREDITS.md)</span>
+            <h2 className="text-sm font-semibold">Or try a site photo</h2>
+            <span className="text-xs text-muted">Wikimedia Commons, CC BY-SA</span>
           </div>
           <div className="wq-stagger grid grid-cols-2 gap-3 md:grid-cols-4">
-            {info.demoPhotos.map((name, i) => (
-              <div key={name} style={{ "--i": i } as React.CSSProperties}>
-              <Card className="wq-lift overflow-hidden">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => pickDemo(name)}
-                  className="group block w-full text-left disabled:opacity-50"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/demo-photo/${encodeURIComponent(name)}`}
-                    alt={DEMO_LABELS[name] ?? name}
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
-                  <div className="px-3 py-2.5">
-                    <div className="text-sm font-medium">{DEMO_LABELS[name] ?? name}</div>
-                    <div className="font-mono text-[11px] text-muted">{name}</div>
-                  </div>
-                </button>
-              </Card>
-              </div>
-            ))}
+            {info.demoPhotos.map((name) => {
+              const d = DEMO[name] ?? { label: name, tag: "Demo photo" };
+              return (
+                <div key={name}>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => pickDemo(name)}
+                    className="wq-lift wq-press group relative block w-full overflow-hidden rounded-2xl border border-line bg-surface text-left disabled:opacity-50"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/demo-photo/${encodeURIComponent(name)}`}
+                      alt={d.label}
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/3] bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/45 px-2 py-0.5 text-[11px] text-white backdrop-blur">
+                      {d.tag}
+                    </span>
+                    <span className="pointer-events-none absolute right-3 top-[calc(75%-2.25rem)] translate-y-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink opacity-0 shadow transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      Use this photo →
+                    </span>
+                    <div className="px-3.5 py-3">
+                      <div className="text-sm font-semibold">{d.label}</div>
+                    </div>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
