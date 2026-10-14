@@ -1,0 +1,2520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKIP — Waste Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F3EE;
+  --surface:#FFFFFF;
+  --surface-2:#FAFAF7;
+  --ink:#14191A;
+  --ink-2:#4B5354;
+  --ink-3:#8B9292;
+  --line:#E6E4DD;
+  --line-2:#EFEDE7;
+  --brand:#20513F;
+  --brand-2:#2E6E56;
+  --brand-tint:#E5EFE9;
+  --brand-glow:#9FD9B8;
+  --good:#1E9E5A;
+  --warn:#D9921A;
+  --bad:#D9483B;
+  --m-drywall:#6D7BEA;
+  --m-timber:#D38B3C;
+  --m-concrete:#5E6876;
+  --m-insulation:#D9668B;
+  --radius:3px;
+  --shadow:0 1px 0 rgba(20,25,26,.04), 0 1px 3px rgba(20,25,26,.05), 0 8px 24px -12px rgba(20,25,26,.10);
+  --mono:'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans:'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-io:cubic-bezier(.77,0,.175,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+button{font:inherit;color:inherit;cursor:pointer}
+.mono{font-family:var(--mono);font-feature-settings:"zero"}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;padding:22px 14px;display:flex;flex-direction:column;gap:22px;border-right:1px solid var(--line);background:linear-gradient(180deg,#F8F7F3, #F2F1EB)}
+.logo{display:flex;align-items:center;gap:10px;padding:0 8px}
+.logo svg{width:92px;height:auto;display:block}
+.logo .tag{font-size:10.5px;color:var(--ink-3);letter-spacing:.04em;line-height:1.2;border-left:1px solid var(--line);padding-left:10px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);padding:10px 10px 6px}
+.nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:3px;color:var(--ink-2);font-weight:500;position:relative;transition:background .2s,color .2s}
+.nav button svg{width:17px;height:17px;flex:none;opacity:.8}
+.nav button:hover{background:rgba(32,81,63,.06);color:var(--ink)}
+.nav button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.nav button.on::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--brand)}
+.nav button.on svg{color:var(--brand);opacity:1}
+.nav .badge{margin-left:auto;font-family:var(--mono);font-size:10.5px;background:var(--brand);color:#fff;padding:1px 6px;border-radius:3px}
+.nav .live-dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 0 rgba(229,72,77,.6);animation:ping 1.8s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}80%,100%{box-shadow:0 0 0 7px rgba(229,72,77,0)}}
+.side .co{margin-top:auto;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:12px;display:flex;gap:10px;align-items:center}
+.co .av{width:34px;height:34px;border-radius:3px;background:linear-gradient(135deg,#C9532C,#E8A13A);color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px;flex:none}
+.co b{display:block;font-size:13px}
+.co span{font-size:11.5px;color:var(--ink-3)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:16px 32px;background:rgba(244,243,238,.82);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.scrolled{border-color:var(--line)}
+.crumb{font-size:12.5px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+.top .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:3px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.chip .d{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(30,158,90,.15)}
+.chip.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.content{padding:8px 32px 48px;max-width:1440px;width:100%}
+.view{display:none}
+.view.on{display:block;animation:viewIn .38s var(--ease-out)}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.head{display:flex;align-items:flex-end;gap:20px;margin:14px 0 22px;flex-wrap:wrap}
+.head h1{font-size:30px;line-height:1.1;letter-spacing:-.025em;margin:0;font-weight:650}
+.head p{margin:6px 0 0;color:var(--ink-2);max-width:640px}
+.head .sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:9px 14px;border-radius:3px;font-weight:550;font-size:13px;transition:transform .16s var(--ease-out),box-shadow .2s ease,background .2s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+@media (hover:hover) and (pointer:fine){.btn:hover{box-shadow:var(--shadow)}}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover{background:var(--brand-2)}
+.btn svg{width:15px;height:15px}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-width:0;position:relative}
+.card h3{margin:0;font-size:14px;font-weight:600;letter-spacing:-.005em}
+.card .sub{color:var(--ink-3);font-size:12.5px;margin-top:2px}
+.card-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.card-h .sp{flex:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.reveal{opacity:0;transform:translateY(10px)}
+.view.on .reveal{animation:rise .7s var(--ease) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* KPI */
+.kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.kpi{padding:18px 18px 14px;overflow:hidden}
+.kpi .k-l{font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.kpi .k-v{font-size:30px;font-weight:650;letter-spacing:-.03em;margin-top:8px;line-height:1}
+.kpi .k-v small{font-size:15px;color:var(--ink-3);font-weight:500;margin-left:2px;letter-spacing:0}
+.kpi .k-d{font-size:12px;margin-top:8px;color:var(--ink-3)}
+.kpi .k-d b{color:var(--good);font-weight:600}
+.kpi svg.spark{position:absolute;right:12px;top:16px;width:70px;height:26px}
+.kpi.hero{background:radial-gradient(120% 140% at 100% 0%, #2E6E56 0%, var(--brand) 55%, #173D2F 100%);color:#fff;border-color:transparent}
+.kpi.hero .k-l,.kpi.hero .k-d{color:rgba(255,255,255,.72)}
+.kpi.hero .k-d b{color:var(--brand-glow)}
+.kpi.hero .k-v small{color:rgba(255,255,255,.6)}
+.kpi.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 48%,transparent 62%);transform:translateX(-100%);animation:sheen 4.5s 1.2s infinite}
+@keyframes sheen{0%{transform:translateX(-100%)}35%,100%{transform:translateX(100%)}}
+
+/* svg chart common */
+svg text{font-family:var(--sans)}
+.ax text{font-size:11px;fill:var(--ink-3)}
+.ax line{stroke:var(--line-2)}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.8s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pop{transform-box:fill-box;transform-origin:center;opacity:0;transform:scale(.5);animation:pop .5s var(--ease-out) forwards}
+@keyframes pop{to{opacity:1;transform:scale(1)}}
+.growy{transform-box:fill-box;transform-origin:bottom;transform:scaleY(0);animation:growy .9s var(--ease) forwards}
+@keyframes growy{to{transform:scaleY(1)}}
+.fade{opacity:0;animation:fade .8s ease forwards}
+@keyframes fade{to{opacity:1}}
+
+/* pipeline */
+.pipe .node rect{fill:var(--surface-2);stroke:var(--line)}
+.pipe .node.jev rect{fill:var(--brand);stroke:var(--brand)}
+.pipe .node.jev text{fill:#fff}
+.pipe .node.jev .nsub{fill:rgba(255,255,255,.7)}
+.pipe .ntitle{font-size:15px;font-weight:600;fill:var(--ink)}
+.pipe .nsub{font-size:11.5px;fill:var(--ink-3);font-family:var(--mono)}
+.pipe .wire{fill:none;stroke:#D6D3CA;stroke-width:1.5}
+.pipe .flow{fill:none;stroke:var(--brand);stroke-width:1.5;stroke-dasharray:3 9;animation:flow 1s linear infinite;opacity:.55}
+@keyframes flow{to{stroke-dashoffset:-12}}
+
+/* ticker */
+.ticker{display:flex;flex-direction:column;gap:0;font-size:12.5px}
+.tick{display:grid;grid-template-columns:64px 66px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);animation:tickIn .6s var(--ease)}
+.tick:last-child{border-bottom:0}
+@keyframes tickIn{from{opacity:0;transform:translateY(-8px);background:var(--brand-tint)}to{opacity:1;transform:none;background:transparent}}
+.tick .t{font-family:var(--mono);color:var(--ink-3);font-size:11.5px}
+.tick .c{font-family:var(--mono);font-size:11px;color:var(--ink-2);background:var(--line-2);border-radius:3px;padding:1px 6px;text-align:center}
+.tick .w{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tick .w i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px}
+.tick .p{font-family:var(--mono);font-size:11.5px;color:var(--brand);font-weight:600}
+
+/* bars html */
+.hbar{display:flex;height:30px;border-radius:3px;overflow:hidden;background:var(--line-2)}
+.hbar > div{height:100%;width:0;transition:width 1.3s var(--ease);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-family:var(--mono);color:#fff;white-space:nowrap;overflow:hidden}
+.mrow{display:grid;grid-template-columns:190px 1fr 80px;gap:14px;align-items:center;padding:8px 0}
+.mrow .nm{font-weight:550;display:flex;align-items:center;gap:8px}
+.mrow .nm i{width:10px;height:10px;border-radius:3px}
+.mrow .v{text-align:right;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{font-weight:500;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:11.5px;white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+tbody tr{opacity:0;animation:rise .6s var(--ease) forwards}
+tbody tr:hover td{background:var(--surface-2)}
+td.r,th.r{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:550}
+.pill.g{background:#E3F4EA;color:#17784A}
+.pill.a{background:#FBF0DC;color:#9A6610}
+.pill.r{background:#FBE5E2;color:#A93427}
+.pill.b{background:var(--brand-tint);color:var(--brand)}
+.matdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px}
+.tbl-wrap{overflow-x:auto;margin:0 -20px -20px;padding:0 20px 8px}
+
+/* camera */
+.live{display:grid;grid-template-columns:230px minmax(0,1fr) 340px;gap:16px;align-items:start}
+.sites{padding:8px}
+.site{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:10px 10px;border-radius:3px;width:100%;transition:background .2s}
+.site:hover{background:var(--surface-2)}
+.site.on{background:var(--brand-tint)}
+.site b{font-size:12.8px;font-weight:600}
+.site span{font-size:11.5px;color:var(--ink-3)}
+.site .st{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--mono);font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:5px}
+.site .st i{width:6px;height:6px;border-radius:50%;background:var(--good)}
+.camwrap{padding:0;overflow:hidden;background:#0B0E10;border-color:#0B0E10}
+.cam-main{position:relative;aspect-ratio:16/9;width:100%}
+.cam-main canvas,.thumb canvas{width:100%;height:100%;display:block}
+.cam-bar{display:flex;gap:6px;padding:10px;background:#111518;border-top:1px solid #1d2327;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;background:#1A2024;border-radius:3px;padding:3px;gap:2px}
+.seg button{all:unset;cursor:pointer;padding:6px 11px;border-radius:3px;font-size:12px;color:#9AA4AA;font-weight:500;transition:background .2s ease,color .2s ease}
+.seg button.on{background:#F4F3EE;color:#14191A}
+.cam-bar .meta{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:#7F8B91}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.thumb{all:unset;cursor:pointer;position:relative;aspect-ratio:16/10;border-radius:3px;overflow:hidden;background:#0B0E10;outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s, transform .2s var(--ease)}
+@media (hover:hover) and (pointer:fine){.thumb:hover{transform:translateY(-2px)}}
+.thumb.on{outline-color:var(--brand)}
+.dets{margin-top:12px}
+.det{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;width:100%;padding:8px 10px;border-radius:3px;font-size:12.5px;transition:background .2s}
+.det:hover{background:var(--surface-2)}
+.det.on{background:var(--brand-tint)}
+.det i{width:10px;height:10px;border-radius:3px}
+.det .cf,.det .vl{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+
+/* run analysis */
+.run-scope{display:flex;gap:6px;flex-wrap:wrap}
+.sec-set{display:flex;align-items:center;gap:10px;padding:5px 5px 5px 12px;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+.sec-set .sl-l{font-size:12px;font-weight:600;line-height:1.2}
+.sec-set .sl-l small{display:block;font-weight:400;color:var(--ink-3);font-size:10.5px}
+.sec-seg{position:relative;display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:2px}
+.sec-seg button{all:unset;cursor:pointer;position:relative;z-index:1;padding:5px 10px;font:600 12px var(--mono);color:var(--ink-3);transition:color .2s ease}
+.sec-seg button.on{color:#fff}
+.sec-seg i{position:absolute;top:2px;bottom:2px;left:0;border-radius:3px;background:var(--brand);transition:transform .3s var(--ease-out),width .3s var(--ease-out)}
+.idle-save{margin:2px 0 4px!important;font-size:12px!important;color:var(--brand)!important}
+.btn[hidden]{display:none}
+.run{display:block}
+.runbar{position:sticky;top:76px;z-index:15;display:flex;align-items:center;gap:20px;padding:14px 16px 12px;margin-bottom:16px;background:rgba(255,255,255,.88);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px)}
+.steps{flex:1;min-width:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));position:relative}
+.steps::before,.steps .fillbar{content:"";position:absolute;left:calc(100% / 14);right:calc(100% / 14);top:13px;height:2px;border-radius:2px;background:var(--line)}
+.steps .fillbar{background:var(--brand);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease-io)}
+.step{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:0 4px;position:relative;z-index:1;cursor:default;min-width:0}
+.step .ix{width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;font:600 11.5px var(--mono);color:var(--ink-3);transition:background .3s ease,border-color .3s ease,color .3s ease}
+.step .ix em{font-style:normal}
+.step b{font-size:12.5px;font-weight:600;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:color .3s ease}
+.step span{font:10.5px var(--mono);color:var(--brand);min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:0;transition:opacity .3s ease}
+.step.busy b,.step.done b{color:var(--ink)}
+.step.busy span,.step.done span{opacity:1}
+.step.busy span{color:var(--ink-3)}
+.step.busy .ix{background:var(--brand);border-color:var(--brand);color:#fff;animation:ring 1.6s ease-out infinite}
+.steps.paused .step.busy .ix{animation:none}
+@keyframes ring{from{box-shadow:0 0 0 0 rgba(32,81,63,.35)}to{box-shadow:0 0 0 9px rgba(32,81,63,0)}}
+.step.done .ix{background:var(--brand-tint);border-color:var(--brand);color:var(--brand)}
+.step.done{cursor:pointer}
+@media (hover:hover) and (pointer:fine){.step.done:hover b{color:var(--brand)}.step.done:hover .ix{background:#fff}}
+.stage-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.stage{height:var(--stage-h,600px);min-height:420px;padding:24px;overflow:hidden;position:relative;box-sizing:border-box}
+.st-in{transform-origin:top center}
+.st-timer{position:absolute;left:0;right:0;top:0;height:3px}
+.st-timer i{display:block;height:100%;transform:scaleX(0);transform-origin:left;background:var(--brand);opacity:.45}
+.st-timer.go i{animation:stTimer linear forwards}
+.st-timer.paused i{animation-play-state:paused}
+@keyframes stTimer{to{transform:scaleX(1)}}
+.run-ctl{display:flex;gap:6px;align-items:center;flex:none;padding-left:16px;border-left:1px solid var(--line);align-self:stretch}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.flow3{display:grid;grid-template-columns:1fr 18px 1.25fr 18px 1fr;gap:6px;align-items:stretch;margin:-4px 0 20px}
+.flow3>div{border:1px solid var(--line);border-radius:3px;padding:8px 11px;background:var(--surface-2);font-size:12.5px;line-height:1.4;opacity:0;animation:fade .45s forwards}
+.flow3 small{display:block;font:600 10px var(--mono);letter-spacing:.08em;color:var(--ink-3);margin-bottom:2px}
+.flow3 .do{background:var(--brand-tint);border-color:transparent}
+.flow3 .do small{color:var(--brand)}
+.flow3 .ar{border:0;background:none;padding:0;align-self:center;text-align:center;color:var(--ink-3);font-size:14px}
+.trace{padding:14px 16px}
+.trace-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+.trace-h b{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.trk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:12px}
+.tn{border:1px dashed var(--line);border-radius:3px;padding:9px 10px;opacity:.4;transition:opacity .3s ease,transform .35s var(--ease-out),border-color .3s ease,background .3s ease,box-shadow .3s ease;min-width:0;position:relative}
+.tn small{font:600 10px var(--mono);color:var(--ink-3);letter-spacing:.06em}
+.tn b{display:block;font-size:13px;font-weight:650;margin:3px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tn span{font-size:11px;color:var(--ink-3);display:block;line-height:1.35}
+.tn .tq{opacity:0;transform:translateY(4px);transition:opacity .3s ease .1s,transform .35s var(--ease-out) .1s}
+.tn.seen,.tn.now{opacity:1;border-style:solid}
+.tn.seen .tq,.tn.now .tq{opacity:1;transform:none}
+.tn.now{border:1.5px solid var(--brand);background:var(--brand-tint);box-shadow:0 0 0 4px rgba(32,81,63,.07);transform:translateY(-2px)}
+.tn.now small{color:var(--brand)}
+.stage-idle{height:100%;display:grid;place-content:center;justify-items:center;text-align:center;gap:10px}
+.stage-idle h3{font-size:20px;margin:6px 0 0}
+.stage-idle p{margin:0 0 8px;color:var(--ink-3);font-family:var(--mono);font-size:12px}
+.st-h{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.st-h .n{font:600 11px var(--mono);color:var(--brand);background:var(--brand-tint);padding:4px 8px;border-radius:3px;white-space:nowrap}
+.st-h h2{margin:0;font-size:20px;letter-spacing:-.02em;font-weight:650}
+.st-h p{margin:3px 0 0;color:var(--ink-2);font-size:13px}
+.st-in{animation:stIn .42s var(--ease-out) both}
+.st-in.leaving{position:absolute;inset:24px;pointer-events:none;animation:stOut .18s ease forwards}
+@keyframes stIn{from{opacity:0;transform:translateY(10px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+@keyframes stOut{to{opacity:0;transform:translateY(-6px);filter:blur(2px)}}
+#log>div{animation:logIn .25s var(--ease-out)}
+@keyframes logIn{from{opacity:0;transform:translateY(4px)}}
+.big3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.big3 > div{background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:14px 16px}
+.big3 span{font-size:11.5px;color:var(--ink-3)}
+.big3 b{display:block;font-size:26px;font-weight:650;letter-spacing:-.03em;margin-top:2px}
+.srcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sync{display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:3px;background:var(--surface-2);margin-bottom:14px}
+.sys{display:flex;align-items:center;gap:11px;min-width:0}
+.sys svg{height:34px;width:auto;flex:none}
+.sys b{display:block;font-size:13.5px;font-weight:650}
+.sys span{display:block;font:11px var(--mono);color:var(--ink-3)}
+.sys .lg{width:44px;height:34px;display:grid;place-items:center;border-radius:3px;background:#fff;border:1px solid var(--line)}
+.sys .lg svg{height:20px}
+.lane{position:relative;height:34px;display:grid;place-items:center}
+.lane::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.lane .fill{position:absolute;left:0;right:0;top:50%;height:1px;margin-top:0;background:linear-gradient(90deg,#0A6ED1,var(--brand));transform:scaleX(0);transform-origin:left;transition:transform .25s linear}
+.lane .pk{position:absolute;left:0;right:0;top:50%;height:12px;margin-top:-6px;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.lane .pk em{position:absolute;inset:0;transform:translateX(-100%);animation:pkt 1.8s var(--ease-io) infinite}
+.lane .pk em::after{content:"";position:absolute;right:0;top:50%;width:90px;height:3px;margin-top:-1.5px;border-radius:2px;background:linear-gradient(90deg,rgba(10,110,209,0),rgba(10,110,209,.55));filter:blur(.5px)}
+.sync.ok .lane .pk{opacity:0;transition:opacity .4s ease}
+@keyframes pkt{to{transform:translateX(0)}}
+.lane .st{position:relative;font:600 10.5px var(--mono);background:#fff;border:1px solid var(--line);padding:3px 9px;border-radius:3px;color:var(--ink-2);white-space:nowrap;transition:color .25s ease,border-color .25s ease}
+.sync.ok .lane .st{color:var(--good);border-color:#BFE3CE}
+.po-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.po{border:1px solid var(--line);border-radius:3px;padding:10px 12px;font-size:12px;background:#fff;opacity:0;transform:translateY(10px) scale(.97);animation:poIn .5s var(--ease) forwards;position:relative;overflow:hidden}
+.po::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(32,81,63,.08),transparent);transform:translateX(-100%);animation:poScan 1.2s .3s var(--ease)}
+@keyframes poIn{to{opacity:1;transform:none}}
+@keyframes poScan{to{transform:translateX(100%)}}
+.po .pn{font-family:var(--mono);font-weight:600;font-size:11.5px}
+.po .pn svg{float:right;height:11px;width:22px;margin-top:1px}
+.po .ps{color:var(--ink-3);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.po .pl{display:flex;justify-content:space-between;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.po .pl i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}
+.scans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.scan{position:relative;border-radius:3px;overflow:hidden;aspect-ratio:16/9;background:#0B0E10;opacity:0;animation:poIn .5s var(--ease) forwards}
+.scan canvas{width:100%;height:100%;display:block}
+.scan .think{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit;mix-blend-mode:screen;animation:thinkOut .7s ease forwards;animation-delay:calc(2.3s + var(--d))}
+.scan .think i{position:absolute;left:15%;top:-10%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(closest-side,rgba(150,235,200,.6),rgba(90,170,255,.22) 55%,transparent);filter:blur(8px);will-change:transform,opacity;animation:thinkDrift 2.4s var(--ease-io) infinite alternate,thinkPulse 1.2s ease-in-out infinite alternate;animation-delay:calc(var(--d) * -3)}
+.scan .think::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1.5px rgba(159,217,184,.85),inset 0 0 34px rgba(120,220,180,.4);animation:thinkPulse 1.2s ease-in-out infinite alternate}
+.scan .done{position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 2px #9FD9B8;opacity:0;animation:doneFlash .9s ease-out forwards;animation-delay:calc(2.45s + var(--d))}
+@keyframes thinkDrift{0%{transform:translate(-40%,5%) scale(.8)}50%{transform:translate(5%,40%) scale(1.08)}100%{transform:translate(40%,-5%) scale(.9)}}
+@keyframes thinkPulse{from{opacity:.45}to{opacity:1}}
+@keyframes thinkOut{to{opacity:0}}
+@keyframes doneFlash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+.scan .lb{position:absolute;left:8px;top:8px;font:500 10px var(--mono);color:#E9F2EE;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:3px}
+.scan .vb{position:absolute;right:8px;bottom:8px;font:600 10px var(--mono);color:#0B0E10;background:#9FD9B8;padding:2px 6px;border-radius:3px;opacity:0;animation:fade .4s 1.2s forwards}
+.gen{margin:0;background:#0F1315;color:#C9D2D6;border-radius:3px;padding:12px 14px;font:11.5px/1.7 var(--mono);min-height:170px;white-space:pre-wrap}
+.gen .k{color:#7F8B91}.gen .a{color:#9FD9B8;font-weight:600}.gen .p{color:#F0C27A}.gen .cur{display:inline-block;width:7px;height:13px;background:#9FD9B8;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.cls-wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+.dstream{height:300px;overflow:hidden;border:1px solid var(--line);border-radius:3px;background:var(--surface-2);font-size:12px;position:relative}
+.dstream::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(transparent,var(--surface-2))}
+.drow{display:grid;grid-template-columns:84px 1fr auto auto;gap:8px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--line-2);animation:tickIn .4s var(--ease)}
+.drow .t{font:500 10.5px var(--mono);color:var(--ink-3)}
+.drow .qq{font:500 10px var(--mono);padding:1px 5px;border-radius:3px;background:var(--ink);color:#fff}
+.drow .p{font:600 11px var(--mono);color:var(--brand)}
+.cdist .mrow{grid-template-columns:120px 1fr 54px;padding:6px 0}
+.cdist .hbar{height:16px}
+.match svg{width:100%;max-width:960px;height:auto;display:block;margin:0 auto}
+.mnote{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.oo{display:flex;flex-direction:column;gap:12px}
+.oo-r{display:grid;grid-template-columns:200px 1fr 150px;gap:14px;align-items:center;font-size:12.5px}
+.oo-r .tr{position:relative;height:22px;border-radius:3px;background:var(--line-2);overflow:hidden}
+.oo-r .tr div{position:absolute;top:0;bottom:0;left:0;width:0;transition:width 1.1s var(--ease)}
+.oo-r .tr .need{background:#20513F}
+.oo-r .tr .bf{background:#E7B65E}
+.oo-r .tr .ws{background:repeating-linear-gradient(135deg,#D9483B 0 5px,#E8746A 5px 10px)}
+.oo-r .v{font-family:var(--mono);font-size:11.5px;text-align:right}
+.oo-r .v b{color:#A93427}
+.opt-wrap{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+.npo td{padding:9px 8px}
+.npo tbody tr{opacity:0;animation:rise .5s var(--ease) forwards}
+.npo .old{text-decoration:line-through;color:var(--ink-3)}
+.npo .new{font-weight:650;color:var(--brand)}
+.mc{display:grid;grid-template-columns:repeat(25,1fr);gap:3px;margin-top:8px}
+.mc i{aspect-ratio:1;border-radius:2px;background:var(--line);transition:background .25s}
+.mc i.ok{background:#5FA684}
+.mc i.lo{background:#E7B65E}
+.mc i.ko{background:#D9483B}
+.mc-l{font-size:11.5px;color:var(--ink-3);margin-top:8px;display:flex;justify-content:space-between}
+.mrecs-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:20px 0 10px;opacity:0;animation:fade .4s 1.5s forwards}
+.mrecs-h b{font-size:14px;font-weight:650}.mrecs-h span{font-size:12px;color:var(--ink-3)}
+.mrecs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mrec{display:grid;grid-template-columns:6px minmax(0,1fr) auto auto auto;gap:12px;align-items:center;padding:9px 10px 9px 0;border:1px solid var(--line);border-radius:3px;background:#fff;overflow:hidden;opacity:0;transform:translateY(8px);animation:rise .45s var(--ease-out) forwards;transition:border-color .3s ease,background .3s ease}
+.mrec>i{align-self:stretch;margin:-9px 0}
+.mrec .mt{min-width:0}.mrec .mt b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mrec .mt span{font-size:11px;color:var(--ink-3)}
+.mrec .mb{font:11px var(--mono);color:var(--ink-3);white-space:nowrap}.mrec .mb b{color:var(--brand)}
+.mrec .ms{font:600 14px var(--mono);color:var(--good);white-space:nowrap}.mrec .ms small{font-size:10px;color:var(--ink-3);font-weight:400}
+.mrec.ok{border-color:#BFE3CE;background:#F3FAF6}.mrec.ok .mok{color:var(--good);border-color:#BFE3CE}
+@media (max-width:1100px){.mrecs{grid-template-columns:1fr}}
+.check{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:3px;background:#E3F4EA;color:#17784A;font-weight:600;font-size:13px;margin-top:12px;opacity:0;animation:fade .5s forwards}
+.fin{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.fin > div{border-radius:3px;padding:18px;background:var(--surface-2);border:1px solid var(--line)}
+.fin > div.h{background:radial-gradient(120% 140% at 100% 0%, #2E6E56 0%, var(--brand) 55%, #173D2F 100%);color:#fff;border:0}
+.fin span{font-size:12px;color:var(--ink-3)}
+.fin .h span{color:rgba(255,255,255,.7)}
+.fin b{display:block;font-size:30px;font-weight:650;letter-spacing:-.03em;margin-top:6px}
+.story{margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.story div{padding:14px;border-right:1px solid var(--line);font-size:12.5px;color:var(--ink-2);opacity:0;animation:rise .6s var(--ease) forwards}
+.story div:last-child{border-right:0}
+.story b{display:block;color:var(--ink);font-size:13px;margin-bottom:4px}
+.log{padding:0;background:#0F1315;border-color:#0F1315;overflow:hidden}
+.log-h{display:flex;justify-content:space-between;padding:9px 14px;font:500 11px var(--mono);color:#7F8B91;border-bottom:1px solid #1d2327;text-transform:uppercase;letter-spacing:.06em}
+#log{height:150px;overflow:auto;padding:8px 14px;font:12px/1.7 var(--mono);color:#C9D2D6}
+#log .ok{color:#9FD9B8}#log .dim{color:#6C7A80}#log .wa{color:#F0C27A}
+@media (max-width:1100px){.runbar{flex-direction:column;align-items:stretch;gap:10px}.run-ctl{border-left:0;padding-left:0;justify-content:flex-end}.step b{font-size:11px}.po-grid{grid-template-columns:repeat(2,1fr)}.cls-wrap,.opt-wrap{grid-template-columns:1fr}.fin,.story{grid-template-columns:repeat(2,1fr)}.scans{grid-template-columns:repeat(2,1fr)}.oo-r{grid-template-columns:130px 1fr 90px}.trk{grid-template-columns:repeat(2,minmax(0,1fr))}.flow3{grid-template-columns:1fr}.flow3 .ar{display:none}}
+
+/* map */
+.mapcard{padding:0;overflow:hidden;height:360px;margin-bottom:16px}
+#map{position:absolute;inset:0;background:#EEF0EC;font-family:var(--sans)}
+.leaflet-container{font-family:var(--sans)}
+.leaflet-tile-pane{filter:sepia(.1) brightness(1.02)}
+.leaflet-control-attribution{font-size:9.5px;background:rgba(255,255,255,.7)!important}
+.map-ov{position:absolute;left:14px;top:14px;z-index:500;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:3px;padding:12px 14px;box-shadow:var(--shadow);max-width:calc(100% - 28px)}
+.mo-h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.mo-s{font-size:13px;color:var(--ink-2);margin-top:4px;display:flex;gap:4px 10px;flex-wrap:wrap}
+.mo-s b{color:var(--ink);font-weight:650;margin-right:2px}
+.mo-l{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--ink-2)}
+.mo-l i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.map-sel{position:absolute;right:14px;bottom:24px;z-index:500;background:var(--ink);color:#fff;border-radius:3px;padding:12px 14px;min-width:220px;box-shadow:0 14px 30px -12px rgba(0,0,0,.4);transition:opacity .3s}
+.map-sel .t{font-weight:600;font-size:13.5px}
+.map-sel .s{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:2px}
+.map-sel .r{display:flex;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11.5px}
+.map-sel .r b{display:block;font-size:16px;font-family:var(--sans);font-weight:650}
+.pin{position:relative;width:34px;height:34px}
+.pin .c{position:absolute;inset:5px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.25);display:grid;place-items:center;color:#fff;font:600 11px var(--mono);transition:transform .3s var(--ease)}
+.pin .ring{position:absolute;inset:0;border-radius:50%;opacity:.5;animation:pinPulse 2.4s infinite}
+.pin.on .c{transform:scale(1.3);border-color:var(--ink)}
+.pin .lab{position:absolute;left:50%;top:-24px;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:#fff;font:600 11px var(--sans);padding:3px 8px;border-radius:3px;opacity:0;pointer-events:none;transition:opacity .25s}
+.pin.on .lab,.pin:hover .lab{opacity:1}
+.pin-wrap{animation:pinDrop .7s var(--ease) both}
+@keyframes pinPulse{0%{transform:scale(.6);opacity:.55}100%{transform:scale(1.9);opacity:0}}
+@keyframes pinDrop{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.leaflet-div-icon{background:none;border:0}
+.map-off{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:13px}
+
+/* jev panel */
+.jev .jh{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.jev .mark{width:30px;height:30px;border-radius:3px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:13px}
+.jev .lat{margin-left:auto;text-align:right;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.jev .lat b{display:block;font-size:16px;color:var(--ink);font-weight:600}
+.q{border:1px solid var(--line);border-radius:3px;padding:11px 12px;margin-top:10px;background:var(--surface-2)}
+.q .qh{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px}
+.q .qt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:2px 6px;border-radius:3px;background:var(--ink);color:#fff}
+.q .qt.score{background:#5B4BC4}
+.q .qt.yn{background:#B4532A}
+.q .qn{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.q .ans{margin-left:auto;font-weight:600;font-size:12px}
+.opt{display:grid;grid-template-columns:1fr 46px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
+.opt .bar{position:relative;height:22px;border-radius:3px;background:#EEEDE7;overflow:hidden}
+.opt .bar > div{position:absolute;inset:0 auto 0 0;width:0;background:#D7DCD9;transition:width .9s var(--ease)}
+.opt.best .bar > div{background:var(--brand)}
+.opt .bar span{position:relative;z-index:1;padding:0 8px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.opt.best .bar span{color:#fff;font-weight:550}
+.opt .pv{font-family:var(--mono);font-size:11.5px;text-align:right;color:var(--ink-2)}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.levels div{height:26px;border-radius:3px;background:#EEEDE7;display:grid;place-items:center;font-size:10.5px;font-family:var(--mono);color:var(--ink-3);transition:background .4s ease,color .4s ease,opacity .4s ease}
+.levels div.on{background:#5B4BC4;color:#fff;transform:scaleY(1.08)}
+.levels div.near{background:#DCD7F5;color:#5B4BC4}
+.yn{display:flex;align-items:center;gap:10px}
+.yn .track{flex:1;height:8px;border-radius:3px;background:#EEEDE7;overflow:hidden}
+.yn .track div{height:100%;width:0;background:#B4532A;border-radius:3px;transition:width .9s var(--ease)}
+.yn .pv{font-family:var(--mono);font-size:12px;width:42px;text-align:right}
+.jev-foot{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.jev-foot .pill{font-family:var(--mono);font-weight:500}
+.code{font-family:var(--mono);font-size:11.5px;line-height:1.65;background:#101416;color:#C9D2D6;border-radius:3px;padding:14px 16px;overflow:auto;white-space:pre}
+.code .k{color:#9FD9B8}.code .s{color:#F0C27A}.code .c{color:#6C7A80}.code .n{color:#9FB6FF}
+
+/* analytics */
+.heat{display:grid;grid-template-columns:150px repeat(12,1fr);gap:4px;font-size:11.5px;align-items:center}
+.heat .hl{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+.heat .hc{aspect-ratio:1.6;border-radius:3px;opacity:0;transform:scale(.6);animation:cell .5s var(--ease) forwards}
+.heat .hx{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:center}
+@keyframes cell{to{opacity:1;transform:none}}
+
+/* recs */
+.slider-card{display:grid;grid-template-columns:1.2fr 2fr;gap:28px;align-items:center}
+.range{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,#D9483B 0%,#D9921A 35%,#1E9E5A 75%,#20513F 100%);outline:none}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab}
+.range::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:grab}
+.rl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:8px}
+.sl-val{font-size:44px;font-weight:650;letter-spacing:-.035em;line-height:1}
+.sl-val small{font-size:16px;color:var(--ink-3);font-weight:500}
+.outs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.out{background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:14px}
+.out .l{font-size:11.5px;color:var(--ink-3)}
+.out .v{font-size:22px;font-weight:650;letter-spacing:-.02em;margin-top:4px}
+.out .v.bad{color:var(--bad)}
+.recs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rec{display:flex;flex-direction:column;gap:12px;transition:box-shadow .3s, border-color .3s}
+.rec.ok{border-color:#9FD0B4;box-shadow:0 0 0 3px rgba(30,158,90,.12), var(--shadow)}
+.rec .rt{display:flex;gap:10px;align-items:flex-start}
+.rec .rt .ic{width:36px;height:36px;border-radius:3px;display:grid;place-items:center;flex:none;color:#fff;font-weight:700;font-size:12px}
+.rec h4{margin:0;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.rec .sku{font-size:12px;color:var(--ink-3)}
+.rec .save{margin-left:auto;text-align:right;font-weight:650;font-size:18px;letter-spacing:-.02em;color:var(--brand);white-space:nowrap}
+.rec .save small{display:block;font-size:10.5px;color:var(--ink-3);font-weight:500;letter-spacing:0}
+.buf{display:grid;grid-template-columns:56px 1fr 44px;gap:8px;align-items:center;font-size:11.5px;color:var(--ink-2)}
+.buf .tr{height:10px;border-radius:3px;background:var(--line-2);overflow:hidden}
+.buf .tr div{height:100%;width:0;border-radius:3px;transition:width 1.1s var(--ease)}
+.buf .pv{font-family:var(--mono);text-align:right}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.facts div{background:var(--surface-2);border-radius:3px;padding:8px 10px;font-size:11px;color:var(--ink-3)}
+.facts b{display:block;font-size:13px;color:var(--ink);font-weight:600;margin-top:1px}
+.rec .why{font-size:12.5px;color:var(--ink-2);margin:0}
+.rec .acts{display:flex;gap:8px;margin-top:auto}
+.rec .acts .btn{flex:1;justify-content:center;padding:8px 10px}
+
+/* report */
+.paper{max-width:900px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:3px;box-shadow:0 30px 60px -30px rgba(20,25,26,.25),var(--shadow);padding:56px 64px;position:relative}
+.paper .ph{display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:18px}
+.paper .ph svg{width:84px}
+.paper h2{font-size:26px;letter-spacing:-.025em;margin:28px 0 4px;font-weight:650}
+.paper h5{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:30px 0 12px;font-weight:600}
+.paper p{color:var(--ink-2);line-height:1.6;margin:0 0 10px}
+.rk{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.rk div{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rk div:nth-child(3n){border-right:0}
+.rk div:nth-last-child(-n+3){border-bottom:0}
+.rk span{font-size:11.5px;color:var(--ink-3)}
+.rk b{display:block;font-size:22px;letter-spacing:-.02em;font-weight:650;margin-top:2px}
+.rk em{font-style:normal;font-size:11.5px;color:var(--good);font-weight:600}
+.stamp{position:absolute;right:56px;top:120px;transform:rotate(-8deg);border:2px solid var(--brand);color:var(--brand);border-radius:3px;padding:6px 12px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;opacity:.8}
+ol.recl{padding-left:18px;margin:0;color:var(--ink-2)}
+ol.recl li{margin:6px 0;line-height:1.5}
+ol.recl b{color:var(--ink)}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:#fff;padding:12px 16px;border-radius:3px;font-size:13px;display:flex;gap:10px;align-items:center;box-shadow:0 20px 40px -12px rgba(0,0,0,.35);transition:transform .4s var(--ease-out),opacity .3s ease;z-index:99;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast i{width:18px;height:18px;border-radius:50%;background:var(--brand-glow);display:grid;place-items:center;color:var(--ink);font-style:normal;font-size:11px;font-weight:700}
+.demo-note{font-size:11px;color:var(--ink-3);text-align:center;margin-top:32px}
+
+@media (max-width:1280px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .live{grid-template-columns:200px minmax(0,1fr)}
+  .live .jev{grid-column:1/-1}
+  .recs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;overflow-x:auto;padding:12px 16px;gap:12px;border-right:0;border-bottom:1px solid var(--line)}
+  .side .co,.nav .lbl,.logo .tag{display:none}
+  .nav{flex-direction:row}
+  .nav button{white-space:nowrap}
+  .nav button.on::before{display:none}
+  .top,.content{padding-left:16px;padding-right:16px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cols-2,.cols-3,.cols-ov,.cols-oi,.cols-wa{grid-template-columns:1fr !important}
+  .live{grid-template-columns:1fr}
+  .slider-card{grid-template-columns:1fr}
+  .outs{grid-template-columns:repeat(2,1fr)}
+  .recs{grid-template-columns:1fr}
+  .paper{padding:28px 20px}
+  .stamp{display:none}
+  .heat{grid-template-columns:90px repeat(12,1fr)}
+  .mrow{grid-template-columns:110px 1fr 60px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.2s !important;animation-iteration-count:1 !important;transition-duration:.15s !important}
+  .scan .think,.kpi.hero::after,.pin .ring{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="sapmark" viewBox="0 0 92 46">
+      <defs><linearGradient id="sapg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00B9F2"/><stop offset="1" stop-color="#0057B8"/></linearGradient></defs>
+      <path d="M0 0H92L46 46H0Z" fill="url(#sapg)"/>
+      <text x="7" y="32" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="23" fill="#fff" letter-spacing="-.5">SAP</text>
+    </symbol>
+    <symbol id="skiplogo" viewBox="0 0 660 340">
+      <g fill="#20513F" stroke="#20513F" stroke-width="18" stroke-linejoin="round">
+        <path d="M78 20 H582 L640 82 H20 Z"/>
+        <path d="M22 114 H638 L560 318 H100 Z"/>
+      </g>
+      <text x="330" y="276" text-anchor="middle" font-family="Geist, Inter, Arial, sans-serif" font-weight="800" font-size="170" letter-spacing="-6" fill="#fff">SKIP</text>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <svg viewBox="0 0 660 340"><use href="#skiplogo"/></svg>
+      <div class="tag">Waste<br>intelligence</div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="lbl">Workspace</div>
+      <button data-v="overview" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Overview</button>
+      <button data-v="run"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="currentColor"/></svg>Run analysis</button>
+      <button data-v="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h10l4 4v14H3V3h4"/><path d="M7 11h10M7 15h10M7 7h5"/></svg>Order intelligence</button>
+      <button data-v="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l6-3v10l-6-3"/></svg>Live sites<span class="live-dot"></span></button>
+      <button data-v="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18"/><path d="M6 16l4-6 4 3 5-8"/></svg>Waste analytics</button>
+      <div class="lbl">Act</div>
+      <button data-v="recs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.6 5.6L20 9.3l-4 4 1 5.7-5-2.8-5 2.8 1-5.7-4-4 5.4-.7z"/></svg>Recommendations<span class="badge">6</span></button>
+      <button data-v="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/></svg>Reports</button>
+    </nav>
+    <div class="co">
+      <div class="av">OM</div>
+      <div><b>Obres Mirador S.L.</b><span>Barcelona · 12 active sites</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top" id="top">
+      <div class="crumb">Obres Mirador / <b id="crumb">Overview</b></div>
+      <div class="sp"></div>
+      <span class="chip"><span class="d"></span><span class="mono num" id="clock">—</span> · 38 cameras live</span>
+      <span class="chip">Apr 2025 – Sep 2026</span>
+    </header>
+
+    <main class="content">
+
+<!-- ================= OVERVIEW ================= -->
+<section class="view on" data-view="overview">
+  <div class="head">
+    <div>
+      <h1>Portfolio overview</h1>
+      <p>18 months of purchase orders matched against what actually ended up in the skip, across 12 sites in the Barcelona area.</p>
+    </div>
+    <div class="sp"></div>
+    <button class="btn" data-go="run">▶ Run analysis</button>
+    <button class="btn" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg>Monthly report</button>
+    <button class="btn pri" data-go="recs">Review 6 recommendations →</button>
+  </div>
+
+  <div class="grid kpis">
+    <div class="card kpi hero reveal" style="animation-delay:.05s">
+      <div class="k-l">Annual savings identified</div>
+      <div class="k-v num" data-count="1.42" data-dec="2" data-pre="€" data-suf="M">€0</div>
+      <div class="k-d"><b>€118k</b> / month · payback 4.1 mo</div>
+    </div>
+    <div class="card kpi reveal" style="animation-delay:.12s">
+      <div class="k-l">Over-ordering</div>
+      <div class="k-v num" data-count="-18.4" data-dec="1" data-suf="%">0</div>
+      <div class="k-d">buffer <b>13.7% → 6.2%</b> avg</div>
+      <svg class="spark" viewBox="0 0 70 26" data-spark="22,21,22,20,21,19,17,14,12,11,10,9" data-col="#20513F"></svg>
+    </div>
+    <div class="card kpi reveal" style="animation-delay:.19s">
+      <div class="k-l">CO₂e avoided / yr</div>
+      <div class="k-v num"><span data-count="640" data-dec="0">0</span><small>t</small></div>
+      <div class="k-d">≈ <b>1,390</b> return flights BCN–NYC</div>
+      <svg class="spark" viewBox="0 0 70 26" data-spark="2,3,3,5,6,8,9,11,13,14,16,18" data-col="#1E9E5A"></svg>
+    </div>
+    <div class="card kpi reveal" style="animation-delay:.26s">
+      <div class="k-l">Service level held</div>
+      <div class="k-v num"><span data-count="98.6" data-dec="1">0</span><small>%</small></div>
+      <div class="k-d">target ≥ 98.5% · <b>0 stock-outs</b></div>
+      <svg class="spark" viewBox="0 0 70 26" data-spark="10,11,10,12,11,12,11,12,12,11,12,12" data-col="#5B4BC4"></svg>
+    </div>
+    <div class="card kpi reveal" style="animation-delay:.33s">
+      <div class="k-l">Waste classified today</div>
+      <div class="k-v num"><span id="kpiVol" data-count="148.6" data-dec="1">0</span><small>m³</small></div>
+      <div class="k-d"><b id="kpiDec">18,432</b> model decisions · 142 ms avg</div>
+      <svg class="spark" viewBox="0 0 70 26" data-spark="4,6,5,8,9,7,10,12,11,13,15,14" data-col="#D38B3C"></svg>
+    </div>
+  </div>
+
+  <div class="grid cols-ov" style="grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);margin-top:16px">
+    <div class="card reveal" style="animation-delay:.3s">
+      <div class="card-h">
+        <div><h3>Ordered vs. actually used</h3><div class="sub">In-scope material spend, € M per month. The shaded gap is material that became waste.</div></div>
+        <div class="sp"></div>
+        <div class="legend"><span><i style="background:#14191A"></i>Ordered</span><span><i style="background:var(--brand)"></i>Used</span><span><i style="background:#F1C9C3"></i>Waste gap</span></div>
+      </div>
+      <svg id="ovChart" viewBox="0 0 800 300" style="width:100%;height:auto;display:block"></svg>
+    </div>
+    <div class="card reveal" style="animation-delay:.38s">
+      <div class="card-h"><div><h3>Where the waste comes from</h3><div class="sub">Waste value by material, last 12 months</div></div></div>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <svg id="donut" viewBox="0 0 160 160" style="width:160px;height:160px;flex:none"></svg>
+        <div id="donutLeg" style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+      <div style="margin-top:20px;padding:14px;border-radius:3px;background:var(--brand-tint);font-size:12.5px;color:var(--brand);line-height:1.5">
+        <b>Biggest lever: timber.</b> 17.8% of formwork and battens end up in the skip, and the model flags 71% of the skipped panels as reusable. Fixing this one family is worth <b>€520k/yr</b>.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-ov" style="grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);margin-top:16px">
+    <div class="card reveal" style="animation-delay:.45s">
+      <div class="card-h"><div><h3>How SKIP works</h3><div class="sub">Cameras see the waste. An autoregressive model decides what it is and which order it came from. The optimizer resizes the next order.</div></div></div>
+      <svg class="pipe" viewBox="0 0 1000 236" style="width:100%;height:auto;display:block">
+        <defs>
+          <linearGradient id="gWire" x1="0" x2="1"><stop offset="0" stop-color="#20513F" stop-opacity=".1"/><stop offset="1" stop-color="#20513F" stop-opacity=".5"/></linearGradient>
+        </defs>
+        <g>
+          <path class="wire" d="M150 58 H220"/><path class="flow" d="M150 58 H220"/>
+          <path class="wire" d="M370 58 H430"/><path class="flow" d="M370 58 H430"/>
+          <path class="wire" d="M580 58 H640"/><path class="flow" d="M580 58 H640"/>
+          <path class="wire" d="M790 58 H850"/><path class="flow" d="M790 58 H850"/>
+          <path class="wire" d="M150 178 C 300 178, 420 178, 505 92"/><path class="flow" d="M150 178 C 300 178, 420 178, 505 92"/>
+          <path class="wire" d="M150 178 C 450 178, 640 178, 715 92"/><path class="flow" d="M150 178 C 450 178, 640 178, 715 92"/>
+        </g>
+        <g fill="#20513F">
+          <circle r="3.5"><animateMotion dur="1.6s" repeatCount="indefinite" path="M150 58 H220"/></circle>
+          <circle r="3.5"><animateMotion dur="1.4s" begin=".3s" repeatCount="indefinite" path="M370 58 H430"/></circle>
+          <circle r="3.5"><animateMotion dur="1.1s" begin=".1s" repeatCount="indefinite" path="M580 58 H640"/></circle>
+          <circle r="3.5"><animateMotion dur="1.6s" begin=".6s" repeatCount="indefinite" path="M790 58 H850"/></circle>
+          <circle r="3.5" fill="#D38B3C"><animateMotion dur="2.6s" repeatCount="indefinite" path="M150 178 C 300 178, 420 178, 505 92"/></circle>
+          <circle r="3.5" fill="#D38B3C"><animateMotion dur="3.2s" begin="1s" repeatCount="indefinite" path="M150 178 C 450 178, 640 178, 715 92"/></circle>
+        </g>
+        <g class="node"><rect x="10" y="22" width="140" height="72" rx="3"/><text class="ntitle" x="26" y="52">Site cameras</text><text class="nsub" x="26" y="72">38 cams · 46 skips</text></g>
+        <g class="node"><rect x="220" y="22" width="150" height="72" rx="3"/><text class="ntitle" x="236" y="52">Vision layer</text><text class="nsub" x="236" y="72">detect · segment · m³</text></g>
+        <g class="node jev"><rect x="430" y="22" width="150" height="72" rx="3"/><text class="ntitle" x="446" y="52">Autoregressive</text><text class="nsub" x="446" y="72">model · decides</text></g>
+        <g class="node"><rect x="640" y="22" width="150" height="72" rx="3"/><text class="ntitle" x="656" y="52">Order optimizer</text><text class="nsub" x="656" y="72">service ≥ 98.5%</text></g>
+        <g class="node"><rect x="850" y="22" width="140" height="72" rx="3"/><text class="ntitle" x="866" y="52">Procurement</text><text class="nsub" x="866" y="72">next PO −18%</text></g>
+        <g class="node"><rect x="10" y="142" width="140" height="72" rx="3"/><text class="ntitle" x="26" y="172">ERP orders</text><text class="nsub" x="26" y="192">4,812 lines · 18 mo</text></g>
+        <text x="300" y="200" font-size="11" fill="#8B9292" font-family="Geist Mono">order lines → matching + baseline</text>
+      </svg>
+    </div>
+    <div class="card reveal" style="animation-delay:.5s">
+      <div class="card-h"><div><h3>Live decision stream</h3><div class="sub">Every detection gets a typed answer from the autoregressive model</div></div><div class="sp"></div><span class="pill b mono" id="dps">41 / min</span></div>
+      <div class="ticker" id="ticker"></div>
+    </div>
+  </div>
+  <div class="demo-note">Demo environment · illustrative data for a fictional contractor · Skip photos: Eric Fischer (CC BY 2.0), Donald Trung Quoc Don (CC BY-SA 4.0), via Wikimedia Commons</div>
+</section>
+
+<!-- ================= RUN ================= -->
+<section class="view" data-view="run">
+  <div class="head">
+    <div>
+      <h1>Run analysis</h1>
+      <p>One run from start to finish: purchase orders and skip scans go in, and next month's orders come out, sized so supply stays safe.</p>
+    </div>
+    <div class="sp"></div>
+    <div class="run-scope">
+      <span class="chip">All 12 sites</span><span class="chip">Apr 2025 – Sep 2026</span>
+    </div>
+  </div>
+  <div class="card runbar">
+    <div class="steps" id="steps"></div>
+    <div class="run-ctl">
+      <button class="btn sm" id="rcBack" disabled title="Back (B)">←</button>
+      <button class="btn sm" id="rcPause" disabled title="Pause / resume (Space)">❚❚ Pause</button>
+      <button class="btn sm" id="rcNext" disabled title="Next (N)">Next →</button>
+      <button class="btn sm pri" id="runBtn" hidden title="Choose a target and run again">↻ New run</button>
+    </div>
+  </div>
+  <div class="run">
+    <div class="stage-col">
+      <div class="card stage" id="stage">
+        <div class="stage-idle">
+          <svg viewBox="0 0 660 340" style="width:120px;opacity:.9"><use href="#skiplogo"/></svg>
+          <h3>Ready to run</h3>
+          <p>4,812 order lines · 38 cameras · 46 skips · 214 SKUs</p>
+          <div class="sec-set" title="Share of order cycles where material must be on site on time" style="margin-top:8px">
+            <span class="sl-l" style="text-align:left">No-disruption target<small>material on site when needed</small></span>
+            <div class="sec-seg"><button data-v="97">97%</button><button data-v="98.5" class="on">98.5%</button><button data-v="99.5">99.5%</button><button data-v="99.9">99.9%</button><i></i></div>
+          </div>
+          <p class="idle-save" id="idleSave">expected saving €1.42M / yr</p>
+          <button class="btn pri" data-run>▶ Run analysis</button>
+          <p style="margin-top:6px">Space pauses · N next · B back</p>
+        </div>
+      </div>
+      <div class="card trace" id="trace">
+        <div class="trace-h"><span class="pill b">Follow one order line</span><b>PO-26-1187 · L3</b><span>Plasterboard 12.5 mm · Diagonal Mar · Yesos Llobregat</span></div>
+        <div class="trk" id="trk"></div>
+      </div>
+      <div class="card log"><div class="log-h"><span>run log</span><span id="runClock" class="mono">00:00.0</span></div><div id="log"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ORDERS ================= -->
+<section class="view" data-view="orders">
+  <div class="head">
+    <div>
+      <h1>Order intelligence</h1>
+      <p>Every purchase order line since April 2025, matched to the waste it produced. This is where safety buffers turn into skips.</p>
+    </div>
+  </div>
+  <div class="grid kpis">
+    <div class="card kpi reveal"><div class="k-l">Order lines analysed</div><div class="k-v num" data-count="4812" data-dec="0">0</div><div class="k-d">from SAP MM · 18 months</div></div>
+    <div class="card kpi reveal" style="animation-delay:.07s"><div class="k-l">Material spend in scope</div><div class="k-v num" data-count="53.0" data-dec="1" data-pre="€" data-suf="M">0</div><div class="k-d">of €62.4M total</div></div>
+    <div class="card kpi reveal" style="animation-delay:.14s"><div class="k-l">SKUs · suppliers</div><div class="k-v num"><span data-count="214" data-dec="0">0</span><small> · 37</small></div><div class="k-d">4 material families</div></div>
+    <div class="card kpi reveal" style="animation-delay:.21s"><div class="k-l">Avg. safety buffer</div><div class="k-v num"><span data-count="13.7" data-dec="1" data-pre="+">0</span><small>%</small></div><div class="k-d">industry norm 5–8%</div></div>
+    <div class="card kpi reveal" style="animation-delay:.28s"><div class="k-l">Ordered → wasted</div><div class="k-v num" data-count="5.26" data-dec="2" data-pre="€" data-suf="M">0</div><div class="k-d">9.9% of in-scope spend</div></div>
+  </div>
+
+  <div class="grid cols-oi" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-top:16px">
+    <div class="card reveal" style="animation-delay:.3s">
+      <div class="card-h"><div><h3>What happened to every euro ordered</h3><div class="sub">Share of ordered value per material family</div></div><div class="sp"></div>
+        <div class="legend"><span><i style="background:#20513F"></i>Installed</span><span><i style="background:#9DB8AC"></i>Stock / returned</span><span><i style="background:#D9483B"></i>Wasted</span></div></div>
+      <div id="mbars"></div>
+    </div>
+    <div class="card reveal" style="animation-delay:.36s">
+      <div class="card-h"><div><h3>Buffer vs. waste, per SKU</h3><div class="sub">Bubble = annual spend. Top-right SKUs never caused a stock-out, so they are the safe ones to cut.</div></div></div>
+      <svg id="scatter" viewBox="0 0 560 300" style="width:100%;height:auto;display:block"></svg>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:16px;animation-delay:.42s">
+    <div class="card-h"><div><h3>Most over-ordered SKUs</h3><div class="sub">Ranked by waste value. Waste is measured by camera and matched to the PO line by the autoregressive model.</div></div></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>SKU</th><th>Family</th><th>Supplier</th><th class="r">Lead time</th><th class="r">Buffer</th><th class="r">Observed waste</th><th class="r">Waste value / yr</th><th class="r">Stock-outs (18 mo)</th><th class="r">Match conf.</th><th>Verdict</th></tr></thead>
+      <tbody id="skuTable"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ================= LIVE ================= -->
+<section class="view" data-view="live">
+  <div class="head">
+    <div>
+      <h1>Live sites</h1>
+      <p>Skip cameras capture RGB, depth and LiDAR. The vision layer finds and measures each item. An autoregressive model answers what it is, how full the skip is and which order line it belongs to.</p>
+    </div>
+  </div>
+  <div class="card mapcard reveal">
+    <div id="map"></div>
+    <div class="map-ov">
+      <div class="mo-h">Barcelona metro · live</div>
+      <div class="mo-s"><b>12</b> sites <b>38</b> cameras <b>46</b> skips</div>
+      <div class="mo-l"><span><i style="background:#1E9E5A"></i>&lt; 60% full</span><span><i style="background:#D9921A"></i>60–80%</span><span><i style="background:#D9483B"></i>&gt; 80%, pickup due</span></div>
+    </div>
+    <div class="map-sel" id="mapSel"></div>
+  </div>
+  <div class="live">
+    <div class="card sites" id="sites"></div>
+    <div>
+      <div class="card camwrap">
+        <div class="cam-main"><canvas id="camMain"></canvas></div>
+        <div class="cam-bar">
+          <div class="seg" id="modes">
+            <button data-m="rgb" class="on">Visual</button>
+            <button data-m="seg">Segmentation</button>
+            <button data-m="depth">Depth</button>
+            <button data-m="lidar">LiDAR</button>
+          </div>
+          <div class="meta" id="camMeta">—</div>
+        </div>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="card dets">
+        <div class="card-h" style="margin-bottom:6px"><div><h3>Detections in this skip</h3><div class="sub" id="skipSum">—</div></div></div>
+        <div id="detList"></div>
+      </div>
+    </div>
+    <div class="card jev">
+      <div class="jh">
+        <div class="mark">AR</div>
+        <div><h3>Autoregressive model · decision trace</h3><div class="sub" id="jevSub">—</div></div>
+        <div class="lat"><b id="jevLat">— ms</b>1 pass · 5 questions</div>
+      </div>
+      <div id="jevQs"></div>
+      <div class="jev-foot">
+        <span class="pill b">typed output</span><span class="pill b">probability per option</span><span class="pill b" id="jevCost">€0.000004 / decision</span>
+      </div>
+      <details style="margin-top:14px">
+        <summary style="cursor:pointer;font-size:12.5px;color:var(--ink-2)">Decision schema (SKIP config)</summary>
+<div class="code" style="margin-top:10px"><span class="c"># questions SKIP asks per detection</span>
+<span class="k">material_class</span>:  <span class="n">choice</span>  [<span class="s">gypsum_board</span>, <span class="s">timber</span>, <span class="s">formwork_ply</span>,
+                          <span class="s">concrete</span>, <span class="s">rebar</span>, <span class="s">mineral_wool</span>, …42]
+<span class="k">fill_level</span>:      <span class="n">score</span>   [empty, quarter, half, three_q, full]
+<span class="k">order_line</span>:      <span class="n">choice</span>  ← open PO lines for this site
+<span class="k">reusable</span>:        <span class="n">yes/no</span>
+<span class="k">contaminated</span>:    <span class="n">yes/no</span>
+<span class="c"># context: vision features + volume + site phase</span></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ANALYTICS ================= -->
+<section class="view" data-view="analytics">
+  <div class="head">
+    <div>
+      <h1>Waste analytics</h1>
+      <p>Measured volume from 46 skips, classified per item. SKIP went live in week 20, when the first adjusted orders started arriving on site.</p>
+    </div>
+  </div>
+  <div class="card reveal">
+    <div class="card-h"><div><h3>Weekly waste volume by material</h3><div class="sub">m³ measured by camera · weeks 14–39, 2026</div></div><div class="sp"></div>
+      <div class="legend" id="areaLeg"></div></div>
+    <svg id="area" viewBox="0 0 1000 300" style="width:100%;height:auto;display:block"></svg>
+  </div>
+  <div class="grid cols-wa" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-top:16px">
+    <div class="card reveal" style="animation-delay:.1s">
+      <div class="card-h"><div><h3>Where it goes</h3><div class="sub">Tonnes per year, by material → end of life</div></div></div>
+      <svg id="sankey" viewBox="0 0 620 330" style="width:100%;height:auto;display:block"></svg>
+    </div>
+    <div class="card reveal" style="animation-delay:.16s">
+      <div class="card-h"><div><h3>Waste intensity by site</h3><div class="sub">kg per m² of floor area built · last 12 weeks</div></div></div>
+      <div class="heat" id="heat"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:11px;color:var(--ink-3)">low<div style="flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,#EEF3EF,#B5D3C0,#E5BE72,#D46F3C,#C2402F)"></div>high</div>
+    </div>
+  </div>
+  <div class="grid cols-3" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-top:16px">
+    <div class="card kpi reveal" style="animation-delay:.2s"><div class="k-l">Landfill diversion</div><div class="k-v num"><span data-count="83.2" data-dec="1">0</span><small>%</small></div><div class="k-d">was 71.4% · <b>+11.8 pts</b></div></div>
+    <div class="card kpi reveal" style="animation-delay:.25s"><div class="k-l">Reused on site</div><div class="k-v num"><span data-count="650" data-dec="0">0</span><small>t</small></div><div class="k-d">offcuts flagged reusable by the model</div></div>
+    <div class="card kpi reveal" style="animation-delay:.3s"><div class="k-l">Skip collections avoided</div><div class="k-v num" data-count="212" data-dec="0">0</div><div class="k-d">fill-level-based pickups · <b>−€54k</b></div></div>
+    <div class="card kpi reveal" style="animation-delay:.35s"><div class="k-l">Classification accuracy</div><div class="k-v num"><span data-count="96.4" data-dec="1">0</span><small>%</small></div><div class="k-d">vs. 1,200 manually audited items</div></div>
+  </div>
+</section>
+
+<!-- ================= RECS ================= -->
+<section class="view" data-view="recs">
+  <div class="head">
+    <div>
+      <h1>Order recommendations</h1>
+      <p>Smaller buffers where the data shows they are safe. Every recommendation is backtested against 18 months of real deliveries and lead times.</p>
+    </div>
+    <div class="sp"></div>
+    <button class="btn pri" id="approveAll">Approve all & push to SAP</button>
+  </div>
+
+  <div class="card reveal slider-card">
+    <div>
+      <div class="sub" style="margin-bottom:6px">Supply-risk guardrail · target service level</div>
+      <div class="sl-val num"><span id="slv">98.5</span><small>%</small></div>
+      <input type="range" class="range" id="sl" min="95" max="99.9" step="0.1" value="98.5" style="margin-top:18px">
+      <div class="rl"><span>95% aggressive</span><span>99.9% conservative</span></div>
+    </div>
+    <div class="outs">
+      <div class="out"><div class="l">Annual savings</div><div class="v num" id="o1">€1.42M</div></div>
+      <div class="out"><div class="l">Over-order cut</div><div class="v num" id="o2">−18.4%</div></div>
+      <div class="out"><div class="l">CO₂e avoided</div><div class="v num" id="o3">640 t</div></div>
+      <div class="out"><div class="l">Expected stock-outs / yr</div><div class="v num" id="o4">0.4</div></div>
+    </div>
+  </div>
+
+  <div class="grid recs" id="recs" style="margin-top:16px"></div>
+
+  <div class="card reveal" style="margin-top:16px;animation-delay:.3s">
+    <div class="card-h"><div><h3>Backtest · plasterboard 12.5 mm, Diagonal Mar Residences</h3><div class="sub">On-site stock if the recommended orders had been placed, using the real consumption and delivery timings</div></div><div class="sp"></div>
+      <div class="legend"><span><i style="background:#8B9292"></i>As ordered</span><span><i style="background:var(--brand)"></i>With SKIP</span><span><i style="background:#D9921A"></i>Safety floor</span></div></div>
+    <svg id="backtest" viewBox="0 0 1000 260" style="width:100%;height:auto;display:block"></svg>
+  </div>
+</section>
+
+<!-- ================= REPORT ================= -->
+<section class="view" data-view="report">
+  <div class="head">
+    <div>
+      <h1>Reports</h1>
+      <p>A monthly report for procurement and site management, plus CSRD-ready data (ESRS E5, resource use and circular economy).</p>
+    </div>
+    <div class="sp"></div>
+    <button class="btn" data-toast="ESRS E5 dataset exported (CSV, 2,318 rows)">Export ESRS E5 data</button>
+    <button class="btn pri" data-toast="Report PDF generated and shared with procurement">Export PDF</button>
+  </div>
+  <div class="paper reveal">
+    <div class="ph">
+      <svg viewBox="0 0 660 340"><use href="#skiplogo"/></svg>
+      <div style="flex:1"></div>
+      <div class="mono" style="font-size:11px;color:var(--ink-3);text-align:right">REPORT SKP-2026-09<br>Generated 1 Oct 2026 · 06:00</div>
+    </div>
+    <div class="stamp">AUTO-GENERATED</div>
+    <h2>Waste & order report · September 2026</h2>
+    <p style="color:var(--ink-3)">Obres Mirador S.L. · 12 sites · 38 cameras · 46 skips</p>
+
+    <h5>Summary</h5>
+    <p>September was the fourth full month with SKIP-adjusted ordering. Measured waste fell to <b>612 m³</b>, 21% below the pre-SKIP baseline, with no stock-outs at any site. Most of the gain came from plasterboard at the three fit-out sites and from formwork plywood reuse at L'Hospitalet Torre B.</p>
+
+    <div class="rk">
+      <div><span>Waste volume</span><b class="num">612 m³</b><em>−21% vs baseline</em></div>
+      <div><span>Over-order avoided</span><b class="num">€96.4k</b><em>+€11k vs Aug</em></div>
+      <div><span>CO₂e avoided</span><b class="num">54.1 t</b><em>on track for 640 t/yr</em></div>
+      <div><span>Landfill diversion</span><b class="num">83.2%</b><em>+11.8 pts</em></div>
+      <div><span>Service level</span><b class="num">98.9%</b><em>0 stock-outs</em></div>
+      <div><span>Model decisions</span><b class="num">541k</b><em>142 ms avg latency</em></div>
+    </div>
+
+    <h5>Waste by site · September</h5>
+    <svg id="repBars" viewBox="0 0 770 200" style="width:100%;height:auto;display:block"></svg>
+
+    <h5>Recommended order changes for October</h5>
+    <ol class="recl">
+      <li><b>Plasterboard 12.5 mm</b>: cut the buffer from +14% to +6% and split deliveries per floor. <span class="mono">−€312k/yr</span></li>
+      <li><b>Formwork ply 18 mm</b>: track reuse cycles (3.1 → 5) and lower the buffer to +9%. <span class="mono">−€286k/yr</span></li>
+      <li><b>Ready-mix C30/37</b>: order the final pour in 0.25 m³ steps with a call-off truck. <span class="mono">−€268k/yr</span></li>
+      <li><b>C24 battens</b>: lower the buffer from +18% to +8% and add a supplier return clause. <span class="mono">−€234k/yr</span></li>
+      <li><b>Rebar B500S</b>: switch to supplier cut-and-bend schedules. <span class="mono">−€172k/yr</span></li>
+      <li><b>Mineral wool + packaging</b>: lower the buffer to +5% and add pallet and wrap take-back. <span class="mono">−€148k/yr</span></li>
+    </ol>
+
+    <h5>Method</h5>
+    <p style="font-size:12.5px">Volumes come from calibrated depth and LiDAR scans of each skip, with an estimated ±6% error. Items are classified by the vision layer and labelled by an autoregressive model, which answers typed questions (material, fill level, order line, reusability, contamination) with probabilities. Recommendations are optimized against a 98.5% service-level constraint and backtested on 4,812 historic order lines.</p>
+  </div>
+  <div class="demo-note">Demo environment · illustrative data for a fictional contractor · Skip photos: Eric Fischer (CC BY 2.0), Donald Trung Quoc Don (CC BY-SA 4.0), via Wikimedia Commons</div>
+</section>
+
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"><i>✓</i><span></span></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ease = t => 1 - Math.pow(1 - t, 3);
+const tween = (dur, fn, delay = 0) => {
+  const t0 = performance.now() + delay;
+  const step = now => {
+    const t = Math.min(1, Math.max(0, (now - t0) / dur));
+    fn(ease(t));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
+const fmt = (v, d = 0) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+const MAT = {
+  drywall:    { name: 'Drywall & gypsum',      color: '#6D7BEA' },
+  timber:     { name: 'Timber & formwork',     color: '#D38B3C' },
+  concrete:   { name: 'Concrete & rebar',      color: '#5E6876' },
+  insulation: { name: 'Insulation & packaging', color: '#D9668B' },
+};
+
+const SITES = [
+  { n: 'Diagonal Mar Residences', ph: 'Interior fit-out', cams: 4, skips: 5 },
+  { n: 'Poblenou 22@ Offices',    ph: 'Envelope',         cams: 4, skips: 5 },
+  { n: 'Sant Cugat Tech Campus',  ph: 'Structure',        cams: 3, skips: 4 },
+  { n: 'Badalona Seafront Homes', ph: 'Finishing',        cams: 3, skips: 4 },
+  { n: "L'Hospitalet Torre B",    ph: 'Structure',        cams: 4, skips: 5 },
+  { n: 'Sabadell Logistics Hub',  ph: 'Envelope',         cams: 3, skips: 3 },
+  { n: 'Gràcia Heritage Rehab',   ph: 'Interior fit-out', cams: 2, skips: 3 },
+  { n: 'Castelldefels Villas',    ph: 'Finishing',        cams: 2, skips: 3 },
+  { n: 'Terrassa Secondary School', ph: 'Interior fit-out', cams: 3, skips: 4 },
+  { n: 'Mataró Hospital Wing',    ph: 'Structure',        cams: 4, skips: 4 },
+  { n: 'El Prat Cargo Hangar',    ph: 'Envelope',         cams: 3, skips: 3 },
+  { n: 'Sants Mixed-Use Block',   ph: 'Structure',        cams: 3, skips: 3 },
+];
+const COORDS = [[41.4095, 2.2165], [41.4030, 2.1960], [41.4740, 2.0850], [41.4440, 2.2450], [41.3590, 2.1000], [41.5480, 2.1070], [41.4030, 2.1570], [41.2800, 1.9770], [41.5630, 2.0110], [41.5380, 2.4440], [41.3000, 2.0800], [41.3750, 2.1350]];
+SITES.forEach((s, i) => s.ll = COORDS[i]);
+let camCounter = 1;
+SITES.forEach((s, i) => { s.i = i; s.camIds = Array.from({ length: s.cams }, () => camCounter++); });
+
+/* ---------------- toast ---------------- */
+let toastT;
+function toast(msg){
+  const t = $('#toast'); $('span', t).textContent = msg;
+  t.classList.add('on'); clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('on'), 2600);
+}
+$$('[data-toast]').forEach(b => b.addEventListener('click', () => toast(b.dataset.toast)));
+
+/* ---------------- count up ---------------- */
+function countUp(root){
+  $$('[data-count]', root).forEach((n, k) => {
+    const to = parseFloat(n.dataset.count), d = +n.dataset.dec || 0;
+    const pre = n.dataset.pre || '', suf = n.dataset.suf || '';
+    const sign = to < 0 ? '−' : '';
+    tween(1500, e => { n.textContent = sign + pre + fmt(Math.abs(to) * e, d) + suf; }, 150 + k * 60);
+  });
+}
+
+/* ---------------- sparklines ---------------- */
+function sparks(root){
+  $$('svg[data-spark]', root).forEach(s => {
+    s.innerHTML = '';
+    const v = s.dataset.spark.split(',').map(Number), mx = Math.max(...v), mn = Math.min(...v);
+    const pts = v.map((y, i) => [2 + i * (66 / (v.length - 1)), 23 - (y - mn) / (mx - mn || 1) * 19]);
+    const d = 'M' + pts.map(p => p.join(',')).join(' L');
+    el('path', { d: d + ` L68,26 L2,26 Z`, fill: s.dataset.col, opacity: .08 }, s);
+    el('path', { d, fill: 'none', stroke: s.dataset.col, 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, class: 'draw' }, s);
+    const l = pts[pts.length - 1];
+    el('circle', { cx: l[0], cy: l[1], r: 2.4, fill: s.dataset.col, class: 'pop', style: 'animation-delay:1.4s' }, s);
+  });
+}
+
+/* ---------------- smooth path ---------------- */
+function smooth(pts){
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++){
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+function clipReveal(svg, id, x, y, w, h, dur = 1800, delay = 0){
+  const defs = el('defs', {}, svg);
+  const cp = el('clipPath', { id }, defs);
+  const r = el('rect', { x, y, width: 0, height: h }, cp);
+  tween(dur, e => r.setAttribute('width', w * e), delay);
+  return `url(#${id})`;
+}
+
+/* ================= OVERVIEW ================= */
+const MONTHS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+function ovChart(){
+  const svg = $('#ovChart'); svg.innerHTML = '';
+  const R = mulberry32(7);
+  const used = [], ordered = [];
+  for (let i = 0; i < 18; i++){
+    const u = 3.95 + .35 * Math.sin(i / 2.1) + (R() - .5) * .18;
+    const w = i < 13 ? .099 + (R() - .5) * .012 : .099 - (i - 12) / 5 * .028 + (R() - .5) * .004;
+    used.push(u); ordered.push(u / (1 - w));
+  }
+  const L = 44, Rt = 790, T = 16, B = 260, mn = 3.2, mx = 5.0;
+  const X = i => L + i * (Rt - L) / 17, Y = v => B - (v - mn) / (mx - mn) * (B - T);
+  const ax = el('g', { class: 'ax' }, svg);
+  for (let v = 3.5; v <= 5.01; v += .5){
+    el('line', { x1: L, x2: Rt, y1: Y(v), y2: Y(v) }, ax);
+    el('text', { x: L - 10, y: Y(v) + 4, 'text-anchor': 'end' }, ax).textContent = '€' + v.toFixed(1) + 'M';
+  }
+  MONTHS.forEach((m, i) => {
+    if (i % 2 === 0 || i === 17) el('text', { x: X(i), y: B + 22, 'text-anchor': 'middle' }, ax).textContent = m + (i === 0 || i === 9 ? (i === 0 ? ' ’25' : ' ’26') : '');
+  });
+  // go-live band
+  const gx = X(12.5);
+  el('rect', { x: gx, y: T, width: Rt - gx, height: B - T, fill: '#E5EFE9', opacity: .55, class: 'fade', style: 'animation-delay:1.2s' }, svg);
+  el('line', { x1: gx, x2: gx, y1: T, y2: B, stroke: '#20513F', 'stroke-dasharray': '3 4', class: 'fade', style: 'animation-delay:1.2s' }, svg);
+  const lab = el('g', { class: 'fade', style: 'animation-delay:1.4s' }, svg);
+  el('rect', { x: gx + 8, y: T + 6, width: 128, height: 22, rx: 3, fill: '#20513F' }, lab);
+  el('text', { x: gx + 72, y: T + 21, 'text-anchor': 'middle', fill: '#fff', 'font-size': 11, 'font-weight': 600 }, lab).textContent = 'SKIP live · May 2026';
+  const po = ordered.map((v, i) => [X(i), Y(v)]), pu = used.map((v, i) => [X(i), Y(v)]);
+  const clip = clipReveal(svg, 'ovc', L, 0, Rt - L + 10, 300, 1800, 200);
+  const g = el('g', { 'clip-path': clip }, svg);
+  const gap = smooth(po) + ' L' + smooth(pu.slice().reverse()).slice(1) + ' Z';
+  el('path', { d: gap, fill: '#F1C9C3', opacity: .75 }, g);
+  el('path', { d: smooth(pu), fill: 'none', stroke: '#20513F', 'stroke-width': 2.4 }, g);
+  el('path', { d: smooth(po), fill: 'none', stroke: '#14191A', 'stroke-width': 2 }, g);
+  // annotations
+  const a1 = el('g', { class: 'fade', style: 'animation-delay:2s' }, svg);
+  const mid = 5;
+  el('line', { x1: X(mid), x2: X(mid), y1: Y(ordered[mid]) + 3, y2: Y(used[mid]) - 3, stroke: '#D9483B', 'stroke-width': 1.5 }, a1);
+  el('text', { x: X(mid) + 8, y: (Y(ordered[mid]) + Y(used[mid])) / 2 + 4, 'font-size': 11.5, fill: '#A93427', 'font-weight': 600 }, a1).textContent = '9.9% wasted';
+  const e = 16;
+  el('line', { x1: X(e), x2: X(e), y1: Y(ordered[e]) + 3, y2: Y(used[e]) - 3, stroke: '#20513F', 'stroke-width': 1.5 }, a1);
+  el('text', { x: X(e) - 8, y: Y(used[e]) + 22, 'font-size': 11.5, fill: '#20513F', 'font-weight': 600, 'text-anchor': 'end' }, a1).textContent = '7.2% wasted';
+  [po, pu].forEach((p, k) => el('circle', { cx: p[17][0], cy: p[17][1], r: 4, fill: k ? '#20513F' : '#14191A', stroke: '#fff', 'stroke-width': 2, class: 'pop', style: 'animation-delay:1.9s' }, svg));
+}
+
+function donut(){
+  const svg = $('#donut'); svg.innerHTML = '';
+  const data = [['drywall', .966], ['timber', 1.709], ['concrete', 1.903], ['insulation', .680]];
+  const tot = data.reduce((a, b) => a + b[1], 0);
+  el('circle', { cx: 80, cy: 80, r: 60, fill: 'none', stroke: '#EFEDE7', 'stroke-width': 22 }, svg);
+  let acc = 0;
+  const arcs = data.map(([k, v]) => {
+    const c = el('circle', { cx: 80, cy: 80, r: 60, fill: 'none', stroke: MAT[k].color, 'stroke-width': 22, pathLength: 100, 'stroke-dasharray': '0 100', transform: 'rotate(-90 80 80)' }, svg);
+    const st = acc; acc += v / tot * 100;
+    return { c, st, len: v / tot * 100 };
+  });
+  tween(1600, e => arcs.forEach(a => {
+    const len = Math.max(0, Math.min(a.len, e * 100 - a.st) - .8);
+    a.c.setAttribute('stroke-dasharray', `${Math.max(0, len)} 100`);
+    a.c.setAttribute('stroke-dashoffset', -a.st);
+  }), 300);
+  el('text', { x: 80, y: 78, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 650, fill: '#14191A', 'letter-spacing': '-.5' }, svg).textContent = '€5.26M';
+  el('text', { x: 80, y: 97, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#8B9292' }, svg).textContent = 'wasted / year';
+  $('#donutLeg').innerHTML = data.map(([k, v]) => `
+    <div style="display:grid;grid-template-columns:10px 1fr auto;gap:9px;align-items:center;font-size:12.5px">
+      <i style="width:10px;height:10px;border-radius:3px;background:${MAT[k].color}"></i>
+      <span>${MAT[k].name}</span><b class="mono" style="font-weight:500;font-size:12px">${v >= 1 ? '€' + v.toFixed(2) + 'M' : '€' + Math.round(v * 1000) + 'k'}</b>
+    </div>`).join('');
+}
+
+/* decision stream */
+const CLS = {
+  gypsum:     { label: 'Gypsum board',      mat: 'drywall',    vis: [224, 221, 212], seg: '#8E9BFF' },
+  timber:     { label: 'Timber / formwork', mat: 'timber',     vis: [170, 118, 70],  seg: '#F5A85C' },
+  concrete:   { label: 'Concrete rubble',   mat: 'concrete',   vis: [146, 147, 144], seg: '#B5C0CE' },
+  rebar:      { label: 'Rebar offcut',      mat: 'concrete',   vis: [128, 70, 48],   seg: '#FF7A59' },
+  insulation: { label: 'Mineral wool',      mat: 'insulation', vis: [218, 186, 82],  seg: '#FF8FB8' },
+  packaging:  { label: 'Packaging film',    mat: 'insulation', vis: [196, 206, 214], seg: '#FFC2D8' },
+  debris:     { label: 'Mixed debris',      mat: null,         vis: [96, 90, 82],    seg: '#555' },
+};
+const CLS_KEYS = Object.keys(CLS);
+const PO_DESC = {
+  gypsum: ['Plasterboard 12.5 mm std', 'Plasterboard 15 mm fire', 'Moisture board 12.5 mm'],
+  timber: ['Formwork ply 18 mm', 'C24 battens 45×70', 'Shuttering boards 22 mm'],
+  concrete: ['Ready-mix C30/37', 'Precast lintels', 'Blockwork 20 cm'],
+  rebar: ['Rebar B500S Ø12', 'Rebar B500S Ø16', 'Mesh ME 15×15'],
+  insulation: ['Mineral wool 100 mm', 'Mineral wool 50 mm', 'EPS 80 mm'],
+  packaging: ['Pallet wrap · supplier', 'Delivery packaging', 'Board pallet covers'],
+};
+const tickR = mulberry32(99);
+function tickRow(){
+  const keys = ['gypsum', 'timber', 'concrete', 'rebar', 'insulation', 'packaging'];
+  const k = keys[Math.floor(tickR() * keys.length)];
+  const s = SITES[Math.floor(tickR() * 12)];
+  const cam = s.camIds[Math.floor(tickR() * s.camIds.length)];
+  const po = `PO-26-${1100 + Math.floor(tickR() * 260)}`;
+  const p = (.86 + tickR() * .13).toFixed(2);
+  const vol = (.05 + tickR() * .6).toFixed(2);
+  const now = new Date();
+  const div = document.createElement('div');
+  div.className = 'tick';
+  div.innerHTML = `<span class="t">${now.toTimeString().slice(0, 8)}</span><span class="c">CAM-${String(cam).padStart(2, '0')}</span>
+    <span class="w"><i style="background:${MAT[CLS[k].mat].color}"></i>${CLS[k].label} → ${po} · ${vol} m³</span><span class="p">${p}</span>`;
+  return div;
+}
+function startTicker(){
+  const t = $('#ticker');
+  for (let i = 0; i < 6; i++) t.appendChild(tickRow());
+  setInterval(() => {
+    t.prepend(tickRow());
+    while (t.children.length > 6) t.lastChild.remove();
+    const d = $('#kpiDec');
+    const v = parseInt(d.textContent.replace(/,/g, ''), 10) + Math.floor(3 + tickR() * 9);
+    d.textContent = fmt(v);
+    $('#dps').textContent = (38 + Math.floor(tickR() * 9)) + ' / min';
+  }, 1700);
+}
+
+/* ================= ORDERS ================= */
+function mbars(){
+  const rows = [
+    ['drywall', 81.2, 4.6, 14.2, 6.8], ['timber', 74.9, 7.3, 17.8, 9.6],
+    ['concrete', 91.6, 2.3, 6.1, 31.2], ['insulation', 82.1, 5.3, 12.6, 5.4],
+  ];
+  const box = $('#mbars');
+  box.innerHTML = rows.map(([k, a, b, c, sp]) => `
+    <div class="mrow">
+      <div class="nm"><i style="background:${MAT[k].color}"></i>${MAT[k].name}</div>
+      <div class="hbar"><div style="background:#20513F" data-w="${a}">${a}%</div><div style="background:#9DB8AC" data-w="${b}"></div><div style="background:#D9483B" data-w="${c}"></div></div>
+      <div class="v"><b style="color:#A93427;font-weight:600">${c}%</b><br><span style="font-size:11px;color:var(--ink-3)">of €${sp}M</span></div>
+    </div>`).join('') + `<div style="font-size:12px;color:var(--ink-3);margin-top:8px">Timber has the worst ratio: €1.71M of formwork and battens are skipped each year, and 62% of it is single-use formwork that could have been reused.</div>`;
+  requestAnimationFrame(() => setTimeout(() => $$('.hbar > div', box).forEach((d, i) => d.style.width = d.dataset.w + '%'), 250));
+}
+
+function scatter(){
+  const svg = $('#scatter'); svg.innerHTML = '';
+  const L = 58, Rt = 548, T = 12, B = 262;
+  const X = v => L + v / 26 * (Rt - L), Y = v => B - v / 24 * (B - T);
+  const ax = el('g', { class: 'ax' }, svg);
+  [0, 5, 10, 15, 20, 25].forEach(v => { el('line', { x1: X(v), x2: X(v), y1: T, y2: B }, ax); el('text', { x: X(v), y: B + 18, 'text-anchor': 'middle' }, ax).textContent = '+' + v + '%'; });
+  [0, 5, 10, 15, 20].forEach(v => { el('line', { x1: L, x2: Rt, y1: Y(v), y2: Y(v) }, ax); el('text', { x: L - 8, y: Y(v) + 4, 'text-anchor': 'end' }, ax).textContent = v + '%'; });
+  el('text', { x: Rt, y: B + 34, 'text-anchor': 'end', 'font-size': 11, fill: '#8B9292' }, svg).textContent = 'safety buffer ordered →';
+  el('text', { x: 12, y: T + 4, 'font-size': 11, fill: '#8B9292', transform: `rotate(-90 12 ${T + 4})`, 'text-anchor': 'end' }, svg).textContent = 'observed waste →';
+  const zone = el('g', { class: 'fade', style: 'animation-delay:1.3s' }, svg);
+  el('rect', { x: X(10), y: Y(24), width: X(26) - X(10), height: Y(9) - Y(24), rx: 3, fill: '#E5EFE9', stroke: '#20513F', 'stroke-dasharray': '4 4' }, zone);
+  el('text', { x: X(25.4), y: Y(22.6), 'text-anchor': 'end', 'font-size': 11.5, fill: '#20513F', 'font-weight': 600 }, zone).textContent = 'Safe to cut · 0 stock-outs';
+  el('text', { x: X(25.4), y: Y(21.2), 'text-anchor': 'end', 'font-size': 10.5, fill: '#2E6E56' }, zone).textContent = '27 SKUs · €1.1M of waste';
+  const R = mulberry32(42), keys = Object.keys(MAT);
+  for (let i = 0; i < 46; i++){
+    const k = keys[i % 4];
+    const b = 2 + R() * 22, w = Math.max(1, Math.min(22.5, b * (.65 + R() * .35) + (R() - .5) * 4 + (k === 'concrete' ? -3 : 0)));
+    const r = 3 + Math.pow(R(), 2) * 11;
+    el('circle', { cx: X(b), cy: Y(w), r, fill: MAT[k].color, 'fill-opacity': .55, stroke: MAT[k].color, 'stroke-width': 1.2, class: 'pop', style: `animation-delay:${.3 + i * .025}s` }, svg);
+  }
+}
+
+const SKUS = [
+  ['Formwork ply 18 mm 2500×1250', 'timber', 'Fusteria Vallès', '5 d', 20, 24.1, 466, 0, .93, 'cut'],
+  ['Plasterboard 12.5 mm std', 'drywall', 'Yesos Llobregat', '3 d', 14, 15.8, 412, 0, .96, 'cut'],
+  ['Ready-mix C30/37 (final pour)', 'concrete', 'Formigons Garraf', 'same day', 11, 8.4, 388, 0, .91, 'cut'],
+  ['C24 battens 45×70', 'timber', 'Fusteria Vallès', '4 d', 18, 19.2, 341, 1, .94, 'cut'],
+  ['Rebar B500S Ø12 (12 m bars)', 'concrete', 'Acers Besòs', '6 d', 9, 7.4, 247, 0, .89, 'cut'],
+  ['Mineral wool 100 mm', 'insulation', 'Aïllaments Nord', '7 d', 12, 13.1, 196, 0, .92, 'cut'],
+  ['Plasterboard 15 mm fire-rated', 'drywall', 'Yesos Llobregat', '9 d', 10, 9.6, 141, 2, .95, 'watch'],
+  ['Precast lintels 1.2 m', 'concrete', 'Prefabricats Anoia', '14 d', 6, 3.1, 58, 3, .87, 'keep'],
+];
+function skuTable(){
+  $('#skuTable').innerHTML = SKUS.map((r, i) => `
+    <tr style="animation-delay:${.35 + i * .06}s">
+      <td><b style="font-weight:550">${r[0]}</b></td>
+      <td><span class="matdot" style="background:${MAT[r[1]].color}"></span>${MAT[r[1]].name.split(' ')[0]}</td>
+      <td>${r[2]}</td><td class="r mono">${r[3]}</td><td class="r mono">+${r[4]}%</td>
+      <td class="r mono" style="color:${r[5] > 12 ? '#A93427' : 'inherit'}">${r[5]}%</td>
+      <td class="r mono">€${r[6]}k</td><td class="r mono">${r[7]}</td><td class="r mono">${r[8].toFixed(2)}</td>
+      <td>${r[9] === 'cut' ? '<span class="pill g">Cut buffer</span>' : r[9] === 'watch' ? '<span class="pill a">Cut carefully</span>' : '<span class="pill r">Keep, supply risk</span>'}</td>
+    </tr>`).join('');
+}
+
+/* ================= ANALYTICS ================= */
+function areaChart(){
+  const svg = $('#area'); svg.innerHTML = '';
+  const keys = ['concrete', 'timber', 'drywall', 'insulation'];
+  const base = { concrete: 44, timber: 52, drywall: 38, insulation: 30 };
+  const R = mulberry32(5);
+  const N = 26, data = keys.map(k => Array.from({ length: N }, (_, i) => {
+    const w = 14 + i, cut = w >= 20 ? Math.min(1, (w - 20) / 8) : 0;
+    const red = { concrete: .14, timber: .27, drywall: .31, insulation: .2 }[k];
+    return base[k] * (1 - red * cut) * (1 + .12 * Math.sin(i / 1.7 + keys.indexOf(k))) * (.93 + R() * .14);
+  }));
+  const stack = []; let acc = new Array(N).fill(0);
+  data.forEach(d => { const lo = acc.slice(); acc = acc.map((a, i) => a + d[i]); stack.push([lo, acc.slice()]); });
+  const L = 46, Rt = 990, T = 14, B = 262, mx = 200;
+  const X = i => L + i * (Rt - L) / (N - 1), Y = v => B - v / mx * (B - T);
+  const ax = el('g', { class: 'ax' }, svg);
+  [0, 50, 100, 150, 200].forEach(v => { el('line', { x1: L, x2: Rt, y1: Y(v), y2: Y(v) }, ax); el('text', { x: L - 10, y: Y(v) + 4, 'text-anchor': 'end' }, ax).textContent = v; });
+  for (let i = 0; i < N; i += 3) el('text', { x: X(i), y: B + 20, 'text-anchor': 'middle' }, ax).textContent = 'W' + (14 + i);
+  const clip = clipReveal(svg, 'arc', L, 0, Rt - L + 4, 300, 2000, 150);
+  const g = el('g', { 'clip-path': clip }, svg);
+  stack.forEach(([lo, hi], k) => {
+    const top = hi.map((v, i) => [X(i), Y(v)]), bot = lo.map((v, i) => [X(i), Y(v)]).reverse();
+    el('path', { d: smooth(top) + ' L' + smooth(bot).slice(1) + ' Z', fill: MAT[keys[k]].color, opacity: .82 }, g);
+    el('path', { d: smooth(top), fill: 'none', stroke: '#fff', 'stroke-width': 1.2, opacity: .8 }, g);
+  });
+  const gx = X(6);
+  const m = el('g', { class: 'fade', style: 'animation-delay:1.1s' }, svg);
+  el('line', { x1: gx, x2: gx, y1: T, y2: B, stroke: '#14191A', 'stroke-dasharray': '3 4' }, m);
+  el('rect', { x: gx + 8, y: T, width: 150, height: 22, rx: 3, fill: '#14191A' }, m);
+  el('text', { x: gx + 83, y: T + 15, 'text-anchor': 'middle', fill: '#fff', 'font-size': 11, 'font-weight': 600 }, m).textContent = 'W20 · adjusted orders land';
+  const m2 = el('g', { class: 'fade', style: 'animation-delay:2s' }, svg);
+  el('rect', { x: X(21) - 10, y: Y(acc[21]) - 46, width: 128, height: 34, rx: 3, fill: '#fff', stroke: '#E6E4DD' }, m2);
+  el('text', { x: X(21), y: Y(acc[21]) - 25, 'font-size': 13, 'font-weight': 650, fill: '#20513F' }, m2).textContent = '−24% m³ / week';
+  $('#areaLeg').innerHTML = keys.map(k => `<span><i style="background:${MAT[k].color}"></i>${MAT[k].name}</span>`).join('');
+}
+
+function sankey(){
+  const svg = $('#sankey'); svg.innerHTML = '';
+  const src = [['concrete', 1940], ['timber', 620], ['drywall', 410], ['insulation', 180]];
+  const dst = [['Reused on site', 650, '#20513F'], ['Recycled', 1970, '#5FA684'], ['Landfill', 530, '#D9483B']];
+  const flows = { concrete: [420, 1350, 170], timber: [180, 300, 140], drywall: [40, 250, 120], insulation: [10, 70, 100] };
+  const tot = 3150, H = 300, gap = 12, sc = (H - gap * 3) / tot, x0 = 130, x1 = 470, nw = 12;
+  let y = 10; const sp = {};
+  src.forEach(([k, v]) => { sp[k] = { y, h: v * sc, off: 0 }; y += v * sc + gap; });
+  y = 10 + (gap * 3 - gap * 2) / 2; const dp = [];
+  dst.forEach(([n, v]) => { dp.push({ y, h: v * sc, off: 0 }); y += v * sc + gap; });
+  const g = el('g', { 'clip-path': clipReveal(svg, 'skc', 0, 0, 620, 330, 1800, 200) }, svg);
+  src.forEach(([k]) => {
+    flows[k].forEach((v, j) => {
+      const h = v * sc, s = sp[k], d = dp[j];
+      const ya = s.y + s.off, yb = d.y + d.off; s.off += h; d.off += h;
+      const xa = x0 + nw, xb = x1, cx = (xa + xb) / 2;
+      el('path', { d: `M${xa},${ya} C${cx},${ya} ${cx},${yb} ${xb},${yb} L${xb},${yb + h} C${cx},${yb + h} ${cx},${ya + h} ${xa},${ya + h} Z`, fill: j === 2 ? '#D9483B' : MAT[k].color, opacity: j === 2 ? .28 : .3 }, g);
+    });
+  });
+  src.forEach(([k, v]) => {
+    const s = sp[k];
+    el('rect', { x: x0, y: s.y, width: nw, height: s.h, rx: 3, fill: MAT[k].color }, svg);
+    el('text', { x: x0 - 10, y: s.y + s.h / 2 - 2, 'text-anchor': 'end', 'font-size': 12, 'font-weight': 600, fill: '#14191A' }, svg).textContent = MAT[k].name.split(' ')[0];
+    el('text', { x: x0 - 10, y: s.y + s.h / 2 + 13, 'text-anchor': 'end', 'font-size': 11, fill: '#8B9292', 'font-family': 'Geist Mono' }, svg).textContent = fmt(v) + ' t';
+  });
+  dst.forEach(([n, v, c], j) => {
+    const d = dp[j];
+    el('rect', { x: x1, y: d.y, width: nw, height: d.h, rx: 3, fill: c }, svg);
+    el('text', { x: x1 + nw + 10, y: d.y + d.h / 2 - 2, 'font-size': 12, 'font-weight': 600, fill: '#14191A' }, svg).textContent = n;
+    el('text', { x: x1 + nw + 10, y: d.y + d.h / 2 + 13, 'font-size': 11, fill: '#8B9292', 'font-family': 'Geist Mono' }, svg).textContent = fmt(v) + ' t · ' + Math.round(v / tot * 100) + '%';
+  });
+}
+
+function heat(){
+  const box = $('#heat'); const R = mulberry32(11);
+  const cols = ['#EEF3EF', '#D3E6DA', '#B5D3C0', '#E8D9A8', '#E5BE72', '#DE9A4B', '#D46F3C', '#C2402F'];
+  let h = '';
+  SITES.forEach((s, si) => {
+    const f = .6 + R() * .9 + (s.ph === 'Interior fit-out' ? .25 : 0);
+    h += `<div class="hl">${s.n}</div>`;
+    for (let w = 0; w < 12; w++){
+      const v = Math.max(0, Math.min(7, Math.round((f * (1 - w * .035) * 4.2 + (R() - .5) * 2.2))));
+      h += `<div class="hc" title="${s.n} · W${28 + w}: ${(v * 1.6 + 2.1).toFixed(1)} kg/m²" style="background:${cols[v]};animation-delay:${(si * 12 + w) * .008 + .2}s"></div>`;
+    }
+  });
+  h += '<div></div>' + Array.from({ length: 12 }, (_, w) => `<div class="hx">${w % 2 ? '' : 'W' + (28 + w)}</div>`).join('');
+  box.innerHTML = h;
+}
+
+/* ================= RECS ================= */
+const RECS = [
+  { k: 'drywall', t: 'Plasterboard 12.5 mm std', s: 'Yesos Llobregat · 7 sites', save: 312, b0: 14, b1: 6, lead: '3 days', otif: '97.2%', so: '0', why: 'The model matched €412k of offcuts and unopened sheets to this SKU. Short lead time means a smaller buffer carries almost no risk. Split deliveries per floor.' },
+  { k: 'timber', t: 'Formwork ply 18 mm', s: 'Fusteria Vallès · 5 sites', save: 286, b0: 20, b1: 9, lead: '5 days', otif: '95.8%', so: '0', why: 'On average a panel is used 3.1 times before it is skipped. The model flags 71% of skipped panels as reusable. Track cycles and aim for 5.' },
+  { k: 'concrete', t: 'Ready-mix C30/37 · final pour', s: 'Formigons Garraf · 6 sites', save: 268, b0: 11, b1: 4, lead: 'same day', otif: '99.1%', so: '0', why: 'Last trucks come back with 0.9 m³ on average. Order the final pour in 0.25 m³ steps and call off a small tail truck.' },
+  { k: 'timber', t: 'C24 battens 45×70', s: 'Fusteria Vallès · 9 sites', save: 234, b0: 18, b1: 8, lead: '4 days', otif: '96.4%', so: '1', why: 'The single stock-out in 18 months came from a supplier delay, not the buffer size. A return clause covers the rest.' },
+  { k: 'concrete', t: 'Rebar B500S Ø12 / Ø16', s: 'Acers Besòs · 5 sites', save: 172, b0: 9, b1: 4, lead: '6 days', otif: '98.0%', so: '0', why: 'Cut-on-site offcuts make up 7.4% of the tonnage. Supplier cut-and-bend schedules bring that down to about 3%.' },
+  { k: 'insulation', t: 'Mineral wool 100 mm + packaging', s: 'Aïllaments Nord · 4 sites', save: 148, b0: 12, b1: 5, lead: '7 days', otif: '97.6%', so: '0', why: 'Lower the buffer, and have the supplier take back pallets and wrap. Packaging is 38% of this skip stream by volume.' },
+];
+let slFactor = 1;
+function recCards(){
+  $('#recs').innerHTML = RECS.map((r, i) => `
+    <div class="card rec reveal" style="animation-delay:${.15 + i * .07}s" data-i="${i}">
+      <div class="rt">
+        <div class="ic" style="background:${MAT[r.k].color}">${MAT[r.k].name.slice(0, 2).toUpperCase()}</div>
+        <div><h4>${r.t}</h4><div class="sku">${r.s}</div></div>
+        <div class="save num"><span class="sv" data-base="${r.save}">−€${r.save}k</span><small>per year</small></div>
+      </div>
+      <div>
+        <div class="buf"><span>Today</span><div class="tr"><div style="background:#B9B7AE" data-w="${r.b0 / 22 * 100}"></div></div><span class="pv">+${r.b0}%</span></div>
+        <div class="buf" style="margin-top:6px"><span>SKIP</span><div class="tr"><div class="nb" style="background:var(--brand)" data-b1="${r.b1}"></div></div><span class="pv nbv">+${r.b1}%</span></div>
+      </div>
+      <div class="facts"><div>Lead time<b>${r.lead}</b></div><div>Supplier OTIF<b>${r.otif}</b></div><div>Stock-outs<b>${r.so} in 18 mo</b></div></div>
+      <p class="why">${r.why}</p>
+      <div class="acts"><button class="btn sim">Simulate</button><button class="btn pri ap">Approve</button></div>
+    </div>`).join('');
+  setTimeout(() => { $$('#recs .tr div[data-w]').forEach(d => d.style.width = d.dataset.w + '%'); updateRecBufs(); }, 400);
+  $$('#recs .ap').forEach(b => b.addEventListener('click', e => approve(e.target.closest('.rec'))));
+  $$('#recs .sim').forEach(b => b.addEventListener('click', () => { $('#backtest').scrollIntoView({ behavior: 'smooth', block: 'center' }); backtest(); }));
+}
+function approve(card, silent){
+  if (card.classList.contains('ok')) return;
+  card.classList.add('ok');
+  const b = $('.ap', card); b.textContent = '✓ Approved'; b.style.background = '#1E9E5A'; b.style.borderColor = '#1E9E5A';
+  if (!silent) toast(`${RECS[card.dataset.i].t}: pushed to SAP MM as a draft PO template`);
+}
+$('#approveAll').addEventListener('click', () => {
+  $$('#recs .rec').forEach((c, i) => setTimeout(() => approve(c, true), i * 140));
+  setTimeout(() => toast('6 recommendations pushed to procurement · €1.42M/yr'), 900);
+});
+function updateRecBufs(){
+  $$('#recs .rec').forEach((c, i) => {
+    const r = RECS[i];
+    const b1 = Math.max(1, Math.min(r.b0, r.b1 / Math.pow(slFactor, 1.1)));
+    $('.nb', c).style.width = (b1 / 22 * 100) + '%';
+    $('.nbv', c).textContent = '+' + b1.toFixed(0) + '%';
+    $('.sv', c).textContent = '−€' + Math.round(r.save * slFactor) + 'k';
+  });
+}
+function slider(){
+  const s = $('#sl');
+  const upd = () => {
+    const v = parseFloat(s.value);
+    slFactor = v <= 98.5 ? 1 + (98.5 - v) * .115 : 1 - (v - 98.5) / 1.4 * .56;
+    const so = .4 * Math.exp((98.5 - v) * .81);
+    $('#slv').textContent = v.toFixed(1);
+    $('#o1').textContent = '€' + (1.42 * slFactor).toFixed(2) + 'M';
+    $('#o2').textContent = '−' + (18.4 * slFactor).toFixed(1) + '%';
+    $('#o3').textContent = Math.round(640 * slFactor) + ' t';
+    const o4 = $('#o4'); o4.textContent = so < .1 ? '< 0.1' : so.toFixed(1);
+    o4.classList.toggle('bad', so > 2);
+    updateRecBufs();
+  };
+  s.addEventListener('input', upd); upd();
+}
+function backtest(){
+  const svg = $('#backtest'); svg.innerHTML = '';
+  const N = 26, L = 46, Rt = 990, T = 12, B = 222, mx = 1150;
+  const X = i => L + i * (Rt - L) / (N - 1), Y = v => B - v / mx * (B - T);
+  const R = mulberry32(3);
+  const asIs = [], skip = []; let a = 520, s = 340;
+  const floor = 120;
+  for (let i = 0; i < N; i++){
+    const use = 70 + R() * 50;
+    if (i % 3 === 0){ a += 290; s += 230; }
+    a -= use; s -= use;
+    if (s < floor + 15) s = floor + 15 + R() * 25;
+    if (a < 250) a += 160;
+    asIs.push(a); skip.push(s);
+  }
+  const ax = el('g', { class: 'ax' }, svg);
+  [0, 300, 600, 900].forEach(v => { el('line', { x1: L, x2: Rt, y1: Y(v), y2: Y(v) }, ax); el('text', { x: L - 10, y: Y(v) + 4, 'text-anchor': 'end' }, ax).textContent = v; });
+  for (let i = 0; i < N; i += 3) el('text', { x: X(i), y: B + 20, 'text-anchor': 'middle' }, ax).textContent = 'W' + (14 + i);
+  el('text', { x: L, y: B + 36, 'font-size': 10.5, fill: '#8B9292' }, svg).textContent = 'sheets on site';
+  el('line', { x1: L, x2: Rt, y1: Y(floor), y2: Y(floor), stroke: '#D9921A', 'stroke-width': 1.5, 'stroke-dasharray': '6 5' }, svg);
+  el('text', { x: Rt, y: Y(floor) + 16, 'text-anchor': 'end', 'font-size': 11, fill: '#9A6610', 'font-weight': 600 }, svg).textContent = 'safety floor (2 days of use)';
+  const g = el('g', { 'clip-path': clipReveal(svg, 'btc', L, 0, Rt - L + 6, 260, 2000, 100) }, svg);
+  const pa = asIs.map((v, i) => [X(i), Y(v)]), ps = skip.map((v, i) => [X(i), Y(v)]);
+  el('path', { d: smooth(pa) + ` L${X(N - 1)},${Y(floor)} L${X(0)},${Y(floor)} Z`, fill: '#D9483B', opacity: .06 }, g);
+  el('path', { d: smooth(pa), fill: 'none', stroke: '#8B9292', 'stroke-width': 2, 'stroke-dasharray': '5 4' }, g);
+  el('path', { d: smooth(ps), fill: 'none', stroke: '#20513F', 'stroke-width': 2.6 }, g);
+  const n = el('g', { class: 'fade', style: 'animation-delay:2s' }, svg);
+  el('rect', { x: X(15), y: Y(1120) - 4, width: 270, height: 40, rx: 3, fill: '#fff', stroke: '#E6E4DD' }, n);
+  el('text', { x: X(15) + 12, y: Y(1120) + 13, 'font-size': 12, 'font-weight': 650, fill: '#14191A' }, n).textContent = '−38% average stock on site';
+  el('text', { x: X(15) + 12, y: Y(1120) + 28, 'font-size': 11, fill: '#8B9292' }, n).textContent = 'never below the safety floor · 0 stock-outs';
+}
+
+/* ================= REPORT ================= */
+function repBars(){
+  const svg = $('#repBars'); svg.innerHTML = '';
+  const R = mulberry32(21), L = 10, B = 160, bw = 44, gp = 19;
+  const keys = ['concrete', 'timber', 'drywall', 'insulation'];
+  SITES.forEach((s, i) => {
+    let y = B; const x = L + i * (bw + gp);
+    keys.forEach((k, j) => {
+      const f = s.ph === 'Structure' ? [1.6, 1.3, .3, .3][j] : s.ph === 'Interior fit-out' ? [.3, .5, 1.6, .9][j] : [.6, .8, .8, 1.1][j];
+      const h = (12 + R() * 16) * f;
+      y -= h;
+      el('rect', { x, y, width: bw, height: h, fill: MAT[k].color, class: 'growy', style: `animation-delay:${.2 + i * .05}s;transform-origin:50% ${B}px;transform-box:view-box` }, svg);
+    });
+    el('text', { x: x + bw / 2, y: B + 16, 'text-anchor': 'middle', 'font-size': 9.5, fill: '#8B9292' }, svg).textContent = ['Diag. Mar', 'Poblenou', 'St Cugat', 'Badalona', "L'Hosp.", 'Sabadell', 'Gràcia', 'C.defels', 'Terrassa', 'Mataró', 'El Prat', 'Sants'][i];
+  });
+  el('line', { x1: 0, x2: 770, y1: B, y2: B, stroke: '#E6E4DD' }, svg);
+  const lg = el('g', {}, svg);
+  keys.forEach((k, j) => { el('rect', { x: 10 + j * 160, y: 186, width: 9, height: 9, rx: 2, fill: MAT[k].color }, lg); el('text', { x: 24 + j * 160, y: 195, 'font-size': 11, fill: '#4B5354' }, lg).textContent = MAT[k].name; });
+}
+
+/* ================= CAMERA ENGINE ================= */
+const PHASE_MIX = {
+  'Structure':        { concrete: 4, rebar: 3, timber: 4, packaging: 1 },
+  'Envelope':         { insulation: 4, packaging: 3, timber: 2, gypsum: 1 },
+  'Interior fit-out': { gypsum: 6, insulation: 2, packaging: 2, timber: 1 },
+  'Finishing':        { packaging: 4, gypsum: 3, timber: 1, insulation: 2 },
+};
+function makeScene(seed, phase){
+  const R = mulberry32(seed);
+  const W = 6, D = 2.4, H = 1.4, NX = 140, NY = 56;
+  const N = NX * NY, hf = new Float32Array(N), cls = new Uint8Array(N), id = new Int16Array(N).fill(-1);
+  const fill = .12 + R() * .22;
+  const bumps = Array.from({ length: 5 }, () => ({ x: R() * W, y: R() * D, r: .7 + R() * 1.3, a: .08 + R() * .28 }));
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++){
+    const x = (i + .5) / NX * W, y = (j + .5) / NY * D;
+    let h = fill * .7;
+    bumps.forEach(b => h += b.a * Math.exp(-((x - b.x) ** 2 + (y - b.y) ** 2) / (b.r * b.r)));
+    h += (R() - .5) * .05;
+    hf[j * NX + i] = Math.min(h, H * .9); cls[j * NX + i] = CLS_KEYS.indexOf('debris');
+  }
+  const mix = PHASE_MIX[phase]; const mk = Object.keys(mix), mtot = mk.reduce((a, k) => a + mix[k], 0);
+  const pick = () => { let r = R() * mtot; for (const k of mk){ r -= mix[k]; if (r <= 0) return k; } return mk[0]; };
+  const items = [];
+  const n = 26 + Math.floor(R() * 12);
+  for (let k = 0; k < n; k++){
+    const type = pick();
+    let w, d, th, shape = 'rect', rot = R() * Math.PI;
+    if (type === 'gypsum'){ w = .9 + R() * 1.4; d = .45 + R() * .7; th = .05 + R() * .08; rot = (R() - .5) * .9; }
+    else if (type === 'timber'){ w = 1.2 + R() * 1.8; d = .1 + R() * .16; th = .06 + R() * .06; }
+    else if (type === 'concrete'){ w = .35 + R() * .55; d = w * (.6 + R() * .4); th = .18 + R() * .3; shape = 'ell'; }
+    else if (type === 'rebar'){ w = 1 + R() * 2.2; d = .06; th = .04; }
+    else if (type === 'insulation'){ w = .5 + R() * .7; d = .4 + R() * .5; th = .18 + R() * .2; shape = 'ell'; }
+    else { w = .5 + R() * .9; d = .4 + R() * .6; th = .05 + R() * .18; rot = (R() - .5) * 1.2; shape = R() < .5 ? 'rect' : 'ell'; }
+    const cx = .3 + R() * (W - .6), cy = .2 + R() * (D - .4);
+    const c = Math.cos(-rot), s = Math.sin(-rot), rad = Math.hypot(w, d) / 2;
+    const cells = [];
+    const i0 = Math.max(0, Math.floor((cx - rad) / W * NX)), i1 = Math.min(NX - 1, Math.ceil((cx + rad) / W * NX));
+    const j0 = Math.max(0, Math.floor((cy - rad) / D * NY)), j1 = Math.min(NY - 1, Math.ceil((cy + rad) / D * NY));
+    let base = 0;
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++){
+      const x = (i + .5) / NX * W - cx, y = (j + .5) / NY * D - cy;
+      const u = x * c - y * s, v = x * s + y * c;
+      let inside, r2 = 0;
+      if (shape === 'rect') inside = Math.abs(u) < w / 2 && Math.abs(v) < d / 2;
+      else { r2 = (u / (w / 2)) ** 2 + (v / (d / 2)) ** 2; inside = r2 < 1; }
+      if (inside){ cells.push([j * NX + i, r2]); base = Math.max(base, hf[j * NX + i]); }
+    }
+    if (cells.length < 4) continue;
+    base = Math.min(base, H * .92);
+    for (const [ix, r2] of cells){
+      const t = shape === 'ell' ? base + th * Math.sqrt(Math.max(0, 1 - r2)) * (type === 'insulation' ? (.85 + R() * .3) : 1) : base + th;
+      hf[ix] = t; cls[ix] = CLS_KEYS.indexOf(type); id[ix] = items.length;
+    }
+    items.push({ type, cx, cy, w, d, rot, base, top: base + th, shape });
+  }
+  const vis = new Array(items.length).fill(0);
+  for (let i = 0; i < N; i++) if (id[i] >= 0) vis[id[i]]++;
+  const cellA = (W / NX) * (D / NY);
+  items.forEach((it, k) => { it.vis = vis[k]; it.k = k; it.vol = vis[k] * cellA * (it.top - it.base + .04) + (it.type === 'insulation' ? .05 : 0); });
+  const cands = items.filter(it => it.vis > 90).sort((a, b) => b.vis - a.vis);
+  const dets = [], seen = new Set();
+  cands.forEach(c => { if (!seen.has(c.type) && dets.length < 7){ dets.push(c); seen.add(c.type); } });
+  cands.forEach(c => { if (dets.length < 7 && !dets.includes(c)) dets.push(c); });
+  const r2 = mulberry32(seed + 7);
+  dets.forEach(dt => {
+    dt.conf = .84 + r2() * .145;
+    dt.po = `PO-26-${1100 + Math.floor(r2() * 260)}`;
+    dt.line = 1 + Math.floor(r2() * 8);
+    dt.desc = PO_DESC[dt.type][Math.floor(r2() * 3)];
+    dt.reuse = dt.type === 'timber' || dt.type === 'gypsum' ? .45 + r2() * .45 : r2() * .35;
+    dt.contam = r2() * .25;
+  });
+  let sum = 0, hmin = 9, hmax = 0; for (let i = 0; i < N; i++){ sum += hf[i]; hmin = Math.min(hmin, hf[i]); hmax = Math.max(hmax, hf[i]); }
+  const volume = sum * cellA;
+  return { W, D, H, NX, NY, hf, cls, id, items, dets, volume, hmin, hmax, fillPct: volume / (W * D * H), seed };
+}
+
+function turbo(t){
+  t = Math.max(0, Math.min(1, t));
+  const r = .13572138 + t * (4.6153926 + t * (-42.66032258 + t * (132.13108234 + t * (-152.94239396 + t * 59.28637943))));
+  const g = .09140261 + t * (2.19418839 + t * (4.84296658 + t * (-14.18503333 + t * (4.27729857 + t * 2.82956604))));
+  const b = .1066733 + t * (12.64194608 + t * (-60.58204836 + t * (110.36276771 + t * (-89.90310912 + t * 27.34824973))));
+  return [r, g, b].map(v => Math.round(Math.max(0, Math.min(1, v)) * 255));
+}
+const rgb = (c, a = 1) => a === 1 ? `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})` : `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const hex2 = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+
+function makeProj(sc, w, h, yaw = 0){
+  const s = w * .66 / sc.W, sp = Math.sin(.98), cp = Math.cos(.98), cy0 = h * .6;
+  const c = Math.cos(yaw), si = Math.sin(yaw);
+  return (x, y, z) => {
+    const X = x - sc.W / 2, Y = y - sc.D / 2;
+    const Xr = X * c - Y * si, Yr = X * si + Y * c;
+    const f = 1 + .07 * Yr + .1 * z;
+    return [w / 2 + s * f * Xr, cy0 + s * f * (Yr * sp - z * cp)];
+  };
+}
+function quad(ctx, P, a, b, c, d, fill){
+  const p1 = P(...a), p2 = P(...b), p3 = P(...c), p4 = P(...d);
+  ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p3[0], p3[1]); ctx.lineTo(p4[0], p4[1]); ctx.closePath();
+  ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = fill; ctx.lineWidth = .7; ctx.stroke();
+}
+
+const noiseCanvas = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d'), d = x.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4){ const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  x.putImageData(d, 0, 0); return c;
+})();
+
+
+/* ---------- real skip photos (Wikimedia Commons, see credits in footer) ---------- */
+/* dets: [class, x0, y0, x1, y1] as fractions of the full image */
+const PHOTOS = [
+  { src: 'img/skip-a.jpg', crop: [0, .125, 1, .75], fill: .58, vol: 9.6, dets: [['timber', .31, .35, .49, .50], ['rebar', .59, .385, .88, .465], ['debris', .47, .38, .77, .54], ['timber', .66, .31, .73, .37], ['packaging', .565, .475, .62, .52]] },
+  { src: 'img/skip-b.jpg', crop: [0, 0, 1, 1], fill: .86, vol: 13.9, dets: [['packaging', .22, .22, .48, .62], ['gypsum', .47, .32, .73, .58], ['concrete', .59, .47, .72, .54], ['packaging', .52, .5, .72, .61], ['packaging', .44, .58, .64, .66], ['insulation', .3, .45, .46, .63]] },
+  { src: 'img/skip-c.jpg', crop: [0, 0, 1, 1], fill: .94, vol: 15.2, dets: [['packaging', .33, .18, .6, .37], ['timber', .2, .34, .52, .56], ['insulation', .53, .29, .72, .41], ['packaging', .61, .39, .68, .51], ['packaging', .7, .45, .83, .66], ['gypsum', .52, .45, .63, .58]] },
+];
+const photosReady = Promise.all(PHOTOS.map(p => new Promise(res => {
+  p.img = new Image(); p.img.onload = () => { p.ok = true; res(); }; p.img.onerror = () => res(); p.img.src = p.src;
+}))).then(() => { if (typeof live !== 'undefined'){ [live.main, ...live.thumbs].forEach(v => v && (v.cache = {}, v.pts = null)); } });
+function attachPhoto(sc, v){
+  const ph = PHOTOS[v % PHOTOS.length], r2 = mulberry32(sc.seed + 7);
+  sc.photo = ph; sc.flip = Math.floor(v / PHOTOS.length) % 2 === 1; sc.zoom = [1, 1.08, 1.16][Math.floor(v / 2) % 3];
+  sc.fillPct = ph.fill * (.94 + r2() * .1); sc.volume = ph.vol * (.9 + r2() * .2);
+  sc.dets = ph.dets.map(([type, x0, y0, x1, y1], k) => ({
+    type, k: 20 + k * 3 + Math.floor(r2() * 3), fx: [x0, y0, x1, y1],
+    vol: (x1 - x0) * (y1 - y0) * sc.volume * (1.6 + r2()),
+    conf: .84 + r2() * .145, po: `PO-26-${1100 + Math.floor(r2() * 260)}`, line: 1 + Math.floor(r2() * 8),
+    desc: PO_DESC[type === 'debris' ? 'concrete' : type][Math.floor(r2() * 3)],
+    reuse: type === 'timber' || type === 'gypsum' ? .45 + r2() * .45 : r2() * .35, contam: r2() * .25,
+  }));
+  return sc;
+}
+/* maps image fractions → canvas pixels (cover-fit of the crop, optional zoom + mirror) */
+function photoMap(sc, w, h){
+  const ph = sc.photo, IW = ph.img.naturalWidth, IH = ph.img.naturalHeight;
+  const [cx, cy, cw, ch] = ph.crop, k = Math.max(w / (cw * IW), h / (ch * IH)) * sc.zoom;
+  const dw = IW * k, dh = IH * k, ox = w / 2 - (cx + cw / 2) * dw, oy = h / 2 - (cy + ch / 2) * dh;
+  const f = (fx, fy) => [sc.flip ? w - (ox + fx * dw) : ox + fx * dw, oy + fy * dh];
+  return { f, ox, oy, dw, dh };
+}
+function drawPhoto(ctx, sc, w, h, filter){
+  const m = photoMap(sc, w, h);
+  ctx.save(); if (sc.flip){ ctx.translate(w, 0); ctx.scale(-1, 1); }
+  ctx.filter = filter || 'none'; ctx.drawImage(sc.photo.img, m.ox, m.oy, m.dw, m.dh); ctx.restore();
+}
+/* pseudo-depth from the photo: lower in frame = closer, blended with blurred brightness */
+function photoDepth(sc, gw, gh){
+  const c = document.createElement('canvas'); c.width = gw; c.height = gh; const x = c.getContext('2d');
+  drawPhoto(x, sc, gw, gh, 'blur(.6px)');
+  const d = x.getImageData(0, 0, gw, gh).data, out = new Float32Array(gw * gh);
+  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++){
+    const q = (j * gw + i) * 4, lum = (d[q] * .3 + d[q + 1] * .59 + d[q + 2] * .11) / 255;
+    out[j * gw + i] = Math.max(0, Math.min(1, Math.round((.55 * (j / gh) + .45 * lum) * 26) / 26));
+  }
+  return { out, rgb: d };
+}
+function renderPhoto(sc, mode, w, h){
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const ctx = cv.getContext('2d');
+  if (mode === 'rgb'){
+    drawPhoto(ctx, sc, w, h, 'contrast(1.06) saturate(.88) brightness(.97)');
+    const g = ctx.createRadialGradient(w / 2, h / 2, h * .35, w / 2, h / 2, w * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  } else if (mode === 'depth'){
+    const gw = Math.max(80, Math.round(w / 5)), gh = Math.max(45, Math.round(h / 5));
+    let out; try { out = photoDepth(sc, gw, gh).out; } catch (e){ out = null; }
+    if (!out){
+      /* pixel reads blocked (e.g. opened from file://): false-colour with blend modes instead */
+      drawPhoto(ctx, sc, w, h, 'grayscale(1) contrast(1.4) brightness(1.1)');
+      const g = ctx.createLinearGradient(0, 0, 0, h); [0, .25, .5, .75, 1].forEach(t => g.addColorStop(t, rgb(turbo(.12 + t * .8))));
+      ctx.globalCompositeOperation = 'color'; ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.globalCompositeOperation = 'source-over';
+      return cv;
+    }
+    const lc = document.createElement('canvas'); lc.width = gw; lc.height = gh; const lx = lc.getContext('2d'), im = lx.createImageData(gw, gh);
+    for (let i = 0; i < out.length; i++){ const c = turbo(.08 + out[i] * .88); im.data[i * 4] = c[0]; im.data[i * 4 + 1] = c[1]; im.data[i * 4 + 2] = c[2]; im.data[i * 4 + 3] = 255; }
+    lx.putImageData(im, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(lc, 0, 0, w, h);
+    ctx.globalAlpha = .32; ctx.globalCompositeOperation = 'overlay'; drawPhoto(ctx, sc, w, h, 'grayscale(1) contrast(1.7)'); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  } else if (mode === 'seg'){
+    drawPhoto(ctx, sc, w, h, 'grayscale(1) brightness(.42) contrast(1.1)');
+    const gw = Math.max(96, Math.round(w / 6)), gh = Math.max(54, Math.round(h / 6));
+    const lc = document.createElement('canvas'); lc.width = gw; lc.height = gh; const lx = lc.getContext('2d'), im = lx.createImageData(gw, gh);
+    const m = photoMap(sc, gw, gh), R = mulberry32(sc.seed + 3);
+    sc.dets.forEach(d => {
+      const a = m.f(d.fx[0], d.fx[1]), b = m.f(d.fx[2], d.fx[3]);
+      const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = a[1], y1 = b[1], c = hex2(CLS[d.type].seg);
+      for (let j = Math.max(0, y0 | 0); j < Math.min(gh, y1); j++) for (let i = Math.max(0, x0 | 0); i < Math.min(gw, x1); i++){
+        const e = Math.min(i - x0, x1 - i, j - y0, y1 - j) / Math.max(2, Math.min(x1 - x0, y1 - y0) * .5);
+        if (e + R() * .35 < .22) continue;
+        const q = (j * gw + i) * 4; im.data[q] = c[0]; im.data[q + 1] = c[1]; im.data[q + 2] = c[2]; im.data[q + 3] = 170;
+      }
+    });
+    lx.putImageData(im, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(lc, 0, 0, w, h);
+  }
+  return cv;
+}
+function photoLidar(sc){
+  const gw = 150, gh = 84, { out, rgb: px } = photoDepth(sc, gw, gh), pts = [], R = mulberry32(sc.seed + 9);
+  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++){
+    if (R() < .35) continue;
+    const q = j * gw + i, lum = (px[q * 4] * .3 + px[q * 4 + 1] * .59 + px[q * 4 + 2] * .11) / 255; pts.push([i / gw, j / gh, out[q], lum]);
+  }
+  return pts;
+}
+
+function renderStatic(sc, mode, w, h){
+  if (sc.photo && sc.photo.ok && mode !== 'lidar') return renderPhoto(sc, mode, w, h);
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d');
+  const P = makeProj(sc, w, h);
+  const R = mulberry32(sc.seed + 1);
+  const depth = mode === 'depth', seg = mode === 'seg';
+  // ground
+  if (depth){
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#120a2a'); g.addColorStop(1, '#2a1150');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(120,140,255,.12)'; ctx.lineWidth = 1;
+    for (let k = -6; k <= 12; k++){ const a = P(k * .8 - 3, -3, 0), b = P(k * .8 - 3, 6, 0); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); }
+    for (let k = -4; k <= 8; k++){ const a = P(-6, k * .6 - 1, 0), b = P(12, k * .6 - 1, 0); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); }
+  } else {
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3b3c3a'); g.addColorStop(1, '#55534d');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = .18; ctx.globalCompositeOperation = 'overlay';
+    for (let y = 0; y < h; y += 256) for (let x = 0; x < w; x += 256) ctx.drawImage(noiseCanvas, x, y);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    // site markings & puddles
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    for (let k = 0; k < 7; k++){ ctx.beginPath(); ctx.ellipse(R() * w, R() * h, 20 + R() * 60, 8 + R() * 18, 0, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(230,200,60,.5)'; ctx.lineWidth = w * .006;
+    const a = P(-1.2, 4.2, 0), b = P(7.2, 4.2, 0); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+    if (seg){ ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, w, h); }
+  }
+  // shadow
+  const sh = P(sc.W / 2, sc.D / 2 + .3, 0);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(sh[0], sh[1], w * .4, h * .2, 0, 0, 7); ctx.fill();
+  const { W, D, H, NX, NY, hf, cls, id } = sc;
+  const wallIn = depth ? null : [118, 92, 34], wallOut = [205, 152, 30];
+  const wallCol = (z, base, k = 1) => depth ? rgb(turbo(z / H * .9).map(v => v * k)) : rgb(base.map(v => v * k));
+  // floor
+  quad(ctx, P, [0, 0, 0], [W, 0, 0], [W, D, 0], [0, D, 0], depth ? rgb(turbo(0)) : '#3a2c18');
+  // back wall inner + side walls inner (in strips for gradient feel)
+  for (let s = 0; s < 6; s++){
+    const z0 = s / 6 * H, z1 = (s + 1) / 6 * H, zm = (z0 + z1) / 2;
+    quad(ctx, P, [0, 0, z0], [W, 0, z0], [W, 0, z1], [0, 0, z1], wallCol(zm, wallIn, .8 + s * .04));
+    quad(ctx, P, [0, 0, z0], [0, D, z0], [0, D, z1], [0, 0, z1], wallCol(zm, wallIn, .65 + s * .04));
+    quad(ctx, P, [W, 0, z0], [W, D, z0], [W, D, z1], [W, 0, z1], wallCol(zm, wallIn, .72 + s * .04));
+  }
+  const dx = W / NX, dy = D / NY, mid = NX / 2;
+  const order = []; for (let i = 0; i < mid; i++) order.push(i); for (let i = NX - 1; i >= mid; i--) order.push(i);
+  const H_ = (i, j) => hf[Math.max(0, Math.min(NY - 1, j)) * NX + Math.max(0, Math.min(NX - 1, i))];
+  const nz = new Float32Array(NX * NY); for (let i = 0; i < nz.length; i++) nz[i] = R();
+  const colorOf = (i, j, kshade) => {
+    const ix = j * NX + i, key = CLS_KEYS[cls[ix]], h = hf[ix];
+    if (depth) return rgb(turbo(.05 + (h - sc.hmin) / (sc.hmax - sc.hmin) * .9).map(v => Math.min(255, v * (.75 + .3 * kshade))));
+    let c = CLS[key].vis;
+    const edge = (id[ix] !== (i > 0 ? id[ix - 1] : id[ix])) || (id[ix] !== (j > 0 ? id[ix - NX] : id[ix]));
+    let k = kshade * (.94 + nz[ix] * .1) * (.8 + .3 * h / H) * (edge ? .72 : 1);
+    if (key === 'timber') k *= .9 + .12 * Math.sin(i * 1.7 + j * .3);
+    if (seg){
+      const g = (c[0] + c[1] + c[2]) / 3 * k * .45;
+      if (key === 'debris') return rgb([g, g, g]);
+      const sc2 = hex2(CLS[key].seg), a = edge ? .95 : .62;
+      return rgb([g * (1 - a) + sc2[0] * a, g * (1 - a) + sc2[1] * a, g * (1 - a) + sc2[2] * a]);
+    }
+    return rgb(c.map(v => Math.min(255, v * k)));
+  };
+  for (let j = 0; j < NY; j++){
+    for (const i of order){
+      const h = hf[j * NX + i];
+      const sl = Math.max(.5, Math.min(1.45, 1 + (H_(i - 1, j) - H_(i + 1, j)) * 3 + (H_(i, j - 1) - H_(i, j + 1)) * 2.2));
+      const x0 = i * dx, x1 = x0 + dx, y0 = j * dy, y1 = y0 + dy;
+      quad(ctx, P, [x0, y0, h], [x1, y0, h], [x1, y1, h], [x0, y1, h], colorOf(i, j, sl));
+      const hn = H_(i, j + 1);
+      if (j < NY - 1 && hn < h - .01) quad(ctx, P, [x0, y1, h], [x1, y1, h], [x1, y1, hn], [x0, y1, hn], colorOf(i, j, .55));
+      if (i < mid){ const hr = H_(i + 1, j); if (hr < h - .01) quad(ctx, P, [x1, y0, h], [x1, y1, h], [x1, y1, hr], [x1, y0, hr], colorOf(i, j, .7)); }
+      else { const hl = H_(i - 1, j); if (hl < h - .01) quad(ctx, P, [x0, y0, h], [x0, y1, h], [x0, y1, hl], [x0, y0, hl], colorOf(i, j, .7)); }
+    }
+  }
+  // rebar lines on top in visual
+  if (!depth){
+    sc.items.filter(it => it.type === 'rebar').forEach(it => {
+      const c = Math.cos(it.rot), s = Math.sin(it.rot);
+      const a = P(it.cx - c * it.w / 2, it.cy - s * it.w / 2, it.top + .01), b = P(it.cx + c * it.w / 2, it.cy + s * it.w / 2, it.top + .01);
+      ctx.strokeStyle = seg ? CLS.rebar.seg : '#7a4632'; ctx.lineWidth = w * .004; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = w * .0015; ctx.stroke();
+    });
+  }
+  // front wall outer
+  for (let s = 0; s < 8; s++){
+    const z0 = s / 8 * H, z1 = (s + 1) / 8 * H;
+    if (depth) ctx.globalAlpha = .28;
+    quad(ctx, P, [0, D, z0], [W, D, z0], [W, D, z1], [0, D, z1], wallCol((z0 + z1) / 2, wallOut, .82 + s * .03));
+    ctx.globalAlpha = 1;
+  }
+  if (!depth){
+    // ribs + grime
+    for (let r = 1; r < 8; r++){
+      const a = P(r * W / 8, D + .001, 0), b = P(r * W / 8, D + .001, H);
+      ctx.strokeStyle = 'rgba(80,55,10,.45)'; ctx.lineWidth = w * .006; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,230,140,.22)'; ctx.lineWidth = w * .002; ctx.beginPath(); ctx.moveTo(a[0] + w * .004, a[1]); ctx.lineTo(b[0] + w * .004, b[1]); ctx.stroke();
+    }
+    const gA = P(0, D, 0), gB = P(0, D, H * .45);
+    const gr = ctx.createLinearGradient(0, gA[1], 0, gB[1]); gr.addColorStop(0, 'rgba(40,25,5,.55)'); gr.addColorStop(1, 'rgba(40,25,5,0)');
+    ctx.fillStyle = gr; const fl = P(0, D, H * .45), fr = P(W, D, 0); ctx.fillRect(gA[0], fl[1], fr[0] - gA[0], gA[1] - fl[1]);
+    const t = P(W * .5, D + .001, H * .55);
+    ctx.fillStyle = 'rgba(30,20,5,.55)'; ctx.font = `700 ${w * .028}px Geist, sans-serif`; ctx.textAlign = 'center';
+    ctx.fillText('OBRES MIRADOR · S-0' + (sc.seed % 5 + 1), t[0], t[1]);
+    if (seg){ ctx.fillStyle = 'rgba(0,0,0,.45)'; const a = P(0, D, H), b = P(W, D, 0); ctx.fillRect(a[0], a[1], b[0] - a[0], b[1] - a[1]); }
+  }
+  // rims
+  ctx.strokeStyle = depth ? rgb(turbo(.95)) : '#e2b13a'; ctx.lineWidth = w * .007; ctx.lineJoin = 'round';
+  const rim = [[0, 0, H], [W, 0, H], [W, D, H], [0, D, H]].map(p => P(...p));
+  ctx.beginPath(); rim.forEach((p, k) => k ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath(); ctx.stroke();
+  // vignette
+  const vg = ctx.createRadialGradient(w / 2, h / 2, h * .3, w / 2, h / 2, w * .7);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)');
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+  return cv;
+}
+
+function lidarPoints(sc){
+  const pts = [], R = mulberry32(sc.seed + 3);
+  for (let j = 0; j < sc.NY; j += 1) for (let i = 0; i < sc.NX; i += 2){
+    const h = sc.hf[j * sc.NX + i];
+    pts.push([(i + R()) / sc.NX * sc.W, (j + R()) / sc.NY * sc.D, h, (h - sc.hmin) / (sc.hmax - sc.hmin)]);
+  }
+  for (let k = 0; k < 900; k++){
+    const side = Math.floor(R() * 4), u = R(), z = R() * sc.H;
+    const p = side === 0 ? [u * sc.W, 0, z] : side === 1 ? [u * sc.W, sc.D, z] : side === 2 ? [0, u * sc.D, z] : [sc.W, u * sc.D, z];
+    pts.push([...p, z / sc.H]);
+  }
+  for (let k = 0; k < 1400; k++){
+    const a = R() * Math.PI * 2, r = 3.5 + Math.pow(R(), .6) * 4;
+    pts.push([sc.W / 2 + Math.cos(a) * r, sc.D / 2 + Math.sin(a) * r * .8, (R() - .5) * .03, -1]);
+  }
+  return pts;
+}
+const TURBO_LUT = Array.from({ length: 40 }, (_, i) => rgb(turbo(.08 + i / 39 * .9)));
+
+class CamView {
+  constructor(canvas, opts = {}){
+    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.o = opts;
+    this.sel = 0; this.t0 = performance.now(); this.cache = {};
+  }
+  set(scene, mode, label){
+    this.sc = scene; this.mode = mode; this.label = label; this.cache = {}; this.pts = null; this.t0 = performance.now(); this.resize(true);
+  }
+  setMode(m){ this.mode = m; this.t0 = performance.now(); this.resize(true); }
+  resize(force){
+    const r = this.cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.max(160, Math.round(r.width * dpr)), h = Math.max(90, Math.round(r.height * dpr));
+    if (!force && w === this.cv.width && h === this.cv.height) return;
+    this.cv.width = w; this.cv.height = h; this.cache = {};
+  }
+  bg(){
+    const k = this.mode + this.cv.width;
+    if (!this.cache[k]) this.cache[k] = renderStatic(this.sc, this.mode, this.cv.width, this.cv.height);
+    return this.cache[k];
+  }
+  draw(now){
+    if (!this.sc) return;
+    const { ctx, cv } = this, w = cv.width, h = cv.height, t = (now - this.t0) / 1000, sc = this.sc, small = this.o.small;
+    let P;
+    if (this.mode === 'lidar' && sc.photo && sc.photo.ok && !sc.photo.noPx){
+      ctx.fillStyle = '#05080B'; ctx.fillRect(0, 0, w, h);
+      if (!this.pts){ try { this.pts = photoLidar(sc); } catch (e){ sc.photo.noPx = true; return this.draw(now); } }
+      const yaw = .5 * Math.sin(now / 4200), cy = Math.cos(yaw), sy = Math.sin(yaw), sz = Math.max(1.2, w / 560);
+      ctx.strokeStyle = 'rgba(80,200,160,.10)'; ctx.lineWidth = 1;
+      for (let g = 0; g <= 10; g++){ const z = g / 10; ctx.beginPath(); ctx.moveTo(w / 2 + (-.6 * cy + (z - .5) * .8 * sy) * w * .8, h * .93 - z * h * .2); ctx.lineTo(w / 2 + (.6 * cy + (z - .5) * .8 * sy) * w * .8, h * .93 - z * h * .2); ctx.stroke(); }
+      for (const p of this.pts){
+        const X = (p[0] - .5) * (sc.flip ? -1 : 1), Z = (1 - p[2]) - .5;
+        const x = w / 2 + (X * cy + Z * .8 * sy) * w * .86, y = h * .08 + p[1] * h * .84 + (Z * cy - X * sy) * h * .08 - (p[3] - .5) * h * .09;
+        ctx.fillStyle = TURBO_LUT[Math.min(39, Math.max(0, Math.round(p[2] * 39)))]; ctx.fillRect(x, y, sz, sz);
+      }
+      const sx = ((now / 1600) % 1) * w, gr = ctx.createLinearGradient(sx - w * .08, 0, sx, 0); gr.addColorStop(0, 'rgba(120,255,200,0)'); gr.addColorStop(1, 'rgba(120,255,200,.08)');
+      ctx.fillStyle = gr; ctx.fillRect(sx - w * .08, 0, w * .08, h);
+      if (!small) this.chip(w * .06, h * .16, `VOL ${sc.volume.toFixed(2)} m³ · ${this.pts.length.toLocaleString()} pts`, '#9FD9B8', '#05080B');
+    } else if (this.mode === 'lidar'){
+      const yaw = .55 * Math.sin(now / 4200);
+      P = makeProj(sc, w, h, yaw);
+      ctx.fillStyle = '#05080B'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(80,200,160,.12)'; ctx.lineWidth = 1;
+      for (let r = 2; r <= 8; r += 2){
+        ctx.beginPath();
+        for (let a = 0; a <= 64; a++){ const p = P(sc.W / 2 + Math.cos(a / 64 * 6.283) * r, sc.D / 2 + Math.sin(a / 64 * 6.283) * r * .8, 0); a ? ctx.lineTo(...p) : ctx.moveTo(...p); }
+        ctx.stroke();
+      }
+      if (!this.pts) this.pts = lidarPoints(sc);
+      const sz = Math.max(1.2, w / 520), sweep = (now / 1600) % 1;
+      const buckets = new Map();
+      for (const p of this.pts){
+        const q = P(p[0], p[1], p[2]);
+        const b = p[3] < 0 ? -1 : Math.min(39, Math.floor(p[3] * 39));
+        if (!buckets.has(b)) buckets.set(b, []);
+        buckets.get(b).push(q);
+      }
+      buckets.forEach((arr, b) => {
+        ctx.fillStyle = b < 0 ? 'rgba(90,160,140,.35)' : TURBO_LUT[b];
+        for (const q of arr) ctx.fillRect(q[0], q[1], sz, sz);
+      });
+      // sweep beam
+      const sx = sweep * w;
+      const gr = ctx.createLinearGradient(sx - w * .08, 0, sx, 0); gr.addColorStop(0, 'rgba(120,255,200,0)'); gr.addColorStop(1, 'rgba(120,255,200,.10)');
+      ctx.fillStyle = gr; ctx.fillRect(sx - w * .08, 0, w * .08, h);
+      // volume mesh outline at fill height
+      const fh = sc.volume / (sc.W * sc.D);
+      ctx.strokeStyle = 'rgba(159,217,184,.9)'; ctx.setLineDash([6, 5]); ctx.lineWidth = Math.max(1, w / 600);
+      const box = [[0, 0, fh], [sc.W, 0, fh], [sc.W, sc.D, fh], [0, sc.D, fh]].map(p => P(...p));
+      ctx.beginPath(); box.forEach((p, k) => k ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+      if (!small){
+        const lp = P(sc.W, 0, fh);
+        this.chip(lp[0] + 10, lp[1] - 10, `VOL ${sc.volume.toFixed(2)} m³ · mesh 1.8k pts`, '#9FD9B8', '#05080B');
+      }
+    } else {
+      P = makeProj(sc, w, h);
+      ctx.drawImage(this.bg(), 0, 0);
+    }
+    // detection boxes
+    if (this.mode !== 'lidar'){
+      const ord = sc.dets.map((_, k) => k).filter(k => k !== this.sel).concat(this.sel < sc.dets.length ? [this.sel] : []);
+      ord.forEach(k => { const d = sc.dets[k];
+        const appear = Math.min(1, Math.max(0, (t - .3 - k * .28) / .45));
+        if (appear <= 0) return;
+        let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        if (d.fx && sc.photo.ok){
+          const pm = photoMap(sc, w, h), a = pm.f(d.fx[0], d.fx[1]), b = pm.f(d.fx[2], d.fx[3]);
+          x0 = Math.min(a[0], b[0]); x1 = Math.max(a[0], b[0]); y0 = a[1]; y1 = b[1];
+        } else {
+          const c = Math.cos(d.rot), s = Math.sin(d.rot), hw = d.w / 2, hd = d.d / 2;
+          [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]].forEach(([u, v]) => {
+            [d.base, d.top].forEach(z => {
+              const p = P(d.cx + u * c - v * s, d.cy + u * s + v * c, z);
+              x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]);
+            });
+          });
+        }
+        const pad = w * .006; x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+        const e = ease(appear), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, sx = .7 + .3 * e;
+        x0 = cx + (x0 - cx) * (2 - sx); x1 = cx + (x1 - cx) * (2 - sx); y0 = cy + (y0 - cy) * (2 - sx); y1 = cy + (y1 - cy) * (2 - sx);
+        const isSel = !small && k === this.sel;
+        const col = CLS[d.type].seg;
+        ctx.globalAlpha = e;
+        ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, w / (isSel ? 380 : 650));
+        const L = Math.min(w * .025, (x1 - x0) / 3, (y1 - y0) / 3);
+        ctx.beginPath();
+        [[x0, y0, 1, 1], [x1, y0, -1, 1], [x1, y1, -1, -1], [x0, y1, 1, -1]].forEach(([x, y, a, b]) => { ctx.moveTo(x + a * L, y); ctx.lineTo(x, y); ctx.lineTo(x, y + b * L); });
+        ctx.stroke();
+        if (isSel){
+          ctx.setLineDash([4, 4]); ctx.lineDashOffset = -now / 40; ctx.globalAlpha = e * .8;
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0); ctx.setLineDash([]);
+          ctx.fillStyle = col; ctx.globalAlpha = e * (.08 + .05 * Math.sin(now / 300)); ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+          ctx.globalAlpha = e;
+        }
+        if (!small){
+          if (isSel) this.chip(x0, y0 - 4, CLS[d.type].label, col, '#0b0e10', `${d.vol.toFixed(2)} m³ → ${d.po}`);
+        }
+        ctx.globalAlpha = 1;
+      });
+    }
+    // scanline
+    const sy = ((now / 3000) % 1) * h;
+    const sg = ctx.createLinearGradient(0, sy - h * .06, 0, sy);
+    sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(1, 'rgba(255,255,255,.05)');
+    ctx.fillStyle = sg; ctx.fillRect(0, sy - h * .06, w, h * .06);
+    // grain
+    ctx.globalAlpha = .045;
+    const ox = Math.random() * 256, oy = Math.random() * 256;
+    for (let y = -oy; y < h; y += 256) for (let x = -ox; x < w; x += 256) ctx.drawImage(noiseCanvas, x, y);
+    ctx.globalAlpha = 1;
+    // HUD
+    const fs = Math.max(9, w / (small ? 32 : 70));
+    ctx.font = `500 ${fs}px "Geist Mono", monospace`; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+    const m = fs * .9;
+    ctx.fillStyle = 'rgba(0,0,0,.5)';
+    const lbl = this.label;
+    ctx.fillRect(m * .6, m * .6, ctx.measureText(lbl).width + m * .9, fs * 1.6);
+    ctx.fillStyle = '#E9F2EE'; ctx.fillText(lbl, m, m * .6 + fs * .3);
+    if (!small){
+      const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(0,0,0,.5)'; const tw = ctx.measureText(ts).width + fs * 2.6;
+      ctx.fillRect(w - m * .6 - tw, m * .6, tw, fs * 1.6);
+      ctx.fillStyle = '#E9F2EE'; ctx.fillText(ts, w - m, m * .6 + fs * .3);
+      if (Math.floor(now / 600) % 2){ ctx.fillStyle = '#FF4D4D'; ctx.beginPath(); ctx.arc(w - m - ctx.measureText(ts).width - fs * .9, m * .6 + fs * .8, fs * .35, 0, 7); ctx.fill(); }
+      // bottom left
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      const modeL = { rgb: 'RGB 1920×1080 · 25 fps', seg: 'SEG MASK · 6 classes', depth: 'DEPTH ToF · 0–3.0 m', lidar: 'LiDAR · 64-beam · 10 Hz' }[this.mode];
+      ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(m * .6, h - m * .6 - fs * 1.6, ctx.measureText(modeL).width + m * .9, fs * 1.6);
+      ctx.fillStyle = '#9FD9B8'; ctx.fillText(modeL, m, h - m * .6 - fs * .3);
+      // fill gauge bottom right
+      const gw = w * .2, gx = w - m - gw, gy = h - m - fs * .9;
+      ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(gx - fs * .6, gy - fs * 1.9, gw + fs * 1.2, fs * 3.1);
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(gx, gy, gw, fs * .5);
+      const fp = Math.min(1, sc.fillPct);
+      ctx.fillStyle = fp > .75 ? '#FF8A5B' : '#9FD9B8'; ctx.fillRect(gx, gy, gw * fp * Math.min(1, t / 1.2), fs * .5);
+      ctx.fillStyle = '#E9F2EE'; ctx.textAlign = 'left';
+      ctx.fillText(`FILL ${(fp * 100).toFixed(0)}% · ${sc.volume.toFixed(1)} m³`, gx, gy - fs * .3);
+      // depth legend
+      if (this.mode === 'depth'){
+        const lx = w - m - fs * .8, ly = h * .3, lh = h * .32;
+        for (let k = 0; k < 40; k++){ ctx.fillStyle = TURBO_LUT[39 - k]; ctx.fillRect(lx, ly + k / 40 * lh, fs * .8, lh / 40 + 1); }
+        ctx.fillStyle = '#E9F2EE'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText(sc.hmax.toFixed(2) + ' m', lx - 6, ly); ctx.fillText(sc.hmin.toFixed(2) + ' m', lx - 6, ly + lh);
+      }
+    } else {
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      if (Math.floor(now / 600) % 2){ ctx.fillStyle = '#FF4D4D'; ctx.beginPath(); ctx.arc(w - m - fs * .2, m * .6 + fs * .8, fs * .35, 0, 7); ctx.fill(); }
+    }
+  }
+  chip(x, y, text, bg, fg, sub){
+    const { ctx, cv } = this, fs = Math.max(10, cv.width / 82);
+    ctx.font = `600 ${fs}px Geist, sans-serif`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    const tw = ctx.measureText(text).width;
+    let sw = 0; if (sub){ ctx.font = `500 ${fs * .9}px "Geist Mono", monospace`; sw = ctx.measureText(sub).width + fs * .8; }
+    const pw = tw + sw + fs * 1.1, ph = fs * 1.7;
+    x = Math.max(4, Math.min(cv.width - pw - 4, x)); y = Math.max(ph + 4, y);
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y - ph, pw, ph, 2) : ctx.rect(x, y - ph, pw, ph); ctx.fill();
+    ctx.font = `600 ${fs}px Geist, sans-serif`; ctx.fillStyle = fg; ctx.fillText(text, x + fs * .55, y - ph / 2);
+    if (sub){ ctx.font = `500 ${fs * .9}px "Geist Mono", monospace`; ctx.globalAlpha *= .75; ctx.fillText(sub, x + fs * .55 + tw + fs * .7, y - ph / 2); ctx.globalAlpha = Math.min(1, ctx.globalAlpha / .75); }
+  }
+}
+
+/* live view wiring */
+const live = { site: 0, cam: 0, mode: 'rgb', main: null, thumbs: [], timer: null, scenes: {} };
+function sceneFor(si, ci){
+  const k = si + ':' + ci;
+  if (!live.scenes[k]) live.scenes[k] = attachPhoto(makeScene(1000 + si * 37 + ci * 11, SITES[si].ph), si * 4 + ci);
+  return live.scenes[k];
+}
+function buildSites(){
+  $('#sites').innerHTML = SITES.map((s, i) => `
+    <button class="site ${i === live.site ? 'on' : ''}" data-i="${i}">
+      <b>${s.n}</b><span>${s.ph} · ${s.skips} skips</span>
+      <div class="st"><i></i>${s.cams}</div>
+    </button>`).join('');
+  $$('#sites .site').forEach(b => b.addEventListener('click', () => pickSite(+b.dataset.i, true)));
+}
+function pickSite(i, fly){
+  live.site = i; live.cam = 0;
+  $$('#sites .site').forEach(x => x.classList.toggle('on', +x.dataset.i === i));
+  loadCam(); updateMapSel(fly);
+}
+const fillCol = f => f > .8 ? '#D9483B' : f > .6 ? '#D9921A' : '#1E9E5A';
+const siteFill = i => { let a = 0; for (let c = 0; c < SITES[i].cams; c++) a += sceneFor(i, c).fillPct; return a / SITES[i].cams; };
+function initMap(){
+  const box = $('#map');
+  if (!window.L){ box.innerHTML = '<div class="map-off">Map needs an internet connection</div>'; return; }
+  const map = L.map(box, { zoomControl: false, scrollWheelZoom: false, attributionControl: true }).setView([41.43, 2.17], 10);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+  // Esri Light Gray Canvas: keyless and allowed from localhost (OSM blocks it, CARTO now needs a key)
+  const esri = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+  L.tileLayer(esri + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, attribution: 'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors' }).addTo(map);
+  L.tileLayer(esri + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16 }).addTo(map);
+  live.map = map; live.pins = [];
+  SITES.forEach((s, i) => {
+    const f = siteFill(i), c = fillCol(f);
+    const icon = L.divIcon({ className: '', iconSize: [34, 34], iconAnchor: [17, 17],
+      html: `<div class="pin-wrap" style="animation-delay:${.2 + i * .06}s"><div class="pin" data-i="${i}"><div class="ring" style="background:${c};animation-delay:${i * .2}s"></div><div class="c" style="background:${c}">${Math.round(f * 100)}</div><div class="lab">${s.n}</div></div></div>` });
+    const m = L.marker(s.ll, { icon, riseOnHover: true }).addTo(map);
+    m.on('click', () => pickSite(i, false));
+    live.pins.push(m);
+  });
+  map.fitBounds(L.latLngBounds(COORDS).pad(.12), { paddingTopLeft: [260, 0] });
+  updateMapSel(false);
+}
+function updateMapSel(fly){
+  const s = SITES[live.site], f = siteFill(live.site);
+  $$('.pin').forEach(p => p.classList.toggle('on', +p.dataset.i === live.site));
+  if (live.pins) live.pins.forEach((m, i) => m.setZIndexOffset(i === live.site ? 1000 : 0));
+  $('#mapSel').innerHTML = `<div class="t">${s.n}</div><div class="s">${s.ph} · ${s.ll[0].toFixed(3)}, ${s.ll[1].toFixed(3)}</div>
+    <div class="r"><div><b>${s.cams}</b>cams</div><div><b>${s.skips}</b>skips</div><div><b style="color:${f > .6 ? (f > .8 ? '#FF8A7A' : '#F2C063') : '#9FD9B8'}">${Math.round(f * 100)}%</b>avg fill</div></div>`;
+  if (fly && live.map) live.map.flyTo(s.ll, 12, { duration: 1.1 });
+}
+const camLabel = (si, ci) => `CAM-${String(SITES[si].camIds[ci]).padStart(2, '0')} · ${SITES[si].n.toUpperCase()} · SKIP S-0${ci + 1}`;
+function loadCam(){
+  const s = SITES[live.site], sc = sceneFor(live.site, live.cam);
+  live.main.set(sc, live.mode, camLabel(live.site, live.cam));
+  live.main.sel = 0;
+  $('#camMeta').textContent = `${s.ph} · ${sc.dets.length} objects · fill ${(sc.fillPct * 100).toFixed(0)}%`;
+  // thumbs
+  const tb = $('#thumbs'); tb.innerHTML = '';
+  const modes = ['rgb', 'depth', 'seg', 'lidar'];
+  live.thumbs = [];
+  for (let k = 0; k < 4; k++){
+    const ci = k % s.cams, mode = k < s.cams ? 'rgb' : modes[k];
+    const b = document.createElement('button'); b.className = 'thumb' + (ci === live.cam && k < s.cams ? ' on' : '');
+    const c = document.createElement('canvas'); b.appendChild(c); tb.appendChild(b);
+    const v = new CamView(c, { small: true });
+    live.thumbs.push(v);
+    requestAnimationFrame(() => v.set(sceneFor(live.site, ci), k < s.cams ? (ci === live.cam ? live.mode === 'lidar' ? 'rgb' : live.mode : 'rgb') : mode, `CAM-${String(s.camIds[ci]).padStart(2, '0')}${k >= s.cams ? ' · ' + mode.toUpperCase() : ''}`));
+    b.addEventListener('click', () => { live.cam = ci; if (k >= s.cams) setMode(mode); loadCam(); });
+  }
+  const total = sc.dets.reduce((a, d) => a + d.vol, 0);
+  $('#skipSum').textContent = `${sc.dets.length} objects matched to order lines · ${total.toFixed(2)} m³ new this hour · ${sc.volume.toFixed(1)} m³ in skip (${(sc.fillPct * 100).toFixed(0)}% full)`;
+  $('#detList').innerHTML = sc.dets.map((d, k) => `
+    <button class="det ${k === 0 ? 'on' : ''}" data-k="${k}"><i style="background:${(MAT[CLS[d.type].mat] || { color: '#9A958B' }).color}"></i>
+      <span><b style="font-weight:550">${CLS[d.type].label}</b> <span style="color:var(--ink-3)">→ ${d.po} · L${d.line}</span></span>
+      <span class="vl">${d.vol.toFixed(2)} m³</span><span class="cf">${d.conf.toFixed(2)}</span></button>`).join('');
+  $$('#detList .det').forEach(b => b.addEventListener('click', () => selectDet(+b.dataset.k, true)));
+  selectDet(0);
+  restartCycle();
+}
+function restartCycle(){
+  clearInterval(live.timer);
+  live.timer = setInterval(() => {
+    const sc = live.main.sc; if (!sc) return;
+    selectDet((live.main.sel + 1) % sc.dets.length);
+  }, 3600);
+}
+function selectDet(k, user){
+  live.main.sel = k;
+  $$('#detList .det').forEach((b, i) => b.classList.toggle('on', i === k));
+  renderJev(live.main.sc.dets[k], live.main.sc);
+  if (user) restartCycle();
+}
+function renderJev(d, sc){
+  const R = mulberry32(Math.floor(d.conf * 1e6));
+  const others = ['gypsum', 'timber', 'concrete', 'rebar', 'insulation', 'packaging'].filter(k => k !== d.type);
+  let rest = 1 - d.conf;
+  const opts = [[CLS[d.type].label, d.conf]];
+  others.slice().sort(() => R() - .5).slice(0, 3).forEach((k, i) => { const p = i < 2 ? rest * (.55 + R() * .2) : rest; rest -= p; opts.push([CLS[k].label, p]); });
+  const sib = (PO_DESC[d.type] || PO_DESC.concrete).filter(x => x !== d.desc);
+  const p1 = .78 + R() * .17, p2 = (1 - p1) * .7;
+  const lines = [[`${d.po} · L${d.line} · ${d.desc}`, p1], [`PO-26-${1100 + Math.floor(R() * 260)} · L${1 + Math.floor(R() * 6)} · ${sib[0]}`, p2], ['No open order line (site stock)', 1 - p1 - p2]];
+  const lvl = Math.max(0, Math.min(4, Math.round(sc.fillPct * 4)));
+  const lvP = .7 + R() * .25;
+  const optRows = (arr) => arr.map(([n, p], i) => `<div class="opt ${i === 0 ? 'best' : ''}"><div class="bar"><div data-w="${(p * 100).toFixed(1)}"></div><span>${n}</span></div><span class="pv">${p.toFixed(2)}</span></div>`).join('');
+  const lat = Math.round(90 + R() * 110);
+  $('#jevLat').textContent = lat + ' ms';
+  $('#jevSub').textContent = `${camLabel(live.site, live.cam).split(' · ')[0]} · object #${d.k} · ${d.vol.toFixed(2)} m³`;
+  $('#jevQs').innerHTML = `
+    <div class="q"><div class="qh"><span class="qt">CHOICE</span><span class="qn">material_class</span><span class="ans">${CLS[d.type].label}</span></div>${optRows(opts)}</div>
+    <div class="q"><div class="qh"><span class="qt score">SCORE</span><span class="qn">fill_level</span><span class="ans">${['Empty', '¼', '½', '¾', 'Full'][lvl]} · ${lvP.toFixed(2)}</span></div>
+      <div class="levels">${['0', '¼', '½', '¾', '1'].map((l, i) => `<div data-l="${i}">${l}</div>`).join('')}</div></div>
+    <div class="q"><div class="qh"><span class="qt">CHOICE</span><span class="qn">order_line</span><span class="ans">${d.po}</span></div>${optRows(lines)}</div>
+    <div class="q"><div class="qh"><span class="qt yn">YES/NO</span><span class="qn">reusable_on_site</span><span class="ans">${d.reuse > .5 ? 'Yes' : 'No'}</span></div>
+      <div class="yn"><div class="track"><div data-w="${(d.reuse * 100).toFixed(0)}"></div></div><span class="pv">${d.reuse.toFixed(2)}</span></div></div>
+    <div class="q"><div class="qh"><span class="qt yn">YES/NO</span><span class="qn">contaminated_stream</span><span class="ans">${d.contam > .5 ? 'Yes' : 'No'}</span></div>
+      <div class="yn"><div class="track"><div data-w="${(d.contam * 100).toFixed(0)}"></div></div><span class="pv">${d.contam.toFixed(2)}</span></div></div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $$('#jevQs [data-w]').forEach((b, i) => setTimeout(() => b.style.width = b.dataset.w + '%', i * 40));
+    $$('#jevQs .levels div').forEach(b => { const l = +b.dataset.l; setTimeout(() => b.classList.add(l === lvl ? 'on' : Math.abs(l - lvl) === 1 ? 'near' : 'x'), 200); });
+  }));
+}
+function setMode(m){
+  live.mode = m;
+  $$('#modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  live.main.setMode(m);
+}
+function initLive(){
+  if (live.main){ live.main.resize(true); live.thumbs.forEach(t => t.resize(true)); if (live.map) setTimeout(() => live.map.invalidateSize(), 50); return; }
+  live.main = new CamView($('#camMain'));
+  buildSites();
+  requestAnimationFrame(initMap);
+  $$('#modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+  loadCam();
+}
+function loop(now){
+  if (current === 'live' && live.main){
+    live.main.draw(now);
+    live.thumbs.forEach(t => t.draw(now));
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (live.main){ live.main.resize(); live.thumbs.forEach(t => t.resize()); } }, 150); });
+
+
+/* ================= RUN ANALYSIS ================= */
+const STEPS = [
+  { t: 'Ingest purchase orders', s: 'Fetch orders', d: 'SAP MM · delivery notes · takeoffs' },
+  { t: 'Capture skip scans', s: 'Scan skips', d: '38 cameras · RGB + depth + LiDAR' },
+  { t: 'Classify each object', s: 'Classify', d: 'autoregressive model · typed answers' },
+  { t: 'Match waste → order lines', s: 'Match to POs', d: 'which PO did this come from?' },
+  { t: 'Measure over-ordering', s: 'Over-order', d: 'ordered vs needed vs wasted' },
+  { t: 'Optimize next orders', s: 'Next orders', d: 'within the supply-risk guardrail' },
+  { t: 'Report & push', s: 'Report', d: 'to procurement and CSRD' },
+];
+const STEP_RES = ['4,812 lines', '61,240 scans', '1.84M answers', '92.4% matched', '€5.26M over', '−18.4%', '€1.42M / yr'];
+/* input → what happens → output, shown under every step header */
+const FLOW = [
+  ['Purchase orders, delivery notes and BIM takeoffs from the ERP', 'Clean them up and put every line in the same units', 'One table: SKU · quantity · site · supplier · date'],
+  ['Photos, depth maps and LiDAR from 38 skip cameras', 'Vision layer finds each object and measures its volume', '1.84M objects, each with a crop and a size in m³'],
+  ['Each object + the open order lines on that site', 'The autoregressive model answers 5 fixed questions, picking only from allowed options', 'Material, fill level, order line, reusable, contaminated, each with a probability'],
+  ['Labelled waste + every PO line', 'Join on site, SKU and delivery window', 'Waste attached to the exact order line it came from'],
+  ['Ordered quantity, installed quantity and waste per line', 'Ordered − needed = over-order. Compare it with the buffer', 'Over-order % and € per SKU, and why it happened'],
+  ['Over-order per SKU + 18 months of lead times', 'Size a smaller buffer, then test it on 1,000 simulated supply scenarios', 'Next order quantity per line, with service level ≥ 98.5%'],
+  ['New order sizes', 'Write recommendations, draft POs (not sent) and the report', '€1.42M/yr saving waiting for approval'],
+];
+/* one order line followed through every step */
+const TRACE = [
+  ['ORDERED', '1,140 sheets', 'PO-26-1187 L3 · 3 Sep · buffer +14%'],
+  ['SCANNED', '2.4 m³ in skip', 'CAM-07 · skip 3 · white board pieces'],
+  ['CLASSIFIED', 'Gypsum board', 'p 0.96 · reusable: no (0.81)'],
+  ['MATCHED', '→ PO-26-1187 L3', 'p 0.97 · same site, delivered 3 Sep'],
+  ['MEASURED', '158 sheets wasted', '13.9% of the order · €1.6k incl. disposal'],
+  ['NEXT ORDER', '1,140 → 1,050', 'buffer +6% · stock-out risk 0.9%'],
+  ['RESULT', '€1.1k saved', 'on this line · €312k/yr for this SKU'],
+];
+const STEP_MS = 8000;
+/* supply-security target → savings scale (same curve as the Recommendations slider) */
+const cfg = { sl: 98.5, f: 1 };
+const slF = v => v <= 98.5 ? 1 + (98.5 - v) * .115 : 1 - (v - 98.5) / 1.4 * .56;
+const eur = v => v >= 1 ? '€' + v.toFixed(2) + 'M' : '€' + Math.round(v * 1000) + 'k';
+function applyCfg(){
+  const f = cfg.f, ach = Math.min(99.95, cfg.sl + .1), so = .4 * Math.exp((98.5 - cfg.sl) * .81);
+  Object.assign(cfg, { ach, so });
+  STEP_RES[5] = `−${(18.4 * f).toFixed(1)}%`; STEP_RES[6] = `${eur(1.42 * f)} / yr`;
+  FLOW[5][2] = `Next order quantity per line, with material on site ≥ ${cfg.sl}% of the time`;
+  FLOW[6][2] = `${eur(1.42 * f)}/yr saving waiting for approval`;
+  const nq = Math.round(1140 - 90 * f);
+  TRACE[5] = ['NEXT ORDER', `1,140 → ${fmt(nq)}`, `buffer +${Math.max(1, 14 - (nq < 1140 ? (1140 - nq) / 1140 * 100 * 1.07 : 0)).toFixed(0)}% · stock-out risk ${(100 - ach).toFixed(1)}%`];
+  TRACE[6] = ['RESULT', `€${(1.1 * f).toFixed(1)}k saved`, `on this line · €${Math.round(312 * f)}k/yr for this SKU`];
+}
+function placeSeg(){ $$('.sec-seg').forEach(seg => { const b = $('button.on', seg), pill = $('i', seg); if (b && b.offsetWidth){ pill.style.width = b.offsetWidth + 'px'; pill.style.transform = `translateX(${b.offsetLeft}px)`; } }); }
+function syncSeg(){ $$('.sec-seg button').forEach(x => x.classList.toggle('on', +x.dataset.v === cfg.sl)); const t = $('#idleSave'); if (t) t.textContent = `expected saving ${eur(1.42 * cfg.f)} / yr`; requestAnimationFrame(placeSeg); }
+function secSeg(){
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.sec-seg button'); if (!b) return;
+    cfg.sl = +b.dataset.v; cfg.f = slF(cfg.sl); applyCfg(); syncSeg();
+    const sl = $('#sl'); if (sl){ sl.value = cfg.sl; sl.dispatchEvent(new Event('input')); }
+    if (runS.cur < 0) buildSteps();
+    toast(`No-disruption target ${cfg.sl}% · expected saving ${eur(1.42 * cfg.f)}/yr`);
+  });
+  requestAnimationFrame(placeSeg); window.addEventListener('resize', placeSeg);
+}
+const runS = { sTok: 0, token: 0, step: -1, cur: -1, max: -1, t0: 0, clock: null, done: false, paused: false, timer: null };
+function buildSteps(){
+  $('#steps').innerHTML = '<i class="fillbar" id="runBar"></i>' + STEPS.map((s, i) => `<button class="step" data-i="${i}" title="${s.t}"><div class="ix"><em>${i + 1}</em></div><b>${s.s}</b><span>&nbsp;</span></button>`).join('');
+  $$('#steps .step').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.i; if (i <= runS.max && runS.cur >= 0){ setPaused(true); goStep(i); } }));
+  $('#trk').innerHTML = TRACE.map(([k, v, d], i) => `<div class="tn" data-i="${i}"><small>${i + 1} · ${k}</small><b class="tq">${v}</b><span class="tq">${d}</span></div>`).join('');
+}
+function logL(html, cls = ''){
+  const el2 = document.createElement('div'); const tt = ((performance.now() - runS.t0) / 1000).toFixed(1).padStart(5, '0');
+  el2.innerHTML = `<span class="dim">[${tt}s]</span> <span class="${cls}">${html}</span>`;
+  const lg = $('#log'); lg.appendChild(el2); lg.scrollTop = lg.scrollHeight;
+}
+const later = (tok, ms, fn) => setTimeout(() => { if (tok === runS.token) fn(); }, ms);
+function countTo(node, to, d = 0, pre = '', suf = '', dur = 2200){ tween(dur, e => node.textContent = pre + fmt(to * e, d) + suf); }
+const setBar = f => $('#runBar').style.transform = `scaleX(${f})`;
+function ctlState(){
+  const running = runS.cur >= 0;
+  $('#rcBack').disabled = !running || runS.cur === 0;
+  $('#rcNext').disabled = !running || runS.cur === STEPS.length - 1;
+  $('#rcPause').disabled = !running || runS.done;
+  $('#rcPause').textContent = runS.paused ? '▶ Resume' : '❚❚ Pause';
+  const tm = $('#stage .st-timer'); if (tm) tm.classList.toggle('paused', runS.paused);
+  $('#steps').classList.toggle('paused', runS.paused);
+  const bs = $('#steps .step.busy span'); if (bs && !runS.done) bs.textContent = runS.paused ? 'paused' : 'running…';
+}
+function schedule(){
+  clearTimeout(runS.timer);
+  if (runS.paused || runS.done) return;
+  const tok = runS.token;
+  runS.timer = setTimeout(() => { if (tok !== runS.token || runS.paused) return; runS.cur < STEPS.length - 1 ? goStep(runS.cur + 1) : finishRun(); }, runS.left ?? STEP_MS);
+  runS.left = null; runS.armed = performance.now();
+}
+function setPaused(p){
+  if (runS.done || runS.cur < 0) p = false;
+  if (p && !runS.paused){ clearTimeout(runS.timer); runS.left = Math.max(400, STEP_MS - (performance.now() - runS.armed)); }
+  const wasPaused = runS.paused; runS.paused = p;
+  if (!p && wasPaused && !runS.done) schedule();
+  ctlState();
+}
+function goStep(i){
+  const first = i > runS.max; runS.max = Math.max(runS.max, i); runS.cur = i; runS.left = null;
+  $$('#steps .step').forEach((b, k) => {
+    b.classList.toggle('busy', k === i);
+    const dn = k < runS.max || (k === runS.max && k !== i) || (runS.done && k <= runS.max);
+    b.classList.toggle('done', dn && k !== i);
+    const shown = (dn && k !== i) || (runS.done && k === i);
+    $('span', b).textContent = shown ? STEP_RES[k] : k === i ? (runS.paused ? 'paused' : 'running…') : '\u00a0';
+    $('em', b).textContent = shown && k !== i ? '✓' : k + 1;
+  });
+  $$('#trk .tn').forEach((n, k) => { n.classList.toggle('now', k === i); n.classList.toggle('seen', k <= runS.max && k !== i); });
+  setBar(i / (STEPS.length - 1));
+  showStage(i, !first, runS.token);
+  schedule(); ctlState();
+}
+function finishRun(){
+  runS.done = true; runS.paused = false; clearTimeout(runS.timer); clearInterval(runS.clock);
+  $$('#steps .step').forEach((b, k) => { b.classList.remove('busy'); b.classList.add('done'); $('span', b).textContent = STEP_RES[k]; $('em', b).textContent = '✓'; });
+  $$('#trk .tn').forEach(n => { n.classList.remove('now'); n.classList.add('seen'); });
+  setBar(1);
+  const tm = $('#stage .st-timer'); if (tm) tm.remove();
+  $('#runBtn').hidden = false;
+  logL('run finished · 6 recommendations ready for approval', 'ok');
+  ctlState();
+}
+function startRun(){
+  runS.token++; runS.done = false; runS.paused = false; runS.max = -1; runS.cur = -1; runS.t0 = performance.now();
+  buildSteps(); $('#log').innerHTML = ''; setBar(0);
+  $('#runBtn').hidden = true; applyCfg();
+  clearInterval(runS.clock);
+  runS.clock = setInterval(() => { const t = (performance.now() - runS.t0) / 1000; $('#runClock').textContent = String(Math.floor(t / 60)).padStart(2, '0') + ':' + (t % 60).toFixed(1).padStart(4, '0'); }, 100);
+  sizeStage(); pinRun();
+  logL(`run <b>skp-run-2026-10-14-0612</b> started · scope: 12 sites, 18 months · no-disruption target ${cfg.sl}%`, 'ok');
+  goStep(0);
+}
+const IDLE = $('#stage').innerHTML;
+/* screen-recording fit: the stage fills the window under the sticky step bar, and each step is zoomed to fit inside it */
+function sizeStage(){
+  const st = $('#stage'), rb = $('.runbar'); if (!st || !rb || !rb.offsetHeight) return;
+  const h = Math.max(420, innerHeight - 76 - rb.offsetHeight - 16 - 16);
+  st.style.setProperty('--stage-h', h + 'px');
+  const box = $('#stage .st-in:not(.leaving)'); if (box) fitBox(box);
+}
+function fitBox(box){
+  const st = $('#stage'); if (!document.body.contains(box)) return;
+  const avail = st.clientHeight - 48;
+  box.style.zoom = 1; const nat = box.scrollHeight;
+  const z = Math.max(.6, Math.min(1, avail / nat));
+  box.style.zoom = z.toFixed(3);
+}
+function fitSoon(box){ [0, 120, 500, 1200, 2600].forEach(ms => setTimeout(() => fitBox(box), ms)); }
+window.addEventListener('resize', sizeStage);
+function pinRun(){ const rb = $('.runbar'); const y = rb.getBoundingClientRect().top + scrollY - 76; if (scrollY < y - 2) window.scrollTo({ top: y, behavior: 'smooth' }); }
+function resetRun(){
+  runS.token++; runS.sTok++; clearTimeout(runS.timer); clearInterval(runS.clock);
+  Object.assign(runS, { cur: -1, max: -1, done: false, paused: false, left: null });
+  $('#stage').innerHTML = IDLE; $('#log').innerHTML = ''; $('#runClock').textContent = '00:00.0';
+  $('#runBtn').hidden = true; buildSteps(); setBar(0); ctlState(); syncSeg();
+}
+$('#runBtn').addEventListener('click', resetRun);
+document.addEventListener('click', e => { if (e.target.closest('[data-run]')) startRun(); });
+$('#rcPause').addEventListener('click', () => setPaused(!runS.paused));
+$('#rcNext').addEventListener('click', () => { if (runS.cur < STEPS.length - 1) goStep(runS.cur + 1); });
+$('#rcBack').addEventListener('click', () => { if (runS.cur > 0){ setPaused(true); goStep(runS.cur - 1); } });
+document.addEventListener('keydown', e => {
+  if (current !== 'run' || runS.cur < 0 || e.target.tagName === 'INPUT') return;
+  if (e.key === ' '){ e.preventDefault(); setPaused(!runS.paused); }
+  if (e.key === 'n' || e.key === 'N') $('#rcNext').click();
+  if (e.key === 'b' || e.key === 'B') $('#rcBack').click();
+});
+
+function stageHead(i, sub){
+  const [a, d, o] = FLOW[i];
+  return `<div class="st-h"><span class="n">STEP ${i + 1} / 7</span><div><h2>${STEPS[i].t}</h2><p>${sub}</p></div></div>
+    <div class="flow3"><div><small>IN</small>${a}</div><div class="ar">→</div><div class="do" style="animation-delay:.25s"><small>WHAT SKIP DOES</small>${d}</div><div class="ar">→</div><div style="animation-delay:.5s"><small>OUT</small>${o}</div></div>`;
+}
+function showStage(i, replay, tok = runS.token){
+  const st = $('#stage');
+  $$('.st-in.leaving', st).forEach(n => n.remove());
+  [...st.children].forEach(n => { if (n.classList.contains('st-in')){ n.classList.add('leaving'); n.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); setTimeout(() => n.remove(), 200); } else n.remove(); });
+  const box = document.createElement('div'); box.className = 'st-in'; box.style.animationDelay = st.querySelector('.leaving') ? '.08s' : '0s'; st.appendChild(box);
+  fitSoon(box);
+  if (!runS.done){ const tm = document.createElement('div'); tm.className = 'st-timer go' + (runS.paused ? ' paused' : ''); tm.innerHTML = `<i style="animation-duration:${STEP_MS}ms"></i>`; st.appendChild(tm); }
+  const sTok = ++runS.sTok;
+  const L_ = (h, c) => { if (!replay) logL(h, c); };
+  const T = (ms, fn) => setTimeout(() => { if (sTok === runS.sTok && (replay || tok === runS.token)) fn(); }, ms);
+  if (i === 0){
+    box.innerHTML = stageHead(0, 'Every purchase order line since April 2025 is pulled from the ERP and normalised into SKU, quantity, site, supplier and delivery date.') +
+      `<div class="sync" id="sync">
+        <div class="sys"><svg viewBox="0 0 92 46"><use href="#sapmark"/></svg><div><b>SAP S/4HANA</b><span>MM · EKKO / EKPO</span></div></div>
+        <div class="lane"><div class="fill" id="syncFill"></div><div class="pk"><em></em></div><span class="st" id="syncSt">connecting…</span></div>
+        <div class="sys"><div class="lg"><svg viewBox="0 0 660 340"><use href="#skiplogo"/></svg></div><div><b>SKIP</b><span>order baseline</span></div></div>
+      </div>
+      <div class="srcs"><span class="pill b">+ Supplier delivery notes · 2,904 PDFs</span><span class="pill b">+ BIM quantity takeoffs · 12 models</span></div>
+      <div class="big3"><div><span>Order lines</span><b class="num" id="c1">0</b></div><div><span>Material spend</span><b class="num" id="c2">€0M</b></div><div><span>Suppliers · SKUs</span><b class="num" id="c3">0</b></div></div>
+      <div class="po-grid" id="poGrid"></div>`;
+    const sync = $('#sync'), syncSt = $('#syncSt');
+    T(500, () => syncSt.textContent = 'OAuth · read-only ✓');
+    T(1000, () => { countTo($('#c1'), 4812, 0, '', '', 3400); countTo($('#c2'), 53.0, 1, '€', 'M', 3400); countTo($('#c3'), 214, 0, '37 · ', '', 3400); tween(3400, e => { syncSt.textContent = 'fetching EKPO · ' + fmt(4812 * e) + ' rows'; $('#syncFill') && ($('#syncFill').style.transform = `scaleX(${e})`); }); });
+    T(4500, () => { sync.classList.add('ok'); syncSt.textContent = '✓ synced 4,812 rows · 06:12'; });
+    const R = mulberry32(77), sups = ['Yesos Llobregat', 'Fusteria Vallès', 'Formigons Garraf', 'Acers Besòs', 'Aïllaments Nord', 'Prefabricats Anoia'], mk = ['drywall', 'timber', 'concrete', 'concrete', 'insulation', 'concrete'];
+    $('#poGrid').innerHTML = Array.from({ length: 12 }, (_, k) => { const si = Math.floor(R() * 6); return `<div class="po" style="animation-delay:${1 + k * .2}s"><div class="pn">PO-26-${1100 + Math.floor(R() * 260)}<svg viewBox="0 0 92 46"><use href="#sapmark"/></svg></div><div class="ps">${sups[si]} · ${SITES[Math.floor(R() * 12)].n}</div><div class="pl"><span><i style="background:${MAT[mk[si]].color}"></i>${2 + Math.floor(R() * 7)} lines</span><span>€${fmt(4 + R() * 60, 1)}k</span></div></div>`; }).join('');
+    L_('connecting to SAP S/4HANA (MM) via OData · read-only service user'); T(1000, () => L_('GET /sap/opu/odata/sap/API_PURCHASEORDER_PROCESS_SRV · 4,812 lines', 'dim')); T(3000, () => L_('parsed 2,904 delivery notes · 0.4% needed manual review', 'dim')); T(4600, () => L_('normalised units (m², m³, kg, pcs) · baseline built per SKU', 'ok'));
+  }
+  if (i === 1){
+    box.innerHTML = stageHead(1, 'Every skip is scanned each time something goes in. Depth and LiDAR give the volume, and RGB gives what the object looks like.') +
+      `<div class="big3"><div><span>Scans processed</span><b class="num" id="c1">0</b></div><div><span>Objects detected</span><b class="num" id="c2">0</b></div><div><span>Volume measured</span><b class="num" id="c3">0 m³</b></div></div><div class="scans" id="scans"></div>`;
+    countTo($('#c1'), 61240); countTo($('#c2'), 1842310); countTo($('#c3'), 18930, 0, '', ' m³');
+    const sc = $('#scans'), modes = ['rgb', 'depth', 'rgb', 'seg', 'rgb', 'depth'], picks = [[0, 0], [1, 0], [2, 0], [2, 1], [3, 1], [4, 1]];
+    picks.forEach(([si, ci], k) => {
+      const d = document.createElement('div'); d.className = 'scan'; d.style.animationDelay = (.15 + k * .25) + 's';
+      const scn = sceneFor(si, ci);
+      d.innerHTML = `<div class="lb">CAM-${String(SITES[si].camIds[ci]).padStart(2, '0')} · ${modes[k].toUpperCase()}</div><div class="think" style="--d:${k * .25}s"><i></i></div><div class="done" style="--d:${k * .25}s"></div><div class="vb" style="animation-delay:${2.5 + k * .25}s">${scn.volume.toFixed(1)} m³ · ${scn.dets.length} obj</div>`;
+      sc.appendChild(d);
+      photosReady.then(() => setTimeout(() => { const c = renderStatic(scn, modes[k], 480, 270); d.prepend(c); }, 30 + k * 40));
+    });
+    L_('38 cameras online · 46 skips · last sync 06:11:58'); T(1600, () => L_('depth + LiDAR fused → volumetric mesh per skip (±6%)', 'dim')); T(3200, () => L_('1,842,310 objects detected and cropped for classification', 'ok'));
+  }
+  if (i === 2){
+    box.innerHTML = stageHead(2, 'An autoregressive model reads each object and the open order lines on that site, then generates its answer to five fixed questions. It can only pick from the allowed options, so every answer is a clean label with a probability that is easy to audit.') +
+      `<div class="big3"><div><span>Decisions</span><b class="num" id="c1">0</b></div><div><span>Avg latency</span><b class="num">142 ms</b></div><div><span>Model cost, whole run</span><b class="num" id="c3">€0</b></div></div>
+      <div class="cls-wrap"><div class="dstream" id="ds"></div><div class="cdist"><div class="sub" style="margin-bottom:6px">Worked example · the order line we follow</div><pre class="gen" id="gen"></pre><div class="sub" style="margin:14px 0 6px">material_class distribution (by volume)</div><div id="cd"></div></div></div>`;
+    countTo($('#c1'), 1.84, 2, '', 'M'); countTo($('#c3'), 29, 0, '€');
+    const GEN = [
+      ['k', 'input  object #184,213 · CAM-07 · 2.4 m³\n'], ['k', 'context 14 open lines · PO-26-1187 L3 …\n\n'],
+      ['', 'material_class → '], ['a', 'gypsum_board'], ['p', '   p 0.96\n'],
+      ['', 'fill_level     → '], ['a', '¾'], ['p', '              p 0.88\n'],
+      ['', 'order_line     → '], ['a', 'PO-26-1187 L3'], ['p', '  p 0.97\n'],
+      ['', 'reusable       → '], ['a', 'no'], ['p', '             p 0.81\n'],
+      ['', 'contaminated   → '], ['a', 'no'], ['p', '             p 0.93'],
+    ];
+    const gen = $('#gen'); let gi = 0, gc = 0, out = '';
+    const esc = t => t.replace(/</g, '&lt;');
+    const gtick = () => {
+      if (!document.body.contains(gen) || box.classList.contains('leaving')) return;
+      if (gi >= GEN.length){ gen.innerHTML = out + '<span class="cur"></span>'; return; }
+      const [c, t] = GEN[gi], step = c === 'a' ? 1 : 3;
+      gc = Math.min(t.length, gc + step);
+      const part = c ? `<span class="${c}">${esc(t.slice(0, gc))}</span>` : esc(t.slice(0, gc));
+      gen.innerHTML = out + part + '<span class="cur"></span>';
+      if (gc >= t.length){ out += c ? `<span class="${c}">${esc(t)}</span>` : esc(t); gi++; gc = 0; }
+      setTimeout(gtick, c === 'a' ? 55 : 14);
+    };
+    setTimeout(gtick, 500);
+    const keys = ['gypsum', 'timber', 'concrete', 'rebar', 'insulation', 'packaging'], qs = [['CHOICE', 'material_class'], ['SCORE', 'fill_level'], ['CHOICE', 'order_line'], ['Y/N', 'reusable']];
+    const R = mulberry32(5150), ds = $('#ds'); let n = 0;
+    const iv = setInterval(() => {
+      if (!document.body.contains(box) || box.classList.contains('leaving')) return clearInterval(iv);
+      const k = keys[Math.floor(R() * 6)], q = qs[Math.floor(R() * 4)];
+      const ans = q[1] === 'material_class' ? CLS[k].label : q[1] === 'fill_level' ? ['¼', '½', '¾'][Math.floor(R() * 3)] : q[1] === 'order_line' ? `PO-26-${1100 + Math.floor(R() * 260)}` : (R() > .4 ? 'yes' : 'no');
+      const r = document.createElement('div'); r.className = 'drow';
+      r.innerHTML = `<span class="t">obj ${fmt(184000 + n * 37)}</span><span>${ans} <span style="color:var(--ink-3);font-family:var(--mono);font-size:10.5px">· ${q[1]}</span></span><span class="qq">${q[0]}</span><span class="p">${(.84 + R() * .15).toFixed(2)}</span>`;
+      ds.prepend(r); n++; while (ds.children.length > 14) ds.lastChild.remove();
+      if (n > 60) clearInterval(iv);
+    }, 75);
+    const dist = [['Concrete', 'concrete', 38], ['Timber', 'timber', 24], ['Drywall', 'drywall', 17], ['Insulation', 'insulation', 9], ['Packaging', 'insulation', 7], ['Mixed / other', null, 5]];
+    $('#cd').innerHTML = dist.map(([nm, k, v]) => `<div class="mrow"><div class="nm" style="font-size:12px"><i style="background:${k ? MAT[k].color : '#B9B7AE'}"></i>${nm}</div><div class="hbar"><div style="background:${k ? MAT[k].color : '#B9B7AE'}" data-w="${v * 2.4}"></div></div><div class="v">${v}%</div></div>`).join('');
+    setTimeout(() => $$('#cd .hbar div').forEach(d => d.style.width = d.dataset.w + '%'), 300);
+    L_('ar-model · 5 questions per object · constrained decoding'); T(1800, () => L_('1.84M decisions · p50 128 ms · p95 310 ms', 'dim')); T(3400, () => L_('3.6% low-confidence (<0.70) → routed to human review queue', 'wa'));
+  }
+  if (i === 3){
+    box.innerHTML = stageHead(3, 'The model\'s order_line answer links each piece of waste back to the PO line it was delivered on. This is what turns "a full skip" into "we bought 14% too much of this SKU".') +
+      `<div class="match"><svg id="msvg" viewBox="0 0 900 340"></svg></div>
+      <div class="mnote"><span class="pill g">92.4% of waste volume matched to a PO line</span><span class="pill a">4.1% site stock / no open PO</span><span class="pill r">3.5% unmatched, mixed debris</span></div>`;
+    const svg = $('#msvg');
+    const left = [['PO-26-1187 · L3', 'Plasterboard 12.5 mm', 'drywall'], ['PO-26-1203 · L1', 'Formwork ply 18 mm', 'timber'], ['PO-26-1244 · L2', 'C24 battens 45×70', 'timber'], ['PO-26-1190 · L5', 'Ready-mix C30/37', 'concrete'], ['PO-26-1261 · L1', 'Rebar B500S Ø12', 'concrete'], ['PO-26-1218 · L4', 'Mineral wool 100 mm', 'insulation']];
+    const right = [['Gypsum board offcuts', '41.2 m³', 'drywall', [0]], ['Unopened sheets ×38', '3.1 m³', 'drywall', [0]], ['Formwork panels', '58.6 m³', 'timber', [1]], ['Batten offcuts', '22.4 m³', 'timber', [2]], ['Concrete returns', '36.8 m³', 'concrete', [3]], ['Rebar offcuts', '4.9 t', 'concrete', [4]], ['Mineral wool + wrap', '19.7 m³', 'insulation', [5]]];
+    const ly = k => 30 + k * 50, ry = k => 22 + k * 45;
+    const conf = [.97, .93, .95, .91, .89, .94, .92];
+    right.forEach(([, , , ls], k) => ls.forEach(l => {
+      const p = el('path', { d: `M300,${ly(l) + 16} C450,${ly(l) + 16} 450,${ry(k) + 16} 600,${ry(k) + 16}`, fill: 'none', stroke: MAT[right[k][2]].color, 'stroke-width': 2.2, opacity: .6, pathLength: 1, class: 'draw', style: `animation-delay:${.6 + k * .35}s` }, svg);
+      const lab = el('g', { class: 'fade', style: `animation-delay:${1.2 + k * .35}s` }, svg);
+      const mx = 450, my = (ly(l) + ry(k)) / 2 + 16;
+      el('rect', { x: mx - 22, y: my - 10, width: 44, height: 20, rx: 3, fill: '#fff', stroke: '#E6E4DD' }, lab);
+      el('text', { x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': 11, 'font-family': 'Geist Mono', 'font-weight': 600, fill: '#20513F' }, lab).textContent = conf[k].toFixed(2);
+    }));
+    left.forEach(([a, b, k], j) => {
+      const g = el('g', { class: 'fade', style: `animation-delay:${j * .08}s` }, svg);
+      el('rect', { x: 10, y: ly(j), width: 290, height: 34, rx: 3, fill: '#FAFAF7', stroke: '#E6E4DD' }, g);
+      el('rect', { x: 10, y: ly(j), width: 4, height: 34, rx: 2, fill: MAT[k].color }, g);
+      el('text', { x: 24, y: ly(j) + 21, 'font-size': 11.5, 'font-family': 'Geist Mono', 'font-weight': 600, fill: '#14191A' }, g).textContent = a;
+      el('text', { x: 150, y: ly(j) + 21, 'font-size': 12, fill: '#4B5354' }, g).textContent = b;
+    });
+    right.forEach(([a, b, k], j) => {
+      const g = el('g', { class: 'fade', style: `animation-delay:${.5 + j * .35}s` }, svg);
+      el('rect', { x: 600, y: ry(j), width: 290, height: 34, rx: 3, fill: '#fff', stroke: MAT[k].color }, g);
+      el('circle', { cx: 618, cy: ry(j) + 17, r: 5, fill: MAT[k].color }, g);
+      el('text', { x: 632, y: ry(j) + 21, 'font-size': 12, 'font-weight': 600, fill: '#14191A' }, g).textContent = a;
+      el('text', { x: 878, y: ry(j) + 21, 'text-anchor': 'end', 'font-size': 11.5, 'font-family': 'Geist Mono', fill: '#4B5354' }, g).textContent = b;
+    });
+    el('text', { x: 10, y: 14, 'font-size': 10.5, fill: '#8B9292', 'letter-spacing': '.08em' }, svg).textContent = 'ORDER LINES (ERP)';
+    el('text', { x: 600, y: 12, 'font-size': 10.5, fill: '#8B9292', 'letter-spacing': '.08em' }, svg).textContent = 'WASTE OBSERVED (CAMERA + MODEL)';
+    L_('joining decisions ↔ order lines on site, SKU, delivery window'); T(1800, () => L_('matched 17,490 m³ (92.4%) · mean confidence 0.93', 'ok')); T(3200, () => L_('flag: 38 unopened plasterboard sheets at Diagonal Mar → return to supplier', 'wa'));
+  }
+  if (i === 4){
+    const rows = [['Formwork ply 18 mm', 'timber', 80, 20, 24.1, '€466k'], ['Plasterboard 12.5 mm', 'drywall', 86, 14, 15.8, '€412k'], ['C24 battens 45×70', 'timber', 82, 18, 19.2, '€341k'], ['Mineral wool 100 mm', 'insulation', 88, 12, 13.1, '€196k'], ['Ready-mix C30/37', 'concrete', 89, 11, 8.4, '€388k'], ['Rebar B500S Ø12', 'concrete', 91, 9, 7.4, '€247k']];
+    box.innerHTML = stageHead(4, 'For each SKU we compare what was ordered, what the building actually needed and what ended up in the skip. When waste is higher than the buffer, the overrun came from site practice and not from the order size.') +
+      `<div class="legend" style="margin-bottom:14px"><span><i style="background:#20513F"></i>Needed (installed)</span><span><i style="background:#E7B65E"></i>Safety buffer ordered</span><span><i style="background:#D9483B"></i>Ended in skip</span></div>
+      <div class="oo">${rows.map(([n, k, need, buf, ws, val]) => `<div class="oo-r"><div class="nm" style="display:flex;gap:8px;align-items:center;font-weight:550"><i style="width:9px;height:9px;border-radius:2px;background:${MAT[k].color}"></i>${n}</div>
+        <div><div class="tr"><div class="need" data-w="${need * .8}"></div><div class="bf" data-l="${need * .8}" data-w="${buf * .8}"></div></div>
+        <div class="tr" style="height:8px;margin-top:4px;background:transparent"><div class="ws" data-l="${(100 - ws) * .8}" data-w="${ws * .8}"></div></div></div>
+        <div class="v">buffer +${buf}%<br><b>waste ${ws}% · ${val}</b></div></div>`).join('')}</div>
+      <div class="check" style="background:#FBF0DC;color:#9A6610;animation-delay:3s">Pattern: the buffer was set by habit (+11–20%), but SKUs with lead times under 7 days have never stocked out. The extra buffer goes straight into the skip.</div>`;
+    setTimeout(() => $$('.oo .tr div').forEach((d, k) => setTimeout(() => { if (d.dataset.l) d.style.left = d.dataset.l + '%'; d.style.width = d.dataset.w + '%'; }, k * 90)), 200);
+    L_('over-order = ordered − installed (BIM takeoff + progress)'); T(1600, () => L_('total over-ordered value: €5.26M / yr (9.9% of spend)', 'ok')); T(3000, () => L_('correlation buffer↔waste r = 0.81 · lead time ≤ 7 d: 0 stock-outs', 'dim'));
+  }
+  if (i === 5){
+    const np = [['Plasterboard 12.5 mm', 'Diagonal Mar', 1140, 1050, 'pcs'], ['Formwork ply 18 mm', "L'Hospitalet", 420, 382, 'pcs'], ['C24 battens 45×70', 'Sants', 3600, 3290, 'm'], ['Ready-mix C30/37', 'Mataró', 186, 179.5, 'm³'], ['Rebar B500S Ø12', 'Sant Cugat', 24.0, 22.8, 't'], ['Mineral wool 100 mm', 'Poblenou', 2300, 2140, 'm²']]
+      .map(([n, st, a, b, u]) => [n, st, a, a - (a - b) * cfg.f, u]);
+    box.innerHTML = stageHead(5, 'The optimizer sizes each next order as needed quantity plus a buffer based on that SKU\'s real lead-time and usage variance. It then stress-tests the order on 1,000 simulated supply scenarios.') +
+      `<div class="opt-wrap"><div><table class="npo"><thead><tr><th>Next order line</th><th>Site</th><th class="r">Usual qty</th><th class="r">SKIP qty</th><th class="r">Δ</th></tr></thead><tbody>
+      ${np.map(([n, s, a, b, u], k) => `<tr style="animation-delay:${.2 + k * .25}s"><td><b style="font-weight:550">${n}</b></td><td>${s}</td><td class="r mono old">${fmt(a, a < 100 ? 1 : 0)} ${u}</td><td class="r mono new">${fmt(b, b < 100 ? 1 : 0)} ${u}</td><td class="r mono" style="color:var(--good)">−${((1 - b / a) * 100).toFixed(1)}%</td></tr>`).join('')}
+      </tbody></table></div>
+      <div><div class="sub">Monte Carlo · 1,000 lead-time & usage scenarios</div><div class="mc" id="mc"></div>
+        <div class="mc-l"><span><b style="color:#17784A" id="mcOk">0</b> on time</span><span><b style="color:#9A6610" id="mcLo">0</b> tight</span><span><b style="color:#A93427" id="mcKo">0</b> stock-out</span></div>
+        <div class="check" style="animation-delay:3.6s">✓ Material on site ${cfg.ach.toFixed(1)}% of cycles · meets your ${cfg.sl}% no-disruption target</div></div></div>`;
+    const mc = $('#mc'); mc.innerHTML = '<i></i>'.repeat(250);
+    const cells = $$('#mc i'), R = mulberry32(31); let ok = 0, lo = 0, ko = 0;
+    cells.forEach((c, k) => setTimeout(() => {
+      const r = R(), kp = (100 - cfg.ach) / 100, cl = r < kp ? 'ko' : r < kp * 4 + .02 ? 'lo' : 'ok'; c.classList.add(cl);
+      if (cl === 'ok') ok++; else if (cl === 'lo') lo++; else ko++;
+      $('#mcOk') && ($('#mcOk').textContent = ok * 4, $('#mcLo').textContent = lo * 4, $('#mcKo').textContent = ko * 4);
+    }, 400 + k * 12));
+    L_(`optimizing 214 SKUs · objective: min waste s.t. material on site ≥ ${cfg.sl}%`); T(1800, () => L_('simulating 1,000 scenarios (lead-time variance from 18 mo of deliveries)', 'dim')); T(3800, () => L_(`service level ${cfg.ach.toFixed(1)}% ✓ · expected stock-outs ${cfg.so < .1 ? '< 0.1' : cfg.so.toFixed(1)} / yr`, 'ok'));
+  }
+  if (i === 6){
+    box.innerHTML = stageHead(6, 'The run ends with draft orders for procurement, a monthly report and CSRD data. Nothing is sent to suppliers until someone approves it.') +
+      `<div class="fin"><div class="h"><span>Annual savings</span><b class="num" id="f1">€0</b></div><div><span>Over-order cut</span><b class="num" id="f2">0%</b></div><div><span>CO₂e avoided</span><b class="num" id="f3">0 t</b></div><div><span>Material on site</span><b class="num" id="f4">0%</b></div></div>
+      <div class="story">
+        <div style="animation-delay:.4s"><b>1 · We saw it</b>18,930 m³ of waste measured by camera, not estimated.</div>
+        <div style="animation-delay:.7s"><b>2 · We traced it</b>92% matched to the exact PO line it was delivered on.</div>
+        <div style="animation-delay:1s"><b>3 · We sized it</b>Buffers cut from +13.7% to +${(13.7 - 7.5 * cfg.f).toFixed(1)}% where lead times allow.</div>
+        <div style="animation-delay:1.3s"><b>4 · We proved it</b>1,000 simulated scenarios: material on site ${cfg.ach.toFixed(1)}% of the time, against your ${cfg.sl}% target.</div>
+      </div>
+      <div class="mrecs-h"><b>6 recommendations ready</b><span>sized for your ${cfg.sl}% no-disruption target · nothing is sent until approved</span></div>
+      <div class="mrecs">${RECS.map((r, k) => { const b1 = r.b0 - (r.b0 - r.b1) * cfg.f; return `<div class="mrec" style="animation-delay:${1.7 + k * .22}s">
+        <i style="background:${MAT[r.k].color}"></i>
+        <div class="mt"><b>${r.t}</b><span>${r.s}</span></div>
+        <div class="mb">buffer <s>+${r.b0}%</s> → <b>+${b1.toFixed(0)}%</b></div>
+        <div class="ms">−€${Math.round(r.save * cfg.f)}k<small>/yr</small></div>
+        <button class="btn sm mok" title="Approve">Approve</button></div>`; }).join('')}</div>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn pri" id="apAll">Approve all 6 → draft POs</button>
+        <button class="btn" data-go2="recs">Open recommendations</button>
+        <button class="btn" data-go2="report">Open September report</button>
+        <button class="btn" data-go2="live">See live cameras</button>
+      </div>`;
+    countTo($('#f1'), 1.42 * cfg.f, 2, '€', 'M', 1800); tween(1800, e => $('#f2').textContent = '−' + (18.4 * cfg.f * e).toFixed(1) + '%'); countTo($('#f3'), 640 * cfg.f, 0, '', ' t', 1800); countTo($('#f4'), cfg.ach, 1, '', '%', 1800);
+    $$('[data-go2]', box).forEach(b => b.addEventListener('click', () => go(b.dataset.go2)));
+    const okRec = (m, silent) => { if (m.classList.contains('ok')) return; m.classList.add('ok'); $('.mok', m).textContent = '✓ Approved'; if (!silent) toast(`${$('.mt b', m).textContent}: draft PO template staged in SAP`); };
+    $$('.mrec', box).forEach(m => $('.mok', m).addEventListener('click', () => okRec(m)));
+    $('#apAll', box).addEventListener('click', e => { $$('.mrec', box).forEach((m, k) => setTimeout(() => okRec(m, true), k * 120)); e.target.textContent = '✓ 6 draft POs staged'; toast(`6 recommendations approved · ${eur(1.42 * cfg.f)}/yr · draft POs staged in SAP (not sent)`); });
+    L_('6 recommendations written · draft PO templates staged in SAP (not sent)'); T(1500, () => L_('report SKP-2026-09 generated · ESRS E5 dataset ready', 'ok'));
+  }
+}
+/* ================= ROUTER ================= */
+const TITLES = { overview: 'Overview', run: 'Run analysis', orders: 'Order intelligence', live: 'Live sites', analytics: 'Waste analytics', recs: 'Recommendations', report: 'Reports' };
+const ENTER = {
+  overview(){ ovChart(); donut(); },
+  run(){ if (runS.step < 0){ runS.step = 0; buildSteps(); } placeSeg(); sizeStage(); },
+  orders(){ mbars(); scatter(); skuTable(); },
+  live(){ initLive(); },
+  analytics(){ areaChart(); sankey(); heat(); },
+  recs(){ recCards(); backtest(); },
+  report(){ repBars(); },
+};
+let current = null;
+function go(v){
+  if (!ENTER[v]) v = 'overview';
+  current = v;
+  $$('.view').forEach(s => { s.classList.remove('on'); });
+  const sec = $(`.view[data-view="${v}"]`);
+  void sec.offsetWidth; sec.classList.add('on');
+  $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $('#crumb').textContent = TITLES[v];
+  window.scrollTo({ top: 0 });
+  sparks(sec); countUp(sec);
+  requestAnimationFrame(() => ENTER[v]());
+  if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+}
+$$('#nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.v)));
+$$('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  const order = Object.keys(TITLES), i = order.indexOf(current);
+  if (e.key === 'ArrowRight' || e.key === ']') go(order[(i + 1) % order.length]);
+  if (e.key === 'ArrowLeft' || e.key === '[') go(order[(i - 1 + order.length) % order.length]);
+});
+window.addEventListener('scroll', () => $('#top').classList.toggle('scrolled', scrollY > 4), { passive: true });
+const clk = () => $('#clock').textContent = new Date().toTimeString().slice(0, 8);
+clk(); setInterval(clk, 1000);
+
+slider();
+secSeg(); applyCfg();
+startTicker();
+go((location.hash || '#overview').slice(1));
+})();
+</script>
+</body>
+</html>
